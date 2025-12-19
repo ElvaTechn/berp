@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /B F:\\berp\\src)",
+      "Bash(dir /B F:\\berp\\src\\app)",
+      "Bash(dir /B F:\\berp\\src\\lib)",
+      "Bash(dir /B F:\\berp\\src\\api)",
+      "Bash(dir /B F:\\berp\\prisma)",
+      "Bash(dir /B /S F:\\berp\\src\\app\\api | findstr \"route.ts\")",
+      "Bash(dir /B /S F:\\berp\\src\\app\\api)",
+      "Bash(dir /B F:\\berp\\src\\components\\admin)",
+      "Bash(npm run build:*)",
+      "Edit(src\\lib/**)",
+      "Bash(powershell -Command \"Remove-Item F:\\berp\\src\\lib\\db-services.ts -Force\")",
+      "Bash(del /F F:\\berp\\src\\lib\\db-services.ts)",
+      "Edit(**)",
+      "Bash(echo:*)",
+      "Bash(cd F:\\berp && npx prisma generate)",
+      "Bash(dir /B F:\\berp\\src\\app\\api 2>nul)",
+      "Bash(npm install:*)",
+      "Bash(dir F:\\berp\\*.md /B)",
+      "Bash(find:*)",
+      "Bash(dir F:\\berp\\src\\app /S /B | findstr \"page.tsx\")",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(cd F:\\berp && powershell -Command \"(Get-Content 'src/app/sales/page.tsx' -Raw) -replace 'text-slate-900 dark:text-slate-900 dark:text-white', 'text-slate-900 dark:text-white' | Set-Content 'src/app/sales/page.tsx' -NoNewline\")",
+      "Bash(cd F:\\berp && powershell -Command \"(Get-Content 'src/app/sales/page.tsx' -Raw) -replace 'text-slate-600 dark:text-slate-600 dark:text-slate-400', 'text-slate-600 dark:text-slate-400' | Set-Content 'src/app/sales/page.tsx' -NoNewline\")",
+      "Bash(cd F:\\berp && powershell -Command \"(Get-Content 'src/app/sales/page.tsx' -Raw) -replace 'border-slate-200 dark:border-slate-200 dark:border-white/10', 'border-slate-200 dark:border-white/10' | Set-Content 'src/app/sales/page.tsx' -NoNewline\")"
+    ]
+  }
+}

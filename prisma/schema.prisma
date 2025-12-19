@@ -1,0 +1,555 @@
+// ================================================================
+// PRISMA SCHEMA - BIZCONTROL 360 ERP (ENTERPRISE GRADE)
+// ================================================================
+// Auditado por: DBA Senior & Data Engineering Team
+// Data: 18 Dezembro 2025
+// Versão: 2.0.0 (Refatoração Completa)
+// 
+// MUDANÇAS CRÍTICAS:
+// - Float → Decimal (Precisão Financeira)
+// - Snapshot de Custos em Vendas
+// - Multi-tenancy Reforçado
+// - Índices Compostos para Performance
+// - Campos Essenciais de ERP (Validade, Descontos, Devoluções)
+// ================================================================
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================================================
+// AUTENTICAÇÃO E USUÁRIOS
+// ================================================================
+
+model User {
+  id         String     @id @default(cuid())
+  full_name  String
+  email      String     @unique
+  password   String
+  role       Role       @default(VENDEDOR)
+  is_active  Boolean    @default(true)  // NEW: Soft delete / suspend accounts
+  
+  // Relacionamentos
+  companies  Company[]
+  audit_logs AuditLog[]
+  employees  Employee[]
+  
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  
+  @@index([email])
+  @@index([role])
+  @@index([is_active])
+  @@map("users")
+}
+
+// ================================================================
+// RATE LIMITING & SECURITY
+// ================================================================
+
+model LoginAttempt {
+  id         String    @id @default(cuid())
+  email      String    @unique
+  attempts   Int       @default(0)
+  lockUntil  DateTime?
+  updatedAt  DateTime  @updatedAt
+  
+  @@index([email])
+  @@index([lockUntil])
+  @@map("login_attempts")
+}
+
+model RateLimitEntry {
+  id         String   @id @default(cuid())
+  identifier String   @unique
+  count      Int      @default(0)
+  resetAt    DateTime
+  updatedAt  DateTime @updatedAt
+  
+  @@index([identifier])
+  @@index([resetAt])
+  @@map("rate_limit_entries")
+}
+
+// ================================================================
+// EMPRESAS E ORGANIZAÇÃO (MULTI-TENANCY CORE)
+// ================================================================
+
+model Company {
+  id                   String     @id @default(cuid())
+  name                 String
+  nuit                 String?    @unique  // Número Único de Identificação Tributária (MZ)
+  address              String?
+  phone                String?
+  email                String?
+  
+  // Subscription Management
+  subscription_status  SubscriptionStatus @default(TRIAL)  // NEW: Enum instead of String
+  subscription_type    SubscriptionType   @default(MONTHLY) // NEW: Enum
+  subscription_start   DateTime?          // NEW: Track trial/subscription start
+  subscription_end     DateTime?
+  
+  // Business Info
+  business_sector      String?
+  tax_regime           TaxRegime?  @default(NORMAL)  // NEW: IVA regime for Mozambique
+  
+  // Ownership
+  owner_id             String
+  owner                User       @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+  
+  // Relacionamentos (Multi-tenancy)
+  employees            Employee[]
+  categories           Category[]
+  products             Product[]
+  sales                Sale[]
+  reservations         Reservation[]
+  audit_logs           AuditLog[]
+  returns              Return[]        // NEW: Product returns
+  discounts            Discount[]      // NEW: Discount management
+  
+  created_at           DateTime   @default(now())
+  updated_at           DateTime   @updatedAt
+  
+  @@index([owner_id])
+  @@index([nuit])
+  @@index([subscription_status])
+  @@unique([name, owner_id])
+  @@map("companies")
+}
+
+model Employee {
+  id         String   @id @default(cuid())
+  full_name  String
+  email      String
+  role       Role     @default(VENDEDOR)
+  is_active  Boolean  @default(true)  // NEW: Soft delete for employees
+  
+  // Multi-tenancy (OBRIGATÓRIO)
+  company_id String
+  company    Company  @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  
+  // Link to User (Optional - Employee pode ou não ter conta de login)
+  user_id    String?
+  user       User?    @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  
+  // Relacionamentos
+  sales      Sale[]
+  reservations Reservation[]
+  audit_logs AuditLog[]
+  returns    Return[]  // NEW: Track who processed returns
+  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  
+  @@unique([company_id, email])
+  @@index([company_id])
+  @@index([email])
+  @@index([role])
+  @@index([is_active])
+  @@index([company_id, is_active])  // NEW: Composite index for active employees by company
+  @@map("employees")
+}
+
+// ================================================================
+// PRODUTOS E CATEGORIAS
+// ================================================================
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  color       String?  @default("#3b82f6")  // Blue default
+  is_active   Boolean  @default(true)  // NEW: Soft delete
+  
+  // Multi-tenancy (OBRIGATÓRIO)
+  company_id  String
+  company     Company  @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  
+  products    Product[]
+  
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  
+  @@unique([name, company_id])
+  @@index([company_id])
+  @@index([company_id, is_active])  // NEW: Composite index
+  @@map("categories")
+}
+
+model Product {
+  id           String    @id @default(cuid())
+  name         String
+  description  String?
+  barcode      String?   @unique
+  sku          String?   // NEW: Stock Keeping Unit (internal code)
+  
+  // FINANCIAL FIELDS - REFATORADO PARA DECIMAL
+  price        Decimal   @db.Decimal(10, 2)  // Preço de venda
+  cost_price   Decimal?  @db.Decimal(10, 2)  // Preço de custo (para cálculo de lucro)
+  
+  // Stock Management
+  quantity     Int       @default(0)
+  min_stock    Int       @default(0)
+  max_stock    Int?      // NEW: Maximum stock level
+  
+  // Product Lifecycle
+  is_active    Boolean   @default(true)   // NEW: Soft delete / inactive products
+  expiry_date  DateTime? // NEW: Data de validade (essencial para farmácias, supermercados)
+  
+  // Multi-tenancy (OBRIGATÓRIO)
+  category_id  String
+  company_id   String
+  
+  category     Category  @relation(fields: [category_id], references: [id], onDelete: Restrict)  // Changed to Restrict
+  company      Company   @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  
+  // Relacionamentos
+  sale_items   SaleItem[]
+  reservations Reservation[]
+  return_items ReturnItem[]  // NEW: Track returned products
+  
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  
+  @@unique([name, company_id])
+  @@index([company_id])
+  @@index([category_id])
+  @@index([barcode])
+  @@index([quantity])
+  @@index([company_id, is_active])         // NEW: Active products per company
+  @@index([company_id, category_id])       // NEW: Products by company and category
+  @@index([expiry_date])                   // NEW: Query expiring products
+  @@index([company_id, expiry_date])       // NEW: Expiring products per company
+  @@map("products")
+}
+
+// ================================================================
+// DESCONTOS (NEW - ESSENTIAL FOR ERP)
+// ================================================================
+
+model Discount {
+  id          String   @id @default(cuid())
+  code        String   // Discount code (e.g., "SUMMER2025")
+  description String?
+  
+  // Discount Type
+  type        DiscountType  // PERCENTAGE or FIXED
+  value       Decimal   @db.Decimal(10, 2)  // 10% = 10.00 or 100MT = 100.00
+  
+  // Validity
+  is_active   Boolean   @default(true)
+  starts_at   DateTime?
+  expires_at  DateTime?
+  
+  // Usage Limits
+  max_uses    Int?      // NULL = unlimited
+  current_uses Int      @default(0)
+  
+  // Multi-tenancy
+  company_id  String
+  company     Company  @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  
+  // Track which sales used this discount
+  sales       Sale[]
+  
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  
+  @@unique([code, company_id])
+  @@index([company_id])
+  @@index([company_id, is_active])
+  @@index([expires_at])
+  @@map("discounts")
+}
+
+// ================================================================
+// VENDAS (REFATORADO COM PRECISÃO FINANCEIRA)
+// ================================================================
+
+model Sale {
+  id             String     @id @default(cuid())
+  
+  // FINANCIAL FIELDS - REFATORADO PARA DECIMAL
+  subtotal       Decimal    @db.Decimal(10, 2)  // NEW: Subtotal before discount/tax
+  discount_amount Decimal?  @db.Decimal(10, 2)  // NEW: Total discount applied
+  tax_amount     Decimal?   @db.Decimal(10, 2)  // NEW: IVA (17% em Moçambique)
+  total          Decimal    @db.Decimal(10, 2)  // Total final
+  total_profit   Decimal?   @db.Decimal(10, 2)  // Lucro total (calculado)
+  
+  payment_method PaymentMethod
+  payment_status PaymentStatus @default(PAID)    // NEW: Track payment status
+  
+  // References
+  discount_id    String?
+  discount       Discount?  @relation(fields: [discount_id], references: [id], onDelete: SetNull)
+  
+  // Multi-tenancy (OBRIGATÓRIO)
+  company_id     String
+  employee_id    String
+  
+  company        Company    @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  employee       Employee   @relation(fields: [employee_id], references: [id], onDelete: Restrict)
+  
+  // Relacionamentos
+  sale_items     SaleItem[]
+  returns        Return[]   // NEW: Track returns for this sale
+  
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+  
+  @@index([company_id])
+  @@index([employee_id])
+  @@index([created_at])
+  @@index([payment_method])
+  @@index([payment_status])           // NEW
+  @@index([company_id, created_at])   // NEW: Composite for sales by company/date
+  @@index([company_id, employee_id])  // NEW: Sales by company and employee
+  @@map("sales")
+}
+
+model SaleItem {
+  id         String  @id @default(cuid())
+  quantity   Int
+  
+  // FINANCIAL SNAPSHOT - CRITICAL FOR HISTORICAL ACCURACY
+  unit_price Decimal @db.Decimal(10, 2)  // Preço no momento da venda (imutável)
+  cost_price Decimal @db.Decimal(10, 2)  // NEW: Custo no momento da venda (para cálculo de lucro)
+  subtotal   Decimal @db.Decimal(10, 2)  // NEW: unit_price * quantity
+  profit     Decimal @db.Decimal(10, 2)  // NEW: (unit_price - cost_price) * quantity
+  
+  // References
+  product_id String
+  sale_id    String
+  
+  product    Product @relation(fields: [product_id], references: [id], onDelete: Restrict)
+  sale       Sale    @relation(fields: [sale_id], references: [id], onDelete: Cascade)
+  
+  created_at DateTime @default(now())
+  
+  @@index([sale_id])
+  @@index([product_id])
+  @@map("sale_items")
+}
+
+// ================================================================
+// DEVOLUÇÕES (NEW - ESSENTIAL FOR ERP)
+// ================================================================
+
+model Return {
+  id             String     @id @default(cuid())
+  reason         String     // Reason for return
+  notes          String?    // Additional notes
+  
+  // Financial Impact
+  total_refund   Decimal    @db.Decimal(10, 2)  // Total amount refunded
+  
+  status         ReturnStatus @default(PENDING)
+  
+  // References
+  sale_id        String
+  sale           Sale       @relation(fields: [sale_id], references: [id], onDelete: Restrict)
+  
+  // Multi-tenancy
+  company_id     String
+  processed_by   String     // Employee who processed the return
+  
+  company        Company    @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  employee       Employee   @relation(fields: [processed_by], references: [id], onDelete: Restrict)
+  
+  // Return Items
+  return_items   ReturnItem[]
+  
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+  
+  @@index([company_id])
+  @@index([sale_id])
+  @@index([status])
+  @@index([company_id, created_at])
+  @@map("returns")
+}
+
+model ReturnItem {
+  id         String  @id @default(cuid())
+  quantity   Int     // Quantity returned
+  
+  // Financial
+  refund_amount Decimal @db.Decimal(10, 2)  // Amount refunded for this item
+  
+  // References
+  return_id  String
+  product_id String
+  
+  return_ref Return  @relation(fields: [return_id], references: [id], onDelete: Cascade)
+  product    Product @relation(fields: [product_id], references: [id], onDelete: Restrict)
+  
+  created_at DateTime @default(now())
+  
+  @@index([return_id])
+  @@index([product_id])
+  @@map("return_items")
+}
+
+// ================================================================
+// RESERVAS
+// ================================================================
+
+model Reservation {
+  id             String     @id @default(cuid())
+  customer_name  String
+  customer_bi    String?    // BI/Passaporte (opcional mas indexado)
+  customer_phone String?
+  quantity       Int
+  status         ReservationStatus @default(PENDING)
+  notes          String?
+  
+  // Deposit/Payment
+  deposit_amount Decimal?   @db.Decimal(10, 2)  // NEW: Valor de sinal pago
+  deposit_paid   Boolean    @default(false)      // NEW: Sinal foi pago?
+
+  // References
+  product_id     String?
+  
+  // Multi-tenancy (OBRIGATÓRIO)
+  company_id     String
+  employee_id    String
+
+  product        Product?   @relation(fields: [product_id], references: [id], onDelete: SetNull)
+  company        Company    @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  employee       Employee   @relation(fields: [employee_id], references: [id], onDelete: Restrict)
+
+  expires_at     DateTime
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+  
+  @@index([company_id])
+  @@index([product_id])
+  @@index([status])
+  @@index([expires_at])
+  @@index([customer_bi])              // NEW: Search by customer
+  @@index([company_id, status])       // NEW: Reservations by company and status
+  @@map("reservations")
+}
+
+// ================================================================
+// AUDITORIA (ENHANCED FOR COMPLIANCE)
+// ================================================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  
+  // Action Details
+  action      String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, etc.
+  resource    String   // User, Product, Sale, etc.
+  resource_id String?  // ID of the affected resource
+  
+  // Network & Device Info
+  ip_address  String
+  user_agent  String
+  device_info String?  // NEW: Device fingerprint
+  
+  // Execution Result
+  success     Boolean  @default(true)
+  error       String?  // Error message if failed
+  
+  // Change Tracking
+  old_values  String?  // NEW: JSON snapshot of old values
+  new_values  String?  // NEW: JSON snapshot of new values
+  details     String?  // Additional JSON details
+  
+  // Multi-tenancy References
+  user_id     String?
+  employee_id String?
+  company_id  String?
+  
+  user        User?    @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  company     Company? @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  employee    Employee? @relation(fields: [employee_id], references: [id], onDelete: SetNull)
+  
+  timestamp   DateTime @default(now())
+  
+  @@index([user_id])
+  @@index([employee_id])
+  @@index([company_id])
+  @@index([action])
+  @@index([resource])
+  @@index([timestamp])
+  @@index([success])
+  @@index([company_id, action])       // NEW: Actions by company
+  @@index([company_id, timestamp])    // NEW: Audit trail by company/time
+  @@index([resource, resource_id])    // NEW: Track changes to specific resource
+  @@map("audit_logs")
+}
+
+// ================================================================
+// ENUMS
+// ================================================================
+
+enum Role {
+  ADMIN      // System admin (super user)
+  GESTOR     // Company manager/owner
+  VENDEDOR   // Salesperson
+}
+
+enum PaymentMethod {
+  DINHEIRO
+  MPESA
+  EMOLA        // NEW: Moçambique mobile money
+  CARTAO
+  MULTICAIXA
+  TRANSFERENCIA
+}
+
+enum PaymentStatus {
+  PENDING      // NEW: Payment not yet received
+  PAID         // NEW: Payment received
+  PARTIAL      // NEW: Partial payment
+  REFUNDED     // NEW: Payment refunded
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  EXPIRED
+  COMPLETED    // NEW: Reservation converted to sale
+}
+
+enum SubscriptionStatus {
+  TRIAL        // NEW: Trial period
+  ACTIVE       // Subscription active
+  SUSPENDED    // Temporarily suspended
+  EXPIRED      // Subscription expired
+  CANCELLED    // Cancelled by user
+}
+
+enum SubscriptionType {
+  MONTHLY      // Monthly billing
+  QUARTERLY    // Quarterly billing
+  ANNUAL       // Annual billing
+  LIFETIME     // One-time payment
+}
+
+enum TaxRegime {
+  NORMAL       // IVA normal (17% em Moçambique)
+  SIMPLIFIED   // Regime simplificado
+  EXEMPT       // Isento de IVA
+}
+
+enum DiscountType {
+  PERCENTAGE   // Discount in percentage (e.g., 10%)
+  FIXED        // Fixed amount discount (e.g., 100 MT)
+}
+
+enum ReturnStatus {
+  PENDING      // Return requested
+  APPROVED     // Return approved
+  REJECTED     // Return rejected
+  COMPLETED    // Refund processed
+}

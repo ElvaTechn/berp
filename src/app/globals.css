@@ -1,8 +1,91 @@
 @import "tailwindcss";
 
+/* =================================================================
+   🌓 DUAL THEME SYSTEM - Light High-Tech & Dark Maximalist
+   ================================================================= */
+
+/* Light Mode (Default) - Clean High-End Aesthetic */
 :root {
+  /* Backgrounds - Branco Puro & Cinza Cristalino */
   --background: #ffffff;
-  --foreground: #171717;
+  --background-secondary: #f8fafc;
+  --background-tertiary: #f1f5f9;
+  
+  /* Foregrounds - Slate Profundo (não preto puro) */
+  --foreground: #0f172a;
+  --foreground-secondary: #1e293b;
+  --foreground-muted: #475569;
+  
+  /* Primary - Azul Vibrante */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-foreground: #ffffff;
+  
+  /* Accents - Cores para Sombras Coloridas */
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --accent-green: #10b981;
+  --accent-orange: #f59e0b;
+  --accent-red: #ef4444;
+  
+  /* Borders - Sutis mas presentes */
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  
+  /* Cards - Com profundidade */
+  --card-bg: #ffffff;
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(59, 130, 246, 0.08);
+  --card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(59, 130, 246, 0.12);
+  
+  /* Glass Effect */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(226, 232, 240, 0.5);
+  
+  /* Focus & Ring */
+  --ring: #2563eb;
+  --ring-offset: #ffffff;
+}
+
+/* Dark Mode - Nave Espacial Maximalist */
+.dark {
+  /* Backgrounds - Preto Absoluto & Cinza Espacial */
+  --background: #050505;
+  --background-secondary: #0a0a0a;
+  --background-tertiary: #141414;
+  
+  /* Foregrounds - Branco & Cinzas Claros */
+  --foreground: #ffffff;
+  --foreground-secondary: #e2e8f0;
+  --foreground-muted: #94a3b8;
+  
+  /* Primary - Azul Neon */
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-foreground: #ffffff;
+  
+  /* Accents - Neon Vibrantes */
+  --accent-blue: #60a5fa;
+  --accent-purple: #a78bfa;
+  --accent-green: #34d399;
+  --accent-orange: #fbbf24;
+  --accent-red: #f87171;
+  
+  /* Borders - Sutis no escuro */
+  --border: #1e293b;
+  --border-strong: #334155;
+  
+  /* Cards - Elevação no escuro */
+  --card-bg: #0a0a0a;
+  --card-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 12px rgba(0, 0, 0, 0.5);
+  --card-shadow-hover: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 8px 24px rgba(0, 0, 0, 0.7);
+  
+  /* Glass Effect */
+  --glass-bg: rgba(10, 10, 10, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  
+  /* Focus & Ring */
+  --ring: #3b82f6;
+  --ring-offset: #050505;
 }
 
 @theme inline {
@@ -12,15 +95,146 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth Theme Transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Scrollbar profissional - Dual Theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground-muted);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* PWA Offline Animations */
+@keyframes slide-in-from-top {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-from-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-from-top {
+  animation: slide-in-from-top 0.3s ease-out;
+}
+
+.animate-slide-in-from-bottom {
+  animation: slide-in-from-bottom 0.3s ease-out;
+}
+
+/* Focus rings */
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Transições suaves */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Cards profissionais */
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Botões com hover suave */
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+/* Inputs profissionais */
+input:focus,
+select:focus,
+textarea:focus {
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+frames fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

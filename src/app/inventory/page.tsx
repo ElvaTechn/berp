@@ -1,0 +1,361 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import {
+  Package,
+  Plus,
+  Search,
+  AlertTriangle,
+  TrendingUp,
+  DollarSign,
+  Filter,
+  Download,
+  Loader2,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import ProductTable from '@/components/inventory/ProductTable';
+import AddProductModal from '@/components/inventory/AddProductModal';
+import EditProductModal from '@/components/inventory/EditProductModal';
+
+interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  barcode: string | null;
+  sku: string | null;
+  price: number;
+  cost_price: number | null;
+  quantity: number;
+  min_stock: number;
+  max_stock: number | null;
+  is_active: boolean;
+  expiry_date: Date | null;
+  category: {
+    id: string;
+    name: string;
+    color: string;
+  };
+  created_at: Date;
+  updated_at: Date;
+}
+
+interface Stats {
+  total: number;
+  active: number;
+  lowStock: number;
+  totalValue: number;
+}
+
+export default function InventoryPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [stats, setStats] = useState<Stats>({
+    total: 0,
+    active: 0,
+    lowStock: 0,
+    totalValue: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterStock, setFilterStock] = useState<string>('all');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  // Fetch products
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/products');
+      if (!response.ok) throw new Error('Erro ao carregar produtos');
+      
+      const data = await response.json();
+      setProducts(data.products || []);
+      calculateStats(data.products || []);
+    } catch (error) {
+      toast.error('Erro ao carregar produtos');
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // Calculate statistics
+  const calculateStats = (productsList: Product[]) => {
+    const active = productsList.filter((p) => p.is_active).length;
+    const lowStock = productsList.filter(
+      (p) => p.is_active && p.quantity <= p.min_stock
+    ).length;
+    const totalValue = productsList.reduce(
+      (sum, p) => sum + (p.is_active ? p.price * p.quantity : 0),
+      0
+    );
+
+    setStats({
+      total: productsList.length,
+      active,
+      lowStock,
+      totalValue,
+    });
+  };
+
+  // Filter products
+  useEffect(() => {
+    let filtered = [...products];
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (p) =>
+          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.barcode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.sku?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Category filter
+    if (filterCategory !== 'all') {
+      filtered = filtered.filter((p) => p.category.id === filterCategory);
+    }
+
+    // Stock filter
+    if (filterStock === 'low') {
+      filtered = filtered.filter((p) => p.quantity <= p.min_stock);
+    } else if (filterStock === 'ok') {
+      filtered = filtered.filter((p) => p.quantity > p.min_stock);
+    } else if (filterStock === 'critical') {
+      filtered = filtered.filter((p) => p.quantity === 0);
+    }
+
+    setFilteredProducts(filtered);
+  }, [searchQuery, filterCategory, filterStock, products]);
+
+  const handleProductAdded = () => {
+    fetchProducts();
+    setShowAddModal(false);
+  };
+
+  const handleProductUpdated = () => {
+    fetchProducts();
+    setEditingProduct(null);
+  };
+
+  const handleProductDeleted = () => {
+    fetchProducts();
+  };
+
+  // Get unique categories for filter
+  const categories = Array.from(
+    new Set(products.map((p) => JSON.stringify(p.category)))
+  ).map((c) => JSON.parse(c));
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#0f0f0f] to-[#0a0a0a]">
+      {/* Header */}
+      <div className="mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 mb-2"
+        >
+          <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-500/30">
+            <Package className="w-6 h-6 text-slate-900 dark:text-slate-900 dark:text-slate-900 dark:text-white" />
+          </div>
+          <div>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-slate-900 dark:text-slate-900 dark:text-white tracking-tight italic">
+              Gestão de <span className="text-purple-500">Inventário</span>
+            </h1>
+            <p className="text-slate-600 dark:text-slate-600 dark:text-slate-600 dark:text-slate-400 font-medium">
+              Controle total do seu stock
+            </p>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Total Products */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600/10 to-blue-600/5 border border-blue-600/20 p-6 backdrop-blur-sm"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 rounded-full blur-3xl" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-600/20">
+                <Package className="w-6 h-6 text-blue-400" />
+              </div>
+              <span className="text-xs font-bold text-blue-400 bg-blue-600/20 px-2 py-1 rounded-full">
+                TOTAL
+              </span>
+            </div>
+            <p className="text-4xl font-black text-slate-900 dark:text-slate-900 dark:text-slate-900 dark:text-white mb-1">{stats.total}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-600 dark:text-slate-600 dark:text-slate-400 font-medium">
+              Produtos cadastrados
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Active Products */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-600/10 to-green-600/5 border border-green-600/20 p-6 backdrop-blur-sm"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-green-600/10 rounded-full blur-3xl" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-green-600/20">
+                <TrendingUp className="w-6 h-6 text-green-400" />
+              </div>
+              <span className="text-xs font-bold text-green-400 bg-green-600/20 px-2 py-1 rounded-full">
+                ATIVOS
+              </span>
+            </div>
+            <p className="text-4xl font-black text-slate-900 dark:text-slate-900 dark:text-slate-900 dark:text-white mb-1">{stats.active}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-600 dark:text-slate-600 dark:text-slate-400 font-medium">Produtos ativos</p>
+          </div>
+        </motion.div>
+
+        {/* Low Stock */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3 }}
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-600/10 to-red-600/5 border border-red-600/20 p-6 backdrop-blur-sm"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/10 rounded-full blur-3xl" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-red-600/20">
+                <AlertTriangle className="w-6 h-6 text-red-400" />
+              </div>
+              <span className="text-xs font-bold text-red-400 bg-red-600/20 px-2 py-1 rounded-full">
+                ALERTA
+              </span>
+            </div>
+            <p className="text-4xl font-black text-slate-900 dark:text-slate-900 dark:text-slate-900 dark:text-white mb-1">
+              {stats.lowStock}
+            </p>
+            <p className="text-sm text-slate-600 dark:text-slate-600 dark:text-slate-600 dark:text-slate-400 font-medium">Stock baixo</p>
+          </div>
+        </motion.div>
+
+        {/* Total Value */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4 }}
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600/10 to-purple-600/5 border border-purple-600/20 p-6 backdrop-blur-sm"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600/10 rounded-full blur-3xl" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-purple-600/20">
+                <DollarSign className="w-6 h-6 text-purple-400" />
+              </div>
+              <span className="text-xs font-bold text-purple-400 bg-purple-600/20 px-2 py-1 rounded-full">
+                VALOR
+              </span>
+            </div>
+            <p className="text-4xl font-black text-slate-900 dark:text-slate-900 dark:text-slate-900 dark:text-white mb-1">
+              {stats.totalValue.toLocaleString('pt-MZ', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })}
+            </p>
+            <p className="text-sm text-slate-600 dark:text-slate-600 dark:text-slate-600 dark:text-slate-400 font-medium">MT em stock</p>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Filters and Actions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="mb-6 flex flex-col lg:flex-row gap-4"
+      >
+        {/* Search */}
+        <div className="flex-1 relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+          <input
+            type="text"
+            placeholder="Buscar por nome, código de barras ou SKU..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-14 pl-12 pr-4 bg-white/5 border border-slate-200 dark:border-slate-200 dark:border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-slate-900 dark:text-slate-900 dark:text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
+          />
+        </div>
+
+        {/* Filters */}
+        <div className="flex gap-3">
+          <select
+            value={filterStock}
+            onChange={(e) => setFilterStock(e.target.value)}
+            className="h-14 px-4 bg-white/5 border border-slate-200 dark:border-slate-200 dark:border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-slate-900 dark:text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
+          >
+            <option value="all">Todos os stocks</option>
+            <option value="ok">Stock OK</option>
+            <option value="low">Stock Baixo</option>
+            <option value="critical">Esgotado</option>
+          </select>
+
+          {/* Add Product Button */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowAddModal(true)}
+            className="h-14 px-6 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl text-slate-900 dark:text-slate-900 dark:text-slate-900 dark:text-white font-bold flex items-center gap-2 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="hidden sm:inline">Adicionar Produto</span>
+          </motion.button>
+        </div>
+      </motion.div>
+
+      {/* Products Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+      >
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
+          </div>
+        ) : (
+          <ProductTable
+            products={filteredProducts}
+            onEdit={setEditingProduct}
+            onDelete={handleProductDeleted}
+          />
+        )}
+      </motion.div>
+
+      {/* Modals */}
+      {showAddModal && (
+        <AddProductModal
+          onClose={() => setShowAddModal(false)}
+          onSuccess={handleProductAdded}
+        />
+      )}
+
+      {editingProduct && (
+        <EditProductModal
+          product={editingProduct}
+          onClose={() => setEditingProduct(null)}
+          onSuccess={handleProductUpdated}
+        />
+      )}
+    </div>
+  );
+}
