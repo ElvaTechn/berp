@@ -1,327 +1,222 @@
-import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
+// src/lib/audit-log.ts
+// Sistema de Auditoria para rastrear todas as ações administrativas
+
+import prisma from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 
-interface AuditLogData {
-  userId?: string;
-  employeeId?: string;
-  companyId?: string;
-  action: string;
-  resource: string;
-  resourceId?: string;
-  ipAddress: string;
-  userAgent: string;
-  timestamp: Date;
-  details?: any;
-  success: boolean;
-  error?: string;
-}
-
-// Create audit log
-export async function createAuditLog(data: AuditLogData): Promise<void> {
-  try {
-    await prisma.auditLog.create({
-      data: {
-        user_id: data.userId,
-        employee_id: data.employeeId,
-        company_id: data.companyId,
-        action: data.action,
-        resource: data.resource,
-        resource_id: data.resourceId,
-        ip_address: data.ipAddress,
-        user_agent: data.userAgent,
-        success: data.success,
-        error: data.error,
-        details: data.details ? JSON.stringify(data.details) : null
-      }
-    });
-
-    logger.info('Audit log created', {
-      action: data.action,
-      userId: data.userId,
-      success: data.success,
-      ip: data.ipAddress
-    });
-
-  } catch (error) {
-    logger.error('Failed to create audit log', { error, data });
-    // Don't throw error to avoid breaking the main flow
-  }
-}
-
-// Middleware to create audit logs from requests
-export function createAuditMiddleware(request: NextRequest) {
-  return {
-    userId: (request as any).userId,
-    employeeId: (request as any).employeeId,
-    companyId: (request as any).companyId,
-    ipAddress: getClientIP(request),
-    userAgent: request.headers.get('user-agent') || 'Unknown',
-    timestamp: new Date()
-  };
-}
-
-// Get client IP safely
-function getClientIP(request: NextRequest): string {
-  const forwarded = request.headers.get('x-forwarded-for');
-  const realIp = request.headers.get('x-real-ip');
-  return forwarded?.split(',')[0] || realIp || 'Unknown';
-}
-
-// Audit actions constants
+// Tipos de ações que podem ser auditadas
 export const AUDIT_ACTIONS = {
-  // Auth actions
-  LOGIN: 'LOGIN',
-  LOGOUT: 'LOGOUT',
-  PASSWORD_CHANGE: 'PASSWORD_CHANGE',
-  
-  // Sales actions
-  SALE_CREATE: 'SALE_CREATE',
-  SALE_UPDATE: 'SALE_UPDATE',
-  SALE_DELETE: 'SALE_DELETE',
-  SALE_SYNC: 'SALE_SYNC',
-  
-  // Product actions
-  PRODUCT_CREATE: 'PRODUCT_CREATE',
-  PRODUCT_UPDATE: 'PRODUCT_UPDATE',
-  PRODUCT_DELETE: 'PRODUCT_DELETE',
-  PRODUCT_PRICE_CHANGE: 'PRODUCT_PRICE_CHANGE',
-  PRODUCT_STOCK_CHANGE: 'PRODUCT_STOCK_CHANGE',
-  
-  // Employee actions
-  EMPLOYEE_CREATE: 'EMPLOYEE_CREATE',
-  EMPLOYEE_UPDATE: 'EMPLOYEE_UPDATE',
-  EMPLOYEE_DELETE: 'EMPLOYEE_DELETE',
-  EMPLOYEE_ROLE_CHANGE: 'EMPLOYEE_ROLE_CHANGE',
-  
-  // Company actions
-  COMPANY_CREATE: 'COMPANY_CREATE',
-  COMPANY_UPDATE: 'COMPANY_UPDATE',
-  COMPANY_DELETE: 'COMPANY_DELETE',
-  
-  // Category actions
-  CATEGORY_CREATE: 'CATEGORY_CREATE',
-  CATEGORY_UPDATE: 'CATEGORY_UPDATE',
-  CATEGORY_DELETE: 'CATEGORY_DELETE',
-  
-  // Reservation actions
-  RESERVATION_CREATE: 'RESERVATION_CREATE',
-  RESERVATION_UPDATE: 'RESERVATION_UPDATE',
-  RESERVATION_DELETE: 'RESERVATION_DELETE',
-  
-  // System actions
-  BACKUP_CREATE: 'BACKUP_CREATE',
-  SYSTEM_ERROR: 'SYSTEM_ERROR',
-  SECURITY_VIOLATION: 'SECURITY_VIOLATION',
-  RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED'
+    // Autenticação
+    LOGIN: 'LOGIN',
+    LOGOUT: 'LOGOUT',
+    LOGIN_FAILED: 'LOGIN_FAILED',
+    
+    // Empresas
+    COMPANY_CREATE: 'COMPANY_CREATE',
+    COMPANY_UPDATE: 'COMPANY_UPDATE',
+    COMPANY_DELETE: 'COMPANY_DELETE',
+    
+    // Subscrições
+    SUBSCRIPTION_CREATE: 'SUBSCRIPTION_CREATE',
+    SUBSCRIPTION_UPDATE: 'SUBSCRIPTION_UPDATE',
+    SUBSCRIPTION_SUSPEND: 'SUBSCRIPTION_SUSPEND',
+    SUBSCRIPTION_RENEW: 'SUBSCRIPTION_RENEW',
+    SUBSCRIPTION_CANCEL: 'SUBSCRIPTION_CANCEL',
+    
+    // Utilizadores
+    USER_CREATE: 'USER_CREATE',
+    USER_UPDATE: 'USER_UPDATE',
+    USER_DELETE: 'USER_DELETE',
+    USER_SUSPEND: 'USER_SUSPEND',
+    USER_ACTIVATE: 'USER_ACTIVATE',
+    
+    // Funcionários
+    EMPLOYEE_CREATE: 'EMPLOYEE_CREATE',
+    EMPLOYEE_UPDATE: 'EMPLOYEE_UPDATE',
+    EMPLOYEE_DELETE: 'EMPLOYEE_DELETE',
+    
+    // Produtos
+    PRODUCT_CREATE: 'PRODUCT_CREATE',
+    PRODUCT_UPDATE: 'PRODUCT_UPDATE',
+    PRODUCT_DELETE: 'PRODUCT_DELETE',
+    
+    // Vendas
+    SALE_CREATE: 'SALE_CREATE',
+    SALE_VOID: 'SALE_VOID',
+    
+    // Admin Actions
+    ADMIN_IMPERSONATE: 'ADMIN_IMPERSONATE', // Admin entrou como cliente
+    ADMIN_VIEW_DASHBOARD: 'ADMIN_VIEW_DASHBOARD',
+    
+    // Sistema
+    SYSTEM_BACKUP: 'SYSTEM_BACKUP',
+    SYSTEM_RESTORE: 'SYSTEM_RESTORE',
 } as const;
 
-// Helper functions for common audit operations
-export async function auditAuthAction(
-  action: string,
-  request: NextRequest,
-  userId: string,
-  success: boolean,
-  error?: string,
-  details?: any
-) {
-  const auditData = createAuditMiddleware(request);
-  await createAuditLog({
-    ...auditData,
-    userId,
-    action,
-    resource: 'AUTH',
-    success,
-    error,
-    details
-  });
+export type AuditAction = typeof AUDIT_ACTIONS[keyof typeof AUDIT_ACTIONS];
+
+// Recursos que podem ser auditados
+export const AUDIT_RESOURCES = {
+    USER: 'USER',
+    COMPANY: 'COMPANY',
+    EMPLOYEE: 'EMPLOYEE',
+    PRODUCT: 'PRODUCT',
+    CATEGORY: 'CATEGORY',
+    SALE: 'SALE',
+    RESERVATION: 'RESERVATION',
+    SUBSCRIPTION: 'SUBSCRIPTION',
+    SYSTEM: 'SYSTEM',
+} as const;
+
+export type AuditResource = typeof AUDIT_RESOURCES[keyof typeof AUDIT_RESOURCES];
+
+interface CreateAuditLogParams {
+    userId?: string;
+    employeeId?: string;
+    companyId?: string;
+    action: string;
+    resource: string;
+    resourceId?: string;
+    ipAddress: string;
+    userAgent: string;
+    success?: boolean;
+    error?: string;
+    oldValues?: Record<string, unknown>;
+    newValues?: Record<string, unknown>;
+    details?: Record<string, unknown>;
+    timestamp?: Date;
 }
 
-export async function auditSaleAction(
-  action: string,
-  request: NextRequest,
-  saleData: any,
-  success: boolean,
-  error?: string
-) {
-  const auditData = createAuditMiddleware(request);
-  await createAuditLog({
-    ...auditData,
-    action,
-    resource: 'SALE',
-    resourceId: saleData.id,
-    details: {
-      total: saleData.total,
-      itemsCount: saleData.items?.length || 0,
-      paymentMethod: saleData.payment_method
-    },
-    success,
-    error
-  });
+/**
+ * Cria um registo de auditoria
+ */
+export async function createAuditLog(params: CreateAuditLogParams): Promise<void> {
+    try {
+        await prisma.auditLog.create({
+            data: {
+                user_id: params.userId,
+                employee_id: params.employeeId,
+                company_id: params.companyId,
+                action: params.action,
+                resource: params.resource,
+                resource_id: params.resourceId,
+                ip_address: params.ipAddress,
+                user_agent: params.userAgent,
+                success: params.success ?? true,
+                error: params.error,
+                old_values: params.oldValues ? JSON.stringify(params.oldValues) : null,
+                new_values: params.newValues ? JSON.stringify(params.newValues) : null,
+                details: params.details ? JSON.stringify(params.details) : null,
+                timestamp: params.timestamp ?? new Date(),
+            },
+        });
+
+        // Log também para o sistema de logs
+        logger.info(`Audit: ${params.action} on ${params.resource}`, {
+            userId: params.userId,
+            resourceId: params.resourceId,
+            success: params.success ?? true,
+        });
+    } catch (error) {
+        // Nunca falhar silenciosamente - log de auditoria é crítico
+        logger.error('Failed to create audit log', {
+            error: error instanceof Error ? error.message : 'Unknown error',
+            params,
+        });
+    }
 }
 
-export async function auditProductAction(
-  action: string,
-  request: NextRequest,
-  productData: any,
-  success: boolean,
-  error?: string
-) {
-  const auditData = createAuditMiddleware(request);
-  await createAuditLog({
-    ...auditData,
-    action,
-    resource: 'PRODUCT',
-    resourceId: productData.id,
-    details: {
-      name: productData.name,
-      price: productData.price,
-      quantity: productData.quantity,
-      categoryId: productData.category_id
-    },
-    success,
-    error
-  });
-}
-
-export async function auditSystemAction(
-  action: string,
-  request: NextRequest,
-  details?: any,
-  success: boolean = true,
-  error?: string
-) {
-  const auditData = createAuditMiddleware(request);
-  await createAuditLog({
-    ...auditData,
-    action,
-    resource: 'SYSTEM',
-    details,
-    success,
-    error
-  });
-}
-
-// Query audit logs
-export async function getAuditLogs(filters: {
-  companyId?: string;
-  userId?: string;
-  action?: string;
-  resource?: string;
-  startDate?: Date;
-  endDate?: Date;
-  limit?: number;
-  offset?: number;
+/**
+ * Buscar logs de auditoria com filtros
+ */
+export async function getAuditLogs(params: {
+    userId?: string;
+    companyId?: string;
+    action?: string;
+    resource?: string;
+    startDate?: Date;
+    endDate?: Date;
+    limit?: number;
+    offset?: number;
 }) {
-  try {
-    const { limit = 50, offset = 0, ...otherFilters } = filters;
-    
-    const logs = await prisma.auditLog.findMany({
-      where: {
-        ...otherFilters,
-        ...(otherFilters.startDate && {
-          timestamp: { gte: otherFilters.startDate }
+    const where: Record<string, unknown> = {};
+
+    if (params.userId) where.user_id = params.userId;
+    if (params.companyId) where.company_id = params.companyId;
+    if (params.action) where.action = params.action;
+    if (params.resource) where.resource = params.resource;
+
+    if (params.startDate || params.endDate) {
+        where.timestamp = {};
+        if (params.startDate) (where.timestamp as Record<string, Date>).gte = params.startDate;
+        if (params.endDate) (where.timestamp as Record<string, Date>).lte = params.endDate;
+    }
+
+    const [logs, total] = await Promise.all([
+        prisma.auditLog.findMany({
+            where,
+            orderBy: { timestamp: 'desc' },
+            take: params.limit || 50,
+            skip: params.offset || 0,
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        full_name: true,
+                        email: true,
+                        role: true,
+                    },
+                },
+                company: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+            },
         }),
-        ...(otherFilters.endDate && {
-          timestamp: { lte: otherFilters.endDate }
-        })
-      },
-      orderBy: { timestamp: 'desc' },
-      take: limit,
-      skip: offset,
-      include: {
-        user: {
-          select: { id: true, full_name: true, email: true }
-        },
-        employee: {
-          select: { id: true, full_name: true, email: true }
-        },
-        company: {
-          select: { id: true, name: true }
-        }
-      }
-    });
+        prisma.auditLog.count({ where }),
+    ]);
 
-    return { success: true, data: logs };
-  } catch (error) {
-    logger.error('Failed to get audit logs', { error, filters });
-    return { success: false, error: 'Failed to retrieve audit logs' };
-  }
+    return { logs, total };
 }
 
-// Get audit statistics
-export async function getAuditStats(filters: {
-  companyId?: string;
-  startDate?: Date;
-  endDate?: Date;
+/**
+ * Formatar log de auditoria para exibição
+ */
+export function formatAuditLog(log: {
+    action: string;
+    resource: string;
+    resource_id?: string | null;
+    old_values?: string | null;
+    new_values?: string | null;
+    details?: string | null;
+    timestamp: Date;
+    user?: { full_name: string; email: string } | null;
 }) {
-  try {
-    const stats = await prisma.auditLog.groupBy({
-      by: ['action'],
-      where: {
-        ...filters,
-        success: true
-      },
-      _count: {
-        action: true
-      },
-      orderBy: {
-        _count: {
-          action: 'desc'
-        }
-      }
-    });
+    const actionLabels: Record<string, string> = {
+        [AUDIT_ACTIONS.COMPANY_CREATE]: 'criou empresa',
+        [AUDIT_ACTIONS.COMPANY_UPDATE]: 'atualizou empresa',
+        [AUDIT_ACTIONS.SUBSCRIPTION_SUSPEND]: 'suspendeu subscrição',
+        [AUDIT_ACTIONS.SUBSCRIPTION_RENEW]: 'renovou subscrição',
+        [AUDIT_ACTIONS.ADMIN_IMPERSONATE]: 'acedeu como cliente',
+        [AUDIT_ACTIONS.USER_CREATE]: 'criou utilizador',
+    };
 
-    // Get error stats
-    const errorStats = await prisma.auditLog.groupBy({
-      by: ['action'],
-      where: {
-        ...filters,
-        success: false
-      },
-      _count: {
-        action: true
-      }
-    });
+    const label = actionLabels[log.action] || log.action.toLowerCase().replace(/_/g, ' ');
 
     return {
-      success: true,
-      data: {
-        actions: stats.map(stat => ({
-          action: stat.action,
-          count: stat._count.action
-        })),
-        errors: errorStats.map(stat => ({
-          action: stat.action,
-          count: stat._count.action
-        }))
-      }
+        ...log,
+        actionLabel: label,
+        oldValues: log.old_values ? JSON.parse(log.old_values) : null,
+        newValues: log.new_values ? JSON.parse(log.new_values) : null,
+        details: log.details ? JSON.parse(log.details) : null,
+        formattedDate: log.timestamp.toLocaleString('pt-MZ', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        }),
     };
-  } catch (error) {
-    logger.error('Failed to get audit stats', { error, filters });
-    return { success: false, error: 'Failed to retrieve audit statistics' };
-  }
-}
-
-// Clean old audit logs (should be run periodically)
-export async function cleanupOldLogs(daysToKeep: number = 90): Promise<void> {
-  try {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
-    
-    const result = await prisma.auditLog.deleteMany({
-      where: {
-        timestamp: {
-          lt: cutoffDate
-        }
-      }
-    });
-
-    logger.info('Old audit logs cleaned up', {
-      cutoffDate,
-      deletedCount: result.count
-    });
-  } catch (error) {
-    logger.error('Failed to cleanup old audit logs', { error, daysToKeep });
-  }
 }

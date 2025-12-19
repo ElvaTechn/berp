@@ -278,12 +278,12 @@ export default function AuditLogsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Ação</label>
-              <Select value={selectedAction} onValueChange={(v) => { setSelectedAction(v); setCurrentPage(1); }}>
+              <Select value={selectedAction || 'all'} onValueChange={(v) => { setSelectedAction(v === 'all' ? '' : v); setCurrentPage(1); }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Todas" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas</SelectItem>
+                  <SelectItem value="all">Todas</SelectItem>
                   {filters?.availableActions.map((action) => (
                     <SelectItem key={action} value={action}>
                       {action}
@@ -295,12 +295,12 @@ export default function AuditLogsPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Recurso</label>
-              <Select value={selectedResource} onValueChange={(v) => { setSelectedResource(v); setCurrentPage(1); }}>
+              <Select value={selectedResource || 'all'} onValueChange={(v) => { setSelectedResource(v === 'all' ? '' : v); setCurrentPage(1); }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   {filters?.availableResources.map((resource) => (
                     <SelectItem key={resource} value={resource}>
                       {resource}
@@ -312,12 +312,12 @@ export default function AuditLogsPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Status</label>
-              <Select value={selectedSuccess} onValueChange={(v) => { setSelectedSuccess(v); setCurrentPage(1); }}>
+              <Select value={selectedSuccess || 'all'} onValueChange={(v) => { setSelectedSuccess(v === 'all' ? '' : v); setCurrentPage(1); }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="true">Sucesso</SelectItem>
                   <SelectItem value="false">Falha</SelectItem>
                 </SelectContent>

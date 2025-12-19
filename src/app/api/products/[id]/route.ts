@@ -8,9 +8,12 @@ import { Prisma } from '@prisma/client';
 // PATCH - Atualizar produto
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await params (Next.js 16+)
+    const { id: productId } = await params;
+
     // Verificar autenticação
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
@@ -50,8 +53,6 @@ export async function PATCH(
         { status: 403 }
       );
     }
-
-    const productId = params.id;
 
     // Verificar se produto existe e pertence à empresa
     const existingProduct = await prisma.product.findUnique({
@@ -197,9 +198,12 @@ export async function PATCH(
 // DELETE - Deletar produto
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await params (Next.js 16+)
+    const { id: productId } = await params;
+
     // Verificar autenticação
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
@@ -239,8 +243,6 @@ export async function DELETE(
         { status: 403 }
       );
     }
-
-    const productId = params.id;
 
     // Verificar se produto existe e pertence à empresa
     const existingProduct = await prisma.product.findUnique({

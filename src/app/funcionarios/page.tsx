@@ -94,7 +94,7 @@ export default function FuncionariosPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] p-4 md:p-6">
+    <div className="min-h-screen bg-white dark:bg-[#050505] p-4 md:p-6">
       <div className="max-w-[1800px] mx-auto space-y-6">
         {/* Header */}
         <motion.div
@@ -103,10 +103,10 @@ export default function FuncionariosPage() {
           className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
         >
           <div>
-            <h1 className="text-5xl font-black italic tracking-tighter text-white mb-2">
+            <h1 className="text-5xl font-black italic tracking-tighter text-slate-900 dark:text-white mb-2">
               Funcionários
             </h1>
-            <p className="text-slate-400 font-medium">
+            <p className="text-slate-600 dark:text-slate-400 font-medium">
               Gerir vendedores e funcionários da empresa
             </p>
           </div>
@@ -120,9 +120,9 @@ export default function FuncionariosPage() {
               whileTap={{ scale: 0.95 }}
               className="
                 flex items-center gap-2 px-4 py-3 rounded-xl
-                bg-slate-800 border border-slate-700
-                font-bold text-white
-                hover:bg-slate-700
+                bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700
+                font-bold text-slate-700 dark:text-white
+                hover:bg-slate-200 dark:hover:bg-slate-700
                 transition-all
                 disabled:opacity-50
               "
@@ -156,8 +156,9 @@ export default function FuncionariosPage() {
           transition={{ delay: 0.1 }}
           className="
             relative overflow-hidden rounded-2xl
-            bg-gradient-to-br from-slate-900/50 to-slate-900/20
-            border border-slate-800
+            bg-white dark:bg-gradient-to-br dark:from-slate-900/50 dark:to-slate-900/20
+            border border-slate-200 dark:border-slate-800
+            shadow-sm dark:shadow-none
             backdrop-blur-xl
             p-4
           "
@@ -171,8 +172,8 @@ export default function FuncionariosPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="
                 w-full pl-12 pr-4 py-3 rounded-xl
-                bg-slate-800 border border-slate-700
-                text-white placeholder:text-slate-500
+                bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700
+                text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500
                 font-medium
                 focus:outline-none focus:ring-2 focus:ring-blue-500/50
                 transition-all
@@ -190,39 +191,39 @@ export default function FuncionariosPage() {
         >
           <div className="
             rounded-xl p-4
-            bg-gradient-to-br from-blue-500/10 to-blue-500/5
-            border border-blue-500/30
+            bg-blue-50 dark:bg-gradient-to-br dark:from-blue-500/10 dark:to-blue-500/5
+            border border-blue-200 dark:border-blue-500/30
           ">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
               Total de Funcionários
             </p>
-            <p className="text-3xl font-black text-white">
+            <p className="text-3xl font-black text-slate-900 dark:text-white">
               {employees.length}
             </p>
           </div>
 
           <div className="
             rounded-xl p-4
-            bg-gradient-to-br from-emerald-500/10 to-emerald-500/5
-            border border-emerald-500/30
+            bg-emerald-50 dark:bg-gradient-to-br dark:from-emerald-500/10 dark:to-emerald-500/5
+            border border-emerald-200 dark:border-emerald-500/30
           ">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
               Ativos
             </p>
-            <p className="text-3xl font-black text-emerald-400">
+            <p className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
               {employees.filter(e => e.is_active).length}
             </p>
           </div>
 
           <div className="
             rounded-xl p-4
-            bg-gradient-to-br from-orange-500/10 to-orange-500/5
-            border border-orange-500/30
+            bg-orange-50 dark:bg-gradient-to-br dark:from-orange-500/10 dark:to-orange-500/5
+            border border-orange-200 dark:border-orange-500/30
           ">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
               Inativos
             </p>
-            <p className="text-3xl font-black text-orange-400">
+            <p className="text-3xl font-black text-orange-600 dark:text-orange-400">
               {employees.filter(e => !e.is_active).length}
             </p>
           </div>

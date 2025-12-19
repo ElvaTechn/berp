@@ -39,13 +39,14 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
     return (
       <div className="
         rounded-2xl p-12
-        bg-gradient-to-br from-slate-900/50 to-slate-900/20
-        border border-slate-800
+        bg-white dark:bg-gradient-to-br dark:from-slate-900/50 dark:to-slate-900/20
+        border border-slate-200 dark:border-slate-800
+        shadow-sm dark:shadow-none
         backdrop-blur-xl
         text-center
       ">
         <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
-        <p className="text-slate-400 font-medium">Carregando funcionários...</p>
+        <p className="text-slate-600 dark:text-slate-400 font-medium">Carregando funcionários...</p>
       </div>
     );
   }
@@ -57,14 +58,15 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
         animate={{ opacity: 1, y: 0 }}
         className="
           rounded-2xl p-12
-          bg-gradient-to-br from-slate-900/50 to-slate-900/20
-          border border-slate-800
+          bg-white dark:bg-gradient-to-br dark:from-slate-900/50 dark:to-slate-900/20
+          border border-slate-200 dark:border-slate-800
+          shadow-sm dark:shadow-none
           backdrop-blur-xl
           text-center
         "
       >
-        <Users className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-        <p className="text-xl font-bold text-slate-400 mb-2">
+        <Users className="w-16 h-16 text-slate-400 dark:text-slate-600 mx-auto mb-4" />
+        <p className="text-xl font-bold text-slate-600 dark:text-slate-400 mb-2">
           Nenhum funcionário encontrado
         </p>
         <p className="text-sm text-slate-500">
@@ -81,14 +83,15 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
       transition={{ delay: 0.3 }}
       className="
         relative overflow-hidden rounded-2xl
-        bg-gradient-to-br from-slate-900/50 to-slate-900/20
-        border border-slate-800
+        bg-white dark:bg-gradient-to-br dark:from-slate-900/50 dark:to-slate-900/20
+        border border-slate-200 dark:border-slate-800
+        shadow-sm dark:shadow-none
         backdrop-blur-xl
       "
     >
       {/* Table Header */}
-      <div className="p-6 border-b border-slate-800">
-        <h3 className="text-2xl font-black italic tracking-tighter text-white">
+      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+        <h3 className="text-2xl font-black italic tracking-tighter text-slate-900 dark:text-white">
           Lista de Funcionários
         </h3>
       </div>
@@ -97,51 +100,51 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-slate-800">
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
+            <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-transparent">
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                 Nome
               </th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                 Email
               </th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                 Função
               </th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                 Status
               </th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                 Data de Criação
               </th>
-              <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-400">
+              <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                 Ações
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {employees.map((employee, index) => (
               <motion.tr
                 key={employee.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="hover:bg-slate-800/30 transition-colors"
+                className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
               >
                 {/* Nome */}
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="
                       w-10 h-10 rounded-full
-                      bg-gradient-to-br from-blue-500/20 to-purple-500/20
-                      border border-blue-500/30
+                      bg-blue-100 dark:bg-gradient-to-br dark:from-blue-500/20 dark:to-purple-500/20
+                      border border-blue-200 dark:border-blue-500/30
                       flex items-center justify-center
                     ">
-                      <span className="text-sm font-black text-blue-400">
+                      <span className="text-sm font-black text-blue-600 dark:text-blue-400">
                         {employee.full_name.charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-white">
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">
                         {employee.full_name}
                       </p>
                     </div>
@@ -150,7 +153,7 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
 
                 {/* Email */}
                 <td className="px-6 py-4">
-                  <p className="text-sm font-medium text-slate-300">
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
                     {employee.user?.email || employee.email || "—"}
                   </p>
                 </td>
@@ -172,7 +175,7 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
                   {employee.is_active ? (
                     <span className="
                       inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold
-                      bg-emerald-500/10 border border-emerald-500/30 text-emerald-400
+                      bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400
                     ">
                       <div className="w-2 h-2 rounded-full bg-emerald-500" />
                       Ativo
@@ -180,7 +183,7 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
                   ) : (
                     <span className="
                       inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold
-                      bg-red-500/10 border border-red-500/30 text-red-400
+                      bg-red-100 dark:bg-red-500/10 border border-red-300 dark:border-red-500/30 text-red-700 dark:text-red-400
                     ">
                       <div className="w-2 h-2 rounded-full bg-red-500" />
                       Inativo
@@ -190,7 +193,7 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
 
                 {/* Data */}
                 <td className="px-6 py-4">
-                  <p className="text-sm font-medium text-slate-400">
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                     {new Date(employee.created_at).toLocaleDateString('pt-MZ', {
                       day: '2-digit',
                       month: 'short',
@@ -208,9 +211,9 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
                       whileTap={{ scale: 0.9 }}
                       className="
                         p-2 rounded-lg
-                        bg-blue-500/10 border border-blue-500/30
-                        text-blue-400
-                        hover:bg-blue-500/20
+                        bg-blue-100 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30
+                        text-blue-600 dark:text-blue-400
+                        hover:bg-blue-200 dark:hover:bg-blue-500/20
                         transition-all
                       "
                       title="Editar"
@@ -224,9 +227,9 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
                       whileTap={{ scale: 0.9 }}
                       className="
                         p-2 rounded-lg
-                        bg-red-500/10 border border-red-500/30
-                        text-red-400
-                        hover:bg-red-500/20
+                        bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30
+                        text-red-600 dark:text-red-400
+                        hover:bg-red-200 dark:hover:bg-red-500/20
                         transition-all
                       "
                       title="Remover"

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Habilita dark mode via classe (necessário para Tailwind v4) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* =================================================================
    🌓 DUAL THEME SYSTEM - Light High-Tech & Dark Maximalist
    ================================================================= */

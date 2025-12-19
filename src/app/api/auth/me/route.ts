@@ -32,7 +32,7 @@ export async function GET(request: Request) {
             user: {
                 id: user.id,
                 email: user.email,
-                name: user.full_name,
+                full_name: user.full_name,
                 role: user.role
             }
         });

@@ -1,8 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
-import { type ThemeProviderProps } from 'next-themes/dist/types';
+import { ThemeProvider as NextThemesProvider, type ThemeProviderProps } from 'next-themes';
 
 /**
  * Theme Provider para BizControl 360
@@ -19,9 +18,10 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
     <NextThemesProvider
       attribute="class"
       defaultTheme="dark"
-      enableSystem
+      enableSystem={false}
       disableTransitionOnChange={false}
       storageKey="bizcontrol-theme"
+      themes={['light', 'dark']}
       {...props}
     >
       {children}

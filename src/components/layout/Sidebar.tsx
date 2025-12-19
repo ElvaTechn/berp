@@ -44,6 +44,7 @@ export default function Sidebar({ user, company }: SidebarProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Links de navegação baseados na role
+  // NOTA: ADMIN usa /admin/layout.tsx com sidebar própria, não esta
   const isVendedor = user.role === 'VENDEDOR';
 
   const navItems: NavItem[] = isVendedor
@@ -184,6 +185,7 @@ export default function Sidebar({ user, company }: SidebarProps) {
 
       {/* Navigation Links */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        {/* Menu para GESTOR e VENDEDOR - ADMIN usa sidebar própria em /admin */}
         {navItems.map((item) => (
           <NavLink key={item.href} item={item} />
         ))}

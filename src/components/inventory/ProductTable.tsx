@@ -27,6 +27,7 @@ interface Product {
   max_stock: number | null;
   is_active: boolean;
   expiry_date: Date | null;
+  category_id: string;
   category: {
     id: string;
     name: string;

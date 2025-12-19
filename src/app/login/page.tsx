@@ -1,15 +1,17 @@
 // src/app/login/page.tsx
 "use client";
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Store, ArrowRight, Loader2, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { toast } from 'sonner'; // Recomendo Sonner para toasts mais bonitos
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
 
@@ -19,14 +21,35 @@ export default function LoginPage() {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.error);
 
+      // Atualiza o AuthContext com os dados do utilizador
+      if (data.user) {
+        login(data.user);
+      }
+
       toast.success('Acesso concedido! Bem-vindo ao ecossistema.');
-      router.push('/dashboard');
+      
+      // Redirecionamento baseado na Role do utilizador
+      // ADMIN → Torre de Controlo (gestão de clientes SaaS)
+      // GESTOR → Dashboard da Empresa (gestão da loja)
+      // VENDEDOR → Ponto de Venda (apenas vendas)
+      const role = data.user?.role?.toUpperCase();
+      let redirectTo = '/dashboard';
+      
+      if (role === 'ADMIN') {
+        redirectTo = '/admin/companies';
+      } else if (role === 'VENDEDOR') {
+        redirectTo = '/sales/pos';
+      }
+      
+      // Força navegação completa para garantir que o servidor recarrega os dados
+      window.location.href = redirectTo;
     } catch (err: any) {
       toast.error(err.message || 'Falha na autenticação');
     } finally {

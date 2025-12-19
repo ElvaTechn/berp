@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
  * Design: Botão elegante com animações suaves
  */
 export function ThemeToggle() {
-  const { theme, setTheme, systemTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
@@ -27,7 +27,8 @@ export function ThemeToggle() {
     );
   }
 
-  const currentTheme = theme === 'system' ? systemTheme : theme;
+  // resolvedTheme é o tema efetivo (resolve 'system' para 'light' ou 'dark')
+  const currentTheme = resolvedTheme;
 
   const themes = [
     {
@@ -50,7 +51,7 @@ export function ThemeToggle() {
     },
   ];
 
-  const CurrentIcon = themes.find((t) => t.value === theme)?.icon || Moon;
+  const CurrentIcon = currentTheme === 'dark' ? Moon : Sun;
 
   return (
     <div className="relative">
@@ -104,8 +105,8 @@ export function ThemeToggle() {
               className="
                 absolute right-0 top-12 z-50
                 w-56 p-2 rounded-xl
-                bg-white dark:bg-gray-900
-                border border-gray-200 dark:border-gray-700
+                bg-white dark:bg-[#0a0a0a]
+                border border-slate-200 dark:border-white/10
                 shadow-2xl
                 backdrop-blur-xl
               "
@@ -129,13 +130,13 @@ export function ThemeToggle() {
                       ${
                         isActive
                           ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+                          : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300'
                       }
                     `}
                   >
                     <div className={`
                       p-1.5 rounded-md
-                      ${isActive ? 'bg-white/20' : 'bg-gray-200 dark:bg-gray-700'}
+                      ${isActive ? 'bg-white/20' : 'bg-slate-200 dark:bg-white/10'}
                     `}>
                       <Icon className="w-4 h-4" />
                     </div>
@@ -144,7 +145,7 @@ export function ThemeToggle() {
                       <div className={`text-sm font-semibold ${isActive ? 'text-white' : ''}`}>
                         {themeOption.label}
                       </div>
-                      <div className={`text-xs ${isActive ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
+                      <div className={`text-xs ${isActive ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'}`}>
                         {themeOption.description}
                       </div>
                     </div>
@@ -161,10 +162,10 @@ export function ThemeToggle() {
               })}
 
               {/* Current Theme Indicator */}
-              <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between">
+              <div className="mt-2 pt-2 border-t border-slate-200 dark:border-white/10">
+                <div className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
                   <span>Tema Atual:</span>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300 capitalize">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300 capitalize">
                     {currentTheme === 'light' ? '☀️ Light' : '🌙 Dark'}
                   </span>
                 </div>
@@ -182,7 +183,7 @@ export function ThemeToggle() {
  * Para uso em lugares com menos espaço
  */
 export function ThemeToggleSimple() {
-  const { theme, setTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -190,10 +191,11 @@ export function ThemeToggleSimple() {
   }, []);
 
   if (!mounted) {
-    return <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-800 animate-pulse" />;
+    return <div className="w-16 h-8 rounded-full bg-slate-200 dark:bg-slate-800 animate-pulse" />;
   }
 
-  const isDark = theme === 'dark';
+  // Usa resolvedTheme para verificar o tema EFETIVO (resolve 'system')
+  const isDark = resolvedTheme === 'dark';
 
   return (
     <motion.button
@@ -209,7 +211,7 @@ export function ThemeToggleSimple() {
         px-1
         group
       "
-      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      aria-label={isDark ? 'Mudar para Light Mode' : 'Mudar para Dark Mode'}
     >
       {/* Slider */}
       <motion.div

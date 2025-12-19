@@ -25,7 +25,11 @@
       "Bash(grep:*)",
       "Bash(cd F:\\berp && powershell -Command \"(Get-Content 'src/app/sales/page.tsx' -Raw) -replace 'text-slate-900 dark:text-slate-900 dark:text-white', 'text-slate-900 dark:text-white' | Set-Content 'src/app/sales/page.tsx' -NoNewline\")",
       "Bash(cd F:\\berp && powershell -Command \"(Get-Content 'src/app/sales/page.tsx' -Raw) -replace 'text-slate-600 dark:text-slate-600 dark:text-slate-400', 'text-slate-600 dark:text-slate-400' | Set-Content 'src/app/sales/page.tsx' -NoNewline\")",
-      "Bash(cd F:\\berp && powershell -Command \"(Get-Content 'src/app/sales/page.tsx' -Raw) -replace 'border-slate-200 dark:border-slate-200 dark:border-white/10', 'border-slate-200 dark:border-white/10' | Set-Content 'src/app/sales/page.tsx' -NoNewline\")"
+      "Bash(cd F:\\berp && powershell -Command \"(Get-Content 'src/app/sales/page.tsx' -Raw) -replace 'border-slate-200 dark:border-slate-200 dark:border-white/10', 'border-slate-200 dark:border-white/10' | Set-Content 'src/app/sales/page.tsx' -NoNewline\")",
+      "Bash(dir /s /b \"F:\\berp\\src\\app\" | findstr \"page.tsx\")",
+      "Bash(cd /d F:\\berp && if exist \".next\" rmdir /s /q \".next\" 2>nul & if exist \"node_modules\\.cache\" rmdir /s /q \"node_modules\\.cache\" 2>nul & echo Cache cleared)",
+      "Bash(mkdir \"F:\\berp\\src\\app\\api\\admin\\stats\" 2>nul & mkdir \"F:\\berp\\src\\app\\api\\admin\\companies\\[id]\\suspend\" 2>nul & mkdir \"F:\\berp\\src\\app\\api\\admin\\companies\\[id]\\renew\" 2>nul & mkdir \"F:\\berp\\src\\app\\api\\admin\\impersonate\" 2>nul & echo Directories created)",
+      "Bash(dir /s /b F:\\berp\\src\\app\\admin\\*.tsx 2>nul | findstr page)"
     ]
   }
 }
