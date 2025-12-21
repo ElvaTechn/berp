@@ -10,6 +10,7 @@ export interface TokenPayload {
     email: string;
     role: string;
     version: number; // Para invalidar tokens antigos se necessário
+    impersonatedBy?: string; // ID do admin que está impersonando (opcional)
 }
 
 export async function signToken(payload: TokenPayload): Promise<string> {

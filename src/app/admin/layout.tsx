@@ -19,6 +19,7 @@ import {
     CreditCard,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ThemeToggleSimple } from '@/components/theme-toggle';
 
 interface NavItem {
     icon: React.ElementType;
@@ -56,7 +57,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const SidebarContent = () => (
         <div className="flex flex-col h-full">
             {/* Header - Logo Admin */}
-            <div className="p-6 border-b border-purple-500/20">
+            <div className="p-6 border-b border-purple-200 dark:border-purple-500/20">
                 <Link href="/admin/dashboard" onClick={() => setIsOpen(false)}>
                     <motion.div
                         whileHover={{ scale: 1.02 }}
@@ -66,10 +67,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <Crown className="w-6 h-6 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h1 className="text-xl font-black text-white tracking-tight italic">
-                                ADMIN<span className="text-purple-400">360</span>
+                            <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight italic">
+                                ADMIN<span className="text-purple-500 dark:text-purple-400">360</span>
                             </h1>
-                            <p className="text-xs text-purple-400 font-medium">
+                            <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">
                                 Torre de Controlo
                             </p>
                         </div>
@@ -131,6 +132,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     </div>
                 </div>
 
+                {/* Theme Toggle */}
+                <div className="mb-3 flex items-center justify-between px-2 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                    <span className="text-xs font-bold text-purple-400 uppercase tracking-wide">
+                        Tema
+                    </span>
+                    <ThemeToggleSimple />
+                </div>
+
                 {/* Logout Button */}
                 <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -147,12 +156,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
 
     return (
-        <div className="flex h-screen bg-[#050505] overflow-hidden">
+        <div className="flex h-screen bg-slate-50 dark:bg-[#050505] overflow-hidden">
             {/* Mobile Hamburger Button */}
             <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsOpen(!isOpen)}
-                className="lg:hidden fixed top-4 left-4 z-50 flex items-center justify-center w-12 h-12 rounded-2xl bg-[#050505] border border-purple-500/20 text-white shadow-2xl"
+                className="lg:hidden fixed top-4 left-4 z-50 flex items-center justify-center w-12 h-12 rounded-2xl bg-white dark:bg-[#050505] border border-purple-200 dark:border-purple-500/20 text-purple-600 dark:text-white shadow-2xl"
             >
                 <AnimatePresence mode="wait">
                     {isOpen ? (
@@ -178,7 +187,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </motion.button>
 
             {/* Desktop Sidebar */}
-            <aside className="hidden lg:flex flex-col w-72 h-screen bg-[#0a0a0a] border-r border-purple-500/20 fixed left-0 top-0 z-40">
+            <aside className="hidden lg:flex flex-col w-72 h-screen bg-white dark:bg-[#0a0a0a] border-r border-purple-200 dark:border-purple-500/20 fixed left-0 top-0 z-40 shadow-xl dark:shadow-none">
                 <SidebarContent />
             </aside>
 
@@ -198,7 +207,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             animate={{ x: 0 }}
                             exit={{ x: '-100%' }}
                             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                            className="lg:hidden fixed left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-[#0a0a0a] border-r border-purple-500/20 z-50 flex flex-col"
+                            className="lg:hidden fixed left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white dark:bg-[#0a0a0a] border-r border-purple-200 dark:border-purple-500/20 z-50 flex flex-col"
                         >
                             <SidebarContent />
                         </motion.aside>
@@ -208,7 +217,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col lg:ml-72 overflow-hidden">
-                <div className="flex-1 overflow-y-auto bg-[#050505]">
+                <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-[#050505]">
                     <div className="p-4 lg:p-8 pt-20 lg:pt-8">
                         {children}
                     </div>

@@ -4,91 +4,91 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* =================================================================
-   🌓 DUAL THEME SYSTEM - Light High-Tech & Dark Maximalist
+   🎨 NOVA IDENTIDADE VISUAL - Rose Premium & Alto Contraste
    ================================================================= */
 
-/* Light Mode (Default) - Clean High-End Aesthetic */
+/* Light Mode (Default) - Branco Puro & Elegante */
 :root {
-  /* Backgrounds - Branco Puro & Cinza Cristalino */
+  /* Backgrounds - Branco Absoluto */
   --background: #ffffff;
-  --background-secondary: #f8fafc;
-  --background-tertiary: #f1f5f9;
+  --background-secondary: #ffffff;
+  --background-tertiary: #fafafa;
   
-  /* Foregrounds - Slate Profundo (não preto puro) */
-  --foreground: #0f172a;
-  --foreground-secondary: #1e293b;
-  --foreground-muted: #475569;
+  /* Foregrounds - Preto Puro */
+  --foreground: #000000;
+  --foreground-secondary: #0a0a0a;
+  --foreground-muted: #525252;
   
-  /* Primary - Azul Vibrante */
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
+  /* Primary - Rose Vibrante */
+  --primary: #f43f5e;
+  --primary-hover: #e11d48;
   --primary-foreground: #ffffff;
+  --primary-glow: rgba(244, 63, 94, 0.4);
   
-  /* Accents - Cores para Sombras Coloridas */
-  --accent-blue: #3b82f6;
-  --accent-purple: #8b5cf6;
+  /* Accents */
+  --accent-rose: #f43f5e;
   --accent-green: #10b981;
   --accent-orange: #f59e0b;
   --accent-red: #ef4444;
   
-  /* Borders - Sutis mas presentes */
+  /* Borders - Slate Suave */
   --border: #e2e8f0;
   --border-strong: #cbd5e1;
   
-  /* Cards - Com profundidade */
+  /* Cards - Branco Puro */
   --card-bg: #ffffff;
-  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(59, 130, 246, 0.08);
-  --card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(59, 130, 246, 0.12);
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(244, 63, 94, 0.06);
+  --card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.1), 0 8px 24px rgba(244, 63, 94, 0.1);
   
   /* Glass Effect */
-  --glass-bg: rgba(255, 255, 255, 0.8);
-  --glass-border: rgba(226, 232, 240, 0.5);
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(226, 232, 240, 0.6);
   
   /* Focus & Ring */
-  --ring: #2563eb;
+  --ring: #f43f5e;
   --ring-offset: #ffffff;
 }
 
-/* Dark Mode - Nave Espacial Maximalist */
+/* Dark Mode - Preto Absoluto & Nítido */
 .dark {
-  /* Backgrounds - Preto Absoluto & Cinza Espacial */
-  --background: #050505;
-  --background-secondary: #0a0a0a;
-  --background-tertiary: #141414;
+  /* Backgrounds - Preto Puro */
+  --background: #000000;
+  --background-secondary: #000000;
+  --background-tertiary: #0a0a0a;
   
-  /* Foregrounds - Branco & Cinzas Claros */
+  /* Foregrounds - Branco Puro */
   --foreground: #ffffff;
-  --foreground-secondary: #e2e8f0;
-  --foreground-muted: #94a3b8;
+  --foreground-secondary: #fafafa;
+  --foreground-muted: #a1a1aa;
   
-  /* Primary - Azul Neon */
-  --primary: #3b82f6;
-  --primary-hover: #60a5fa;
+  /* Primary - Rose Vibrante */
+  --primary: #f43f5e;
+  --primary-hover: #fb7185;
   --primary-foreground: #ffffff;
+  --primary-glow: rgba(244, 63, 94, 0.5);
   
-  /* Accents - Neon Vibrantes */
-  --accent-blue: #60a5fa;
-  --accent-purple: #a78bfa;
+  /* Accents */
+  --accent-rose: #fb7185;
   --accent-green: #34d399;
   --accent-orange: #fbbf24;
   --accent-red: #f87171;
   
-  /* Borders - Sutis no escuro */
-  --border: #1e293b;
-  --border-strong: #334155;
+  /* Borders - Branco Sutil */
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.15);
   
-  /* Cards - Elevação no escuro */
-  --card-bg: #0a0a0a;
-  --card-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 12px rgba(0, 0, 0, 0.5);
-  --card-shadow-hover: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 8px 24px rgba(0, 0, 0, 0.7);
+  /* Cards - Preto Puro */
+  --card-bg: #000000;
+  --card-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 12px rgba(0, 0, 0, 0.8);
+  --card-shadow-hover: 0 0 0 1px rgba(244, 63, 94, 0.3), 0 8px 24px rgba(244, 63, 94, 0.15);
   
   /* Glass Effect */
-  --glass-bg: rgba(10, 10, 10, 0.8);
+  --glass-bg: rgba(0, 0, 0, 0.9);
   --glass-border: rgba(255, 255, 255, 0.1);
   
   /* Focus & Ring */
-  --ring: #3b82f6;
-  --ring-offset: #050505;
+  --ring: #f43f5e;
+  --ring-offset: #000000;
 }
 
 @theme inline {
@@ -101,9 +101,15 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tipografia Premium */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 800;
+  letter-spacing: -0.025em;
 }
 
 /* Smooth Theme Transitions */
@@ -192,7 +198,7 @@ body {
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
 }
 
-/* Botões com hover suave */
+/* Botões com hover suave e glow Rose */
 button:not(:disabled):hover {
   transform: translateY(-1px);
 }
@@ -201,11 +207,26 @@ button:not(:disabled):active {
   transform: translateY(0);
 }
 
-/* Inputs profissionais */
+/* Botões primários com glow Rose */
+.btn-primary {
+  background: #f43f5e;
+  color: white;
+  border-radius: 1rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #e11d48;
+  box-shadow: 0 0 20px rgba(244, 63, 94, 0.4);
+}
+
+/* Inputs profissionais com foco Rose */
 input:focus,
 select:focus,
 textarea:focus {
-  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.15);
+  border-color: #f43f5e;
 }
 
 /* Animações */
@@ -218,26 +239,19 @@ textarea:focus {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Gradient text */
+/* Gradient text - Rose */
 .text-gradient {
-  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #f43f5e 0%, #fb7185 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-frames fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+
+/* Rose Glow Effect */
+.rose-glow {
+  box-shadow: 0 0 30px rgba(244, 63, 94, 0.3);
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-/* Gradient text */
-.text-gradient {
-  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.rose-glow:hover {
+  box-shadow: 0 0 40px rgba(244, 63, 94, 0.5);
 }

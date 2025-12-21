@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
     // Audit log
     await createAuditLog({
       userId: session.userId,
-      action: AUDIT_ACTIONS.BACKUP_CREATE,
+      action: AUDIT_ACTIONS.SYSTEM_BACKUP,
       resource: 'SYSTEM',
       ipAddress: getClientIP(request),
       userAgent: request.headers.get('user-agent') || 'Unknown',

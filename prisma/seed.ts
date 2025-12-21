@@ -22,9 +22,23 @@ async function main() {
   // ============================================
   console.log('👤 Criando usuários...');
   
-  const gestorPassword = await bcrypt.hash('Admin123!', 12);
+  const adminPassword = await bcrypt.hash('Admin123!', 12);
+  const gestorPassword = await bcrypt.hash('Gestor123!', 12);
   const vendedorPassword = await bcrypt.hash('Venda123!', 12);
 
+  // Super Admin (acesso total ao sistema)
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@bizcontrol.co.mz' },
+    update: {},
+    create: {
+      email: 'admin@bizcontrol.co.mz',
+      full_name: 'Administrador Sistema',
+      password: adminPassword,
+      role: Role.ADMIN,
+    },
+  });
+
+  // Gestor da empresa
   const gestor = await prisma.user.upsert({
     where: { email: 'gestor@bizcontrol.co.mz' },
     update: {},
@@ -32,7 +46,7 @@ async function main() {
       email: 'gestor@bizcontrol.co.mz',
       full_name: 'João Machado',
       password: gestorPassword,
-      role: Role.ADMIN,
+      role: Role.GESTOR,
     },
   });
 
@@ -47,7 +61,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Usuários criados: Gestor e Vendedor\n');
+  console.log('✅ Usuários criados: Admin, Gestor e Vendedor\n');
 
   // ============================================
   // 2️⃣ CRIAR EMPRESA
@@ -167,9 +181,13 @@ async function main() {
   console.log('═══════════════════════════════════════════\n');
   console.log('🔑 CREDENCIAIS DE ACESSO:');
   console.log('───────────────────────────────────────────');
-  console.log('👨‍💼 GESTOR:');
-  console.log('   Email: gestor@bizcontrol.co.mz');
+  console.log('🔐 ADMIN (Super Administrador):');
+  console.log('   Email: admin@bizcontrol.co.mz');
   console.log('   Senha: Admin123!');
+  console.log('');
+  console.log('👨‍💼 GESTOR (Gestor da Empresa):');
+  console.log('   Email: gestor@bizcontrol.co.mz');
+  console.log('   Senha: Gestor123!');
   console.log('');
   console.log('👨‍💻 VENDEDOR:');
   console.log('   Email: vendedor@bizcontrol.co.mz');

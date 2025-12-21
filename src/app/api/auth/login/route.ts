@@ -7,6 +7,7 @@ import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import { cookies } from 'next/headers';
+import { ZodError } from 'zod';
 
 export async function POST(request: NextRequest) {
     const ip = getClientIP(request);
@@ -22,7 +23,18 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { email, password } = loginSchema.parse(body);
+        
+        // Validação com tratamento de erros
+        const parseResult = loginSchema.safeParse(body);
+        if (!parseResult.success) {
+            const firstError = parseResult.error.issues[0];
+            return NextResponse.json(
+                { error: firstError?.message || 'Dados inválidos' },
+                { status: 400 }
+            );
+        }
+        
+        const { email, password } = parseResult.data;
 
         // 2. Verificação de conta bloqueada (Redis)
         const lockStatus = await isAccountLocked(email);
