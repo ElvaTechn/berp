@@ -156,49 +156,47 @@ export default function InventoryPage() {
   ).map((c) => JSON.parse(c));
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-gradient-to-br dark:from-[#0a0a0a] dark:via-[#0f0f0f] dark:to-[#0a0a0a]">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 mb-2"
-        >
-          <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-500/30">
-            <Package className="w-6 h-6 text-slate-900 dark:text-white" />
-          </div>
-          <div>
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight italic">
-              Gestão de <span className="text-purple-500">Inventário</span>
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400 font-medium">
-              Controle total do seu stock
-            </p>
-          </div>
-        </motion.div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row items-start sm:items-center gap-3"
+      >
+        <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-500/30 flex-shrink-0">
+          <Package className="w-5 h-5 sm:w-6 sm:h-6 text-black dark:text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-black dark:text-white tracking-tight italic">
+            Gestão de <span className="text-orange-500">Inventário</span>
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 font-medium">
+            Controle total do seu stock
+          </p>
+        </div>
+      </motion.div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* Statistics Cards - Mobile: 1 col, Tablet: 2 cols, Desktop: 4 cols */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* Total Products */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600/10 to-blue-600/5 border border-blue-600/20 p-6 backdrop-blur-sm"
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-600/10 to-orange-600/5 border border-orange-600/20 p-6 backdrop-blur-sm"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 rounded-full blur-3xl" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-600/10 rounded-full blur-3xl" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-600/20">
-                <Package className="w-6 h-6 text-blue-400" />
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-orange-600/20">
+                <Package className="w-6 h-6 text-orange-400" />
               </div>
-              <span className="text-xs font-bold text-blue-400 bg-blue-600/20 px-2 py-1 rounded-full">
+              <span className="text-xs font-bold text-orange-400 bg-orange-600/20 px-2 py-1 rounded-full">
                 TOTAL
               </span>
             </div>
-            <p className="text-4xl font-black text-slate-900 dark:text-white mb-1">{stats.total}</p>
-            <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+            <p className="text-4xl font-black text-black dark:text-white mb-1">{stats.total}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
               Produtos cadastrados
             </p>
           </div>
@@ -221,8 +219,8 @@ export default function InventoryPage() {
                 ATIVOS
               </span>
             </div>
-            <p className="text-4xl font-black text-slate-900 dark:text-white mb-1">{stats.active}</p>
-            <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Produtos ativos</p>
+            <p className="text-4xl font-black text-black dark:text-white mb-1">{stats.active}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Produtos ativos</p>
           </div>
         </motion.div>
 
@@ -243,10 +241,10 @@ export default function InventoryPage() {
                 ALERTA
               </span>
             </div>
-            <p className="text-4xl font-black text-slate-900 dark:text-white mb-1">
+            <p className="text-4xl font-black text-black dark:text-white mb-1">
               {stats.lowStock}
             </p>
-            <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Stock baixo</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Stock baixo</p>
           </div>
         </motion.div>
 
@@ -267,13 +265,13 @@ export default function InventoryPage() {
                 VALOR
               </span>
             </div>
-            <p className="text-4xl font-black text-slate-900 dark:text-white mb-1">
+            <p className="text-4xl font-black text-black dark:text-white mb-1">
               {stats.totalValue.toLocaleString('pt-MZ', {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
               })}
             </p>
-            <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">MT em stock</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">MT em stock</p>
           </div>
         </motion.div>
       </div>
@@ -283,7 +281,7 @@ export default function InventoryPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="mb-6 flex flex-col lg:flex-row gap-4"
+        className="flex flex-col gap-3 sm:gap-4"
       >
         {/* Search */}
         <div className="flex-1 relative">
@@ -293,16 +291,16 @@ export default function InventoryPage() {
             placeholder="Buscar por nome, código de barras ou SKU..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-14 pl-12 pr-4 bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
+            className="w-full h-12 sm:h-14 pl-12 pr-4 bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-black dark:text-white text-sm sm:text-base placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
           />
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-3">
+        {/* Filters and Action Button */}
+        <div className="flex flex-col sm:flex-row gap-3">
           <select
             value={filterStock}
             onChange={(e) => setFilterStock(e.target.value)}
-            className="h-14 px-4 bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
+            className="h-12 sm:h-14 px-4 bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-black dark:text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all flex-1 sm:flex-initial"
           >
             <option value="all">Todos os stocks</option>
             <option value="ok">Stock OK</option>
@@ -315,10 +313,10 @@ export default function InventoryPage() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowAddModal(true)}
-            className="h-14 px-6 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl text-slate-900 dark:text-white font-bold flex items-center gap-2 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all"
+            className="h-12 sm:h-14 px-6 bg-rose-400 rounded-2xl text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-rose-400/30 hover:shadow-rose-400/50 transition-all"
           >
             <Plus className="w-5 h-5" />
-            <span className="hidden sm:inline">Adicionar Produto</span>
+            <span>Adicionar Produto</span>
           </motion.button>
         </div>
       </motion.div>

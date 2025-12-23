@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import Sidebar from './Sidebar';
 import { Loader2 } from 'lucide-react';
+import { useOfflineSync } from '@/hooks/useOfflineSync';
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -22,7 +23,7 @@ interface CompanyData {
 }
 
 // Rotas públicas onde a Sidebar NÃO deve aparecer
-const PUBLIC_ROUTES = ['/login', '/register', '/setup', '/forgot-password', '/reset-password'];
+const PUBLIC_ROUTES = ['/', '/login', '/register', '/setup', '/forgot-password', '/reset-password'];
 
 export default function ClientLayout({ children, user: serverUser }: ClientLayoutProps) {
   const pathname = usePathname();
@@ -45,7 +46,12 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
   }, [contextUser, serverUser]);
 
   // Verificar se é uma rota pública
-  const isPublicRoute = PUBLIC_ROUTES.some(route => pathname?.startsWith(route));
+  const isPublicRoute = PUBLIC_ROUTES.some(route => {
+    // Para a rota raiz "/", usar match exato
+    if (route === '/') return pathname === '/';
+    // Para outras rotas, usar startsWith
+    return pathname?.startsWith(route);
+  });
 
   // Hydration guard - marca quando o cliente está pronto
   useEffect(() => {
@@ -86,12 +92,62 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
     fetchCompanyData();
   }, [currentUser?.id]); // Recarrega quando o ID do user muda
 
+  // Listener global para eventos de autenticação e sincronização
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleForceLogout = (event: CustomEvent) => {
+      console.log('🔥 Evento force-logout recebido:', event.detail);
+      // Limpa dados do contexto
+      // O AuthProvider já tem o logout, mas vamos garantir limpeza
+      const cleanup = async () => {
+        const { clearAllCache } = await import('@/lib/pwa/indexedDB');
+        const { clearLease } = await import('@/lib/pwa/subscription-check');
+        await clearAllCache();
+        await clearLease();
+        localStorage.removeItem('bizcontrol_offline_queue');
+      };
+      
+      cleanup().then(() => {
+        // Redireciona para login
+        window.location.href = '/login';
+      });
+    };
+
+    const handleAuthError = (event: CustomEvent) => {
+      console.log('❌ Evento auth-error recebido:', event.detail);
+      // Pode ser usado para mostrar toast global de erro de autenticação
+    };
+
+    const handleSyncSuccess = (event: CustomEvent) => {
+      console.log('✅ Evento sync-success recebido:', event.detail);
+    };
+
+    const handleSyncError = (event: CustomEvent) => {
+      console.log('❌ Evento sync-error recebido:', event.detail);
+    };
+
+    // Registra listeners
+    window.addEventListener('force-logout', handleForceLogout as EventListener);
+    window.addEventListener('offline-queue-auth-error', handleAuthError as EventListener);
+    window.addEventListener('offline-queue-sync-success', handleSyncSuccess as EventListener);
+    window.addEventListener('offline-queue-sync-error', handleSyncError as EventListener);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('force-logout', handleForceLogout as EventListener);
+      window.removeEventListener('offline-queue-auth-error', handleAuthError as EventListener);
+      window.removeEventListener('offline-queue-sync-success', handleSyncSuccess as EventListener);
+      window.removeEventListener('offline-queue-sync-error', handleSyncError as EventListener);
+    };
+  }, []);
+
   // ========== RENDERIZAÇÃO ==========
 
   // ROTA PÚBLICA: Renderiza APENAS o conteúdo (sem Sidebar)
   if (isPublicRoute) {
     return (
-      <div className="min-h-screen bg-white dark:bg-[#050505]">
+      <div className="min-h-screen bg-white dark:bg-black">
         {children}
       </div>
     );
@@ -100,7 +156,7 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
   // SEM UTILIZADOR: Mostra conteúdo sem sidebar (provavelmente vai redirecionar)
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-white dark:bg-[#050505]">
+      <div className="min-h-screen bg-white dark:bg-black">
         {children}
       </div>
     );
@@ -109,9 +165,9 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
   // LOADING: Ainda não hidratou ou está a carregar autenticação
   if (!isHydrated || authLoading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-[#050505] flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
+          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
           <p className="text-slate-600 dark:text-slate-400 font-medium">A carregar...</p>
         </div>
       </div>
@@ -120,7 +176,7 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
 
   // LAYOUT COMPLETO: Utilizador autenticado com Sidebar
   return (
-    <div className="flex h-screen bg-white dark:bg-[#050505] overflow-hidden">
+    <div className="flex h-screen bg-white dark:bg-black overflow-hidden">
       {/* Sidebar */}
       <Sidebar
         user={{
@@ -140,8 +196,9 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
         className="flex-1 flex flex-col lg:ml-72 overflow-hidden"
       >
         {/* Content with independent scroll */}
-        <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-[#0a0a0a]">
-          <div className="p-4 lg:p-8 pt-20 lg:pt-8">
+        <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-black">
+          {/* Container compacto - máximo aproveitamento do espaço */}
+          <div className="w-full px-2 sm:px-3 lg:px-4 py-2 sm:py-3 lg:py-4 pt-16 lg:pt-4">
             {children}
           </div>
         </div>

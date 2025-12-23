@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, Store, ArrowRight, Loader2, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, Store, ArrowRight, Loader2, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -14,6 +14,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,14 +37,14 @@ export default function LoginPage() {
       toast.success('Acesso concedido! Bem-vindo ao ecossistema.');
       
       // Redirecionamento baseado na Role do utilizador
-      // ADMIN → Torre de Controlo (gestão de clientes SaaS)
+      // ADMIN → Área administrativa (gestão de empresas, auditoria, sistema)
       // GESTOR → Dashboard da Empresa (gestão da loja)
       // VENDEDOR → Ponto de Venda (apenas vendas)
       const role = data.user?.role?.toUpperCase();
       let redirectTo = '/dashboard';
       
       if (role === 'ADMIN') {
-        redirectTo = '/admin/companies';
+        redirectTo = '/admin';
       } else if (role === 'VENDEDOR') {
         redirectTo = '/sales/pos';
       }
@@ -60,8 +61,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 overflow-hidden relative">
       {/* Background Decorativo - Efeito de Aurora/Glow */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px]" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/20 rounded-full blur-[120px]" />
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-rose-500/15 rounded-full blur-[120px]" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-orange-500/15 rounded-full blur-[120px]" />
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -72,12 +73,12 @@ export default function LoginPage() {
         <div className="text-center mb-10">
           <motion.div 
             whileHover={{ scale: 1.05 }}
-            className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-[0_0_40px_rgba(37,99,235,0.4)] mb-6"
+            className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-rose-400 shadow-[0_0_40px_rgba(251,113,133,0.4)] mb-6"
           >
             <Store className="w-10 h-10 text-white" />
           </motion.div>
           <h1 className="text-6xl font-black tracking-tighter text-white mb-2 italic">
-            BIZ<span className="text-blue-500">360</span>
+            BIZ<span className="text-orange-500">360</span>
           </h1>
           <p className="text-slate-400 font-medium tracking-wide uppercase text-xs">A inteligência por trás do seu ERP</p>
         </div>
@@ -87,12 +88,12 @@ export default function LoginPage() {
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-300 ml-1">IDENTIFICAÇÃO</label>
               <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-orange-400 transition-colors" />
                 <Input
                   type="email"
                   required
                   placeholder="admin@empresa.com"
-                  className="h-14 pl-12 bg-black/40 border-white/10 text-white rounded-2xl focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
+                  className="h-14 pl-12 bg-black/40 border-white/10 text-white rounded-2xl focus:ring-2 focus:ring-orange-500/50 transition-all placeholder:text-slate-600"
                   onChange={(e) => setForm({...form, email: e.target.value})}
                 />
               </div>
@@ -101,20 +102,31 @@ export default function LoginPage() {
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-300 ml-1">CHAVE DE ACESSO</label>
               <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-orange-400 transition-colors" />
                 <Input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   placeholder="••••••••••••"
-                  className="h-14 pl-12 bg-black/40 border-white/10 text-white rounded-2xl focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
+                  className="h-14 pl-12 pr-12 bg-black/40 border-white/10 text-white rounded-2xl focus:ring-2 focus:ring-orange-500/50 transition-all placeholder:text-slate-600"
                   onChange={(e) => setForm({...form, password: e.target.value})}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-orange-400 transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
               </div>
             </div>
 
             <Button 
               disabled={isLoading}
-              className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl text-lg transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-blue-600/20"
+              className="w-full h-14 bg-orange-500 hover:bg-orange-400 text-white font-bold rounded-2xl text-lg transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-orange-500/20"
             >
               {isLoading ? <Loader2 className="animate-spin" /> : (
                 <span className="flex items-center gap-2">

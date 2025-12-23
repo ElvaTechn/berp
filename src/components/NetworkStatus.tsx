@@ -122,10 +122,23 @@ export function NetworkStatus() {
               )}
 
               {syncError && (
-                <span className="text-xs text-red-400 font-medium flex items-center gap-1">
-                  <AlertTriangle className="w-3 h-3" />
-                  {syncError}
-                </span>
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs text-red-400 font-medium flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" />
+                    {syncError}
+                  </span>
+                  {syncError.includes('sessão') || syncError.includes('401') ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.dispatchEvent(new CustomEvent('force-logout'));
+                      }}
+                      className="text-[10px] bg-red-500/20 hover:bg-red-500/30 text-red-300 px-2 py-1 rounded transition-colors"
+                    >
+                      Fazer Login Novamente
+                    </button>
+                  ) : null}
+                </div>
               )}
             </div>
 

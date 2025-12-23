@@ -89,6 +89,26 @@ async function main() {
   // ============================================
   console.log('👥 Criando funcionários...');
 
+  // Admin employee - vinculado à empresa para poder acessar dashboard
+  const existingAdmin = await prisma.employee.findFirst({
+    where: {
+      company_id: company.id,
+      email: 'admin@bizcontrol.co.mz',
+    },
+  });
+
+  if (!existingAdmin) {
+    await prisma.employee.create({
+      data: {
+        full_name: 'Administrador Sistema',
+        email: 'admin@bizcontrol.co.mz',
+        role: Role.ADMIN,
+        company_id: company.id,
+        user_id: admin.id,
+      },
+    });
+  }
+
   // Buscar por combinação única de company_id e email
   const existingGestor = await prisma.employee.findFirst({
     where: {
@@ -182,16 +202,19 @@ async function main() {
   console.log('🔑 CREDENCIAIS DE ACESSO:');
   console.log('───────────────────────────────────────────');
   console.log('🔐 ADMIN (Super Administrador):');
-  console.log('   Email: admin@bizcontrol.co.mz');
-  console.log('   Senha: Admin123!');
+  console.log('   Email:    admin@bizcontrol.co.mz');
+  console.log('   Senha:    Admin123!');
+  console.log('   Acesso:   Dashboard completo da empresa');
   console.log('');
   console.log('👨‍💼 GESTOR (Gestor da Empresa):');
-  console.log('   Email: gestor@bizcontrol.co.mz');
-  console.log('   Senha: Gestor123!');
+  console.log('   Email:    gestor@bizcontrol.co.mz');
+  console.log('   Senha:    Gestor123!');
+  console.log('   Acesso:   Dashboard e gestão completa');
   console.log('');
   console.log('👨‍💻 VENDEDOR:');
-  console.log('   Email: vendedor@bizcontrol.co.mz');
-  console.log('   Senha: Venda123!');
+  console.log('   Email:    vendedor@bizcontrol.co.mz');
+  console.log('   Senha:    Venda123!');
+  console.log('   Acesso:   Apenas ponto de venda (PDV)');
   console.log('═══════════════════════════════════════════\n');
 }
 

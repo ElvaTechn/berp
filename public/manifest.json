@@ -1,11 +1,11 @@
 {
-  "name": "BizControl 360 - ERP Enterprise",
+  "name": "BizControl 360",
   "short_name": "BizControl",
   "description": "Sistema ERP completo para gestão de negócios em Moçambique",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#050505",
-  "theme_color": "#3b82f6",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "orientation": "portrait-primary",
   "icons": [
     {

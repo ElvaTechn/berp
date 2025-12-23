@@ -13,6 +13,8 @@ import {
   Settings,
   LogOut,
   Menu,
+  Building2,
+  Shield,
   X,
   Store,
 } from 'lucide-react';
@@ -44,15 +46,48 @@ export default function Sidebar({ user, company }: SidebarProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Links de navegação baseados na role
-  // NOTA: ADMIN usa /admin/layout.tsx com sidebar própria, não esta
   const isVendedor = user.role === 'VENDEDOR';
+  const isAdmin = user.role === 'ADMIN';
 
-  const navItems: NavItem[] = isVendedor
+  const navItems: NavItem[] = isAdmin
+    ? [
+        {
+          icon: LayoutDashboard,
+          label: 'Administração',
+          href: '/admin',
+        },
+        {
+          icon: Building2,
+          label: 'Empresas',
+          href: '/admin/companies',
+        },
+        {
+          icon: Users,
+          label: 'Usuários',
+          href: '/admin/users',
+        },
+        {
+          icon: Shield,
+          label: 'Auditoria',
+          href: '/admin/audit',
+        },
+        {
+          icon: Settings,
+          label: 'Sistema',
+          href: '/admin/settings',
+        },
+      ]
+    : isVendedor
     ? [
         {
           icon: ShoppingCart,
           label: 'Ponto de Venda',
           href: '/sales/pos',
+        },
+        {
+          icon: Calendar,
+          label: 'Reservas',
+          href: '/reservations',
         },
       ]
     : [
@@ -111,6 +146,11 @@ export default function Sidebar({ user, company }: SidebarProps) {
   const NavLink = ({ item }: { item: NavItem }) => {
     const isActive = pathname === item.href;
     const Icon = item.icon;
+    
+    // Aplicar tema "Onyx & Sunset" (Laranja/Coral) para Reservas
+    const isReservationsLink = item.href === '/reservations';
+    
+    const activeColors = 'bg-rose-400 dark:bg-rose-400 text-white shadow-lg shadow-rose-400/30';
 
     return (
       <Link
@@ -125,7 +165,7 @@ export default function Sidebar({ user, company }: SidebarProps) {
             relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
             ${
               isActive
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
+                ? activeColors
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
             }
           `}
@@ -168,13 +208,11 @@ export default function Sidebar({ user, company }: SidebarProps) {
             whileHover={{ scale: 1.02 }}
             className="flex items-center gap-3 cursor-pointer"
           >
-            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-lg shadow-blue-500/30">
+            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-rose-400 shadow-lg shadow-rose-400/30">
               <Store className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight italic truncate">
-                BIZ<span className="text-blue-500">360</span>
-              </h1>
+              <h2 className="heading-1 text-slate-900 dark:text-white tracking-tight italic whitespace-nowrap">BIZ<span className="sunset-accent">360</span></h2>
               <p className="text-xs text-slate-600 dark:text-slate-400 font-medium truncate">
                 {company.name}
               </p>
@@ -195,7 +233,7 @@ export default function Sidebar({ user, company }: SidebarProps) {
       <div className="p-4 border-t border-slate-200 dark:border-white/5">
         <div className="mb-3 p-3 rounded-xl bg-slate-100 dark:bg-white/5 backdrop-blur-sm">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white font-black text-sm">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-rose-400 text-white font-black text-sm">
               {user.full_name.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
@@ -216,8 +254,8 @@ export default function Sidebar({ user, company }: SidebarProps) {
                   user.role === 'ADMIN'
                     ? 'bg-red-500/20 text-red-400'
                     : user.role === 'GESTOR'
-                    ? 'bg-blue-500/20 text-blue-400'
-                    : 'bg-green-500/20 text-green-400'
+                    ? 'bg-orange-500/20 text-orange-400'
+                    : 'bg-amber-500/20 text-amber-400'
                 }
               `}
             >

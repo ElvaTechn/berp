@@ -11,7 +11,7 @@ const ADMIN_PATHS = ['/admin'];
 const ROLE_REDIRECTS: Record<string, string> = {
     VENDEDOR: '/sales/pos',
     GESTOR: '/dashboard',
-    ADMIN: '/admin/dashboard',
+    ADMIN: '/admin', // Área administrativa do sistema
 };
 
 export async function middleware(request: NextRequest) {

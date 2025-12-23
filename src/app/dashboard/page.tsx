@@ -12,7 +12,7 @@ import {
 import { toast } from "sonner";
 
 // Components
-import { KPICard } from "@/components/dashboard/KPICard";
+import { KPICardMinimal } from "@/components/dashboard/KPICardMinimal";
 import { TrendChart } from "@/components/dashboard/TrendChart";
 import { TopProductsRanking } from "@/components/dashboard/TopProductsRanking";
 import { PaymentDistribution } from "@/components/dashboard/PaymentDistribution";
@@ -104,26 +104,21 @@ export default function DashboardPage() {
 
   // Loading state
   if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#050505] p-6">
-        <div className="max-w-[1800px] mx-auto">
-          <DashboardSkeleton />
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
-  // No data state
-  if (!data) {
+  // No data state - only show error if truly failed to load
+  // If data exists but is empty, still render the dashboard with zeros
+  if (!data && !loading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#050505] flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-slate-600 dark:text-slate-400 text-lg font-medium mb-4">
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center px-4">
+          <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg font-medium mb-4">
             Erro ao carregar dados do dashboard
           </p>
           <button
             onClick={() => fetchDashboard()}
-            className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-colors"
+            className="px-6 py-3 bg-orange-500 hover:bg-orange-400 text-white font-bold rounded-xl transition-colors"
           >
             Tentar Novamente
           </button>
@@ -131,59 +126,85 @@ export default function DashboardPage() {
       </div>
     );
   }
+  
+  // If data is null but we're not loading, return null to avoid rendering
+  if (!data) {
+    return null;
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#050505] p-4 md:p-6">
-      <div className="max-w-[1800px] mx-auto space-y-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+    <div className="space-y-2 sm:space-y-3">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+      >
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white mb-0.5">Dashboard</h1>
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Visão em tempo real do seu negócio</p>
+        </div>
+
+        {/* Refresh Button */}
+        <motion.button
+          onClick={() => fetchDashboard(true)}
+          disabled={refreshing}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className={`
+            flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl
+            bg-rose-400
+            border border-orange-400/30
+            font-bold text-white text-sm sm:text-base
+            hover:from-orange-600 hover:to-red-600
+            transition-all sunset-glow
+            disabled:opacity-50 disabled:cursor-not-allowed
+            w-full sm:w-auto
+          `}
         >
-          <div>
-            <h1 className="text-5xl font-black italic tracking-tighter text-slate-900 dark:text-white mb-2">
-              Dashboard
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400 font-medium">
-              Visão em tempo real do seu negócio
+          <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          <span className="hidden sm:inline">{refreshing ? "Atualizando..." : "Atualizar"}</span>
+          <span className="sm:hidden">Refresh</span>
+        </motion.button>
+      </motion.div>
+
+      {/* Empty State - Show friendly message when no sales exist */}
+      {data.kpis.today.sales_count === 0 && (data.kpis.yesterday?.sales_count === 0 || !data.kpis.yesterday) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-br from-orange-50 to-rose-50 dark:from-orange-950/20 dark:to-rose-950/20 rounded-2xl p-8 text-center border border-orange-200 dark:border-orange-800/30"
+        >
+          <div className="max-w-md mx-auto">
+            <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <ShoppingCart className="w-8 h-8 text-orange-500" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              Ainda não há vendas
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Comece a registar vendas no sistema para ver as estatísticas aqui.
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-500">
+              Os KPIs abaixo mostram valores iniciais (0 MT). Assim que fizer a primeira venda, verá os dados atualizados automaticamente.
             </p>
           </div>
-
-          {/* Refresh Button */}
-          <motion.button
-            onClick={() => fetchDashboard(true)}
-            disabled={refreshing}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className={`
-              flex items-center gap-2 px-6 py-3 rounded-xl
-              bg-gradient-to-br from-blue-500 to-blue-600
-              border border-blue-400/30
-              font-bold text-white
-              hover:from-blue-600 hover:to-blue-700
-              transition-all
-              disabled:opacity-50 disabled:cursor-not-allowed
-            `}
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            <span>{refreshing ? "Atualizando..." : "Atualizar"}</span>
-          </motion.button>
         </motion.div>
+      )}
 
-        {/* KPI Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <KPICard
+      {/* KPI Grid - Mobile: 1 col, Tablet: 2 cols, Desktop: 4 cols */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 w-full">
+          <KPICardMinimal
             title="Faturação Hoje"
             value={data.kpis.today.revenue_formatted}
-            subtitle={`vs ${data.kpis.yesterday.revenue.toLocaleString("pt-MZ")} MT ontem`}
+            subtitle={`vs ${(data.kpis.yesterday?.revenue || 0).toLocaleString("pt-MZ")} MT ontem`}
             growth={data.kpis.growth.revenue_percent}
             icon={DollarSign}
             color="blue"
             index={0}
           />
 
-          <KPICard
+          <KPICardMinimal
             title="Lucro Real"
             value={data.kpis.today.profit_formatted}
             subtitle={`Margem de ${data.kpis.today.profit_margin.toFixed(1)}%`}
@@ -193,7 +214,7 @@ export default function DashboardPage() {
             index={1}
           />
 
-          <KPICard
+          <KPICardMinimal
             title="Vendas Hoje"
             value={data.kpis.today.sales_count}
             subtitle={`vs ${data.kpis.yesterday.sales_count} ontem`}
@@ -203,7 +224,7 @@ export default function DashboardPage() {
             index={2}
           />
 
-          <KPICard
+          <KPICardMinimal
             title="Ticket Médio"
             value={data.kpis.today.avg_ticket_formatted}
             subtitle="Por venda"
@@ -214,36 +235,35 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Main Chart */}
-        <TrendChart data={data.trend} />
+      {/* Main Chart */}
+      <TrendChart data={data.trend} />
 
-        {/* Bottom Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Bottom Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           {/* Left: Top Products */}
           <TopProductsRanking products={data.top_products} />
 
-          {/* Right: Split Column */}
-          <div className="space-y-6">
-            {/* Payment Distribution */}
-            <PaymentDistribution distribution={data.payment_distribution} />
+        {/* Right: Split Column */}
+        <div className="space-y-2 sm:space-y-3">
+          {/* Payment Distribution */}
+          <PaymentDistribution distribution={data.payment_distribution} />
 
-            {/* Inventory Alerts */}
-            <InventoryAlerts alerts={data.inventory_alerts} />
-          </div>
+          {/* Inventory Alerts */}
+          <InventoryAlerts alerts={data.inventory_alerts} />
         </div>
-
-        {/* Footer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="text-center py-8"
-        >
-          <p className="text-xs text-slate-500 dark:text-slate-600 font-medium uppercase tracking-wider">
-            BizControl 360 ERP • Enterprise Grade • v2.0.0
-          </p>
-        </motion.div>
       </div>
+
+      {/* Footer */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="text-center py-6 sm:py-8"
+      >
+        <p className="text-xs text-gray-500 dark:text-gray-600 font-medium uppercase tracking-wider">
+          BizControl 360 ERP • High-Contrast Premium • v2.0.0
+        </p>
+      </motion.div>
     </div>
   );
 }

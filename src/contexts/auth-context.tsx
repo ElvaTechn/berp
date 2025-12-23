@@ -50,6 +50,17 @@ export function AuthProvider({ children, initialUser }: { children: React.ReactN
       await fetch('/api/auth/logout', { method: 'POST' });
       setUser(null);
       router.push('/login');
+      
+      // Limpa dados offline após logout
+      if (typeof window !== 'undefined') {
+        const { clearAllCache } = await import('@/lib/pwa/indexedDB');
+        const { clearLease } = await import('@/lib/pwa/subscription-check');
+        await clearAllCache();
+        await clearLease();
+        
+        // Limpa fila de sincronização
+        localStorage.removeItem('bizcontrol_offline_queue');
+      }
     } finally {
       setLoading(false);
     }

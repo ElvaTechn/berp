@@ -183,6 +183,38 @@ class OfflineQueue {
         setTimeout(() => this.remove(operation.id), 5000);
         
         return true;
+      } else if (response.status === 401) {
+        // TRATAMENTO CRÍTICO: Token expirado ou não autorizado
+        console.error('❌ ERRO 401: Token expirado ou inválido');
+        
+        // 1. Parar todas as tentativas de sincronização
+        this.isSyncing = false;
+        
+        // 2. Limpar a fila para evitar retry infinito
+        // (mantém as operações mas marca como failed)
+        operation.status = 'failed';
+        operation.error = 'AUTH_EXPIRED';
+        
+        // 3. Notificar todos os clients sobre erro de autenticação
+        this.dispatchEvent('auth-error', { 
+          message: 'Sessão expirada. Faça login novamente para sincronizar os dados offline.',
+          requiresLogout: true
+        });
+        
+        // 4. Disparar evento global para forçar logout
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('force-logout', {
+            detail: { 
+              reason: 'token_expired',
+              message: 'Sua sessão expirou. Por favor, faça login novamente.'
+            }
+          }));
+        }
+        
+        // 5. Salvar estado
+        this.saveToStorage();
+        
+        return false;
       } else {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }

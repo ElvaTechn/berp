@@ -219,7 +219,7 @@ export default function POSPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-gradient-to-br dark:from-[#0a0a0a] dark:via-[#0f0f0f] dark:to-[#0a0a0a] p-4 lg:p-8">
+    <div className="min-h-screen bg-white dark:bg-black p-4 lg:p-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -228,13 +228,13 @@ export default function POSPage() {
       >
         <div className="flex items-center gap-3 mb-2">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/30">
-            <ShoppingCart className="w-6 h-6 text-slate-900 dark:text-white" />
+            <ShoppingCart className="w-6 h-6 text-black dark:text-white" />
           </div>
           <div>
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white italic tracking-tight">
-              Ponto de <span className="text-green-500">Venda</span>
+            <h1 className="text-4xl font-black text-black dark:text-white italic tracking-tight">
+              Ponto de <span className="text-orange-500">Venda</span>
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 font-medium">Sistema de alta performance</p>
+            <p className="text-gray-600 dark:text-gray-400 font-medium">Sistema de alta performance</p>
           </div>
         </div>
 
@@ -246,7 +246,7 @@ export default function POSPage() {
           <div className="px-3 py-1 rounded-lg bg-green-600/10 border border-green-600/30 text-xs text-green-400 font-bold">
             F9 - Finalizar
           </div>
-          <div className="px-3 py-1 rounded-lg bg-slate-600/10 border border-slate-600/30 text-xs text-slate-600 dark:text-slate-400 font-bold">
+          <div className="px-3 py-1 rounded-lg bg-slate-600/10 border border-slate-600/30 text-xs text-gray-600 dark:text-gray-400 font-bold">
             ESC - Fechar
           </div>
         </div>
@@ -270,7 +270,7 @@ export default function POSPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar produto... (F2)"
-                className="w-full h-16 pl-14 pr-4 bg-white/5 border-2 border-green-600/30 rounded-2xl text-slate-900 dark:text-white text-lg placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
+                className="w-full h-16 pl-14 pr-4 bg-white/5 border-2 border-green-600/30 rounded-2xl text-black dark:text-white text-lg placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
               />
             </div>
           </motion.div>
@@ -284,7 +284,7 @@ export default function POSPage() {
             ) : filteredProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full">
                 <Package className="w-16 h-16 text-slate-600 mb-4" />
-                <p className="text-slate-600 dark:text-slate-400 font-medium">Nenhum produto encontrado</p>
+                <p className="text-gray-600 dark:text-gray-400 font-medium">Nenhum produto encontrado</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -308,7 +308,7 @@ export default function POSPage() {
                   >
                     {/* Category Badge */}
                     <div
-                      className="absolute top-2 right-2 w-8 h-8 rounded-lg flex items-center justify-center text-slate-900 dark:text-white text-xs font-black shadow-lg"
+                      className="absolute top-2 right-2 w-8 h-8 rounded-lg flex items-center justify-center text-black dark:text-white text-xs font-black shadow-lg"
                       style={{ backgroundColor: product.category.color }}
                     >
                       {product.category.name.charAt(0)}
@@ -316,12 +316,12 @@ export default function POSPage() {
 
                     {/* Stock Alert */}
                     {product.quantity === 0 ? (
-                      <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full bg-red-600 text-slate-900 dark:text-white text-[10px] font-black">
+                      <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full bg-red-600 text-black dark:text-white text-[10px] font-black">
                         <AlertTriangle className="w-3 h-3" />
                         ESGOTADO
                       </div>
                     ) : isLowStock(product) ? (
-                      <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full bg-yellow-600 text-slate-900 dark:text-white text-[10px] font-black">
+                      <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full bg-yellow-600 text-black dark:text-white text-[10px] font-black">
                         <AlertTriangle className="w-3 h-3" />
                         BAIXO
                       </div>
@@ -329,7 +329,7 @@ export default function POSPage() {
 
                     {/* Product Info */}
                     <div className="mt-8 text-left">
-                      <p className="text-slate-900 dark:text-white font-bold text-sm mb-1 line-clamp-2">
+                      <p className="text-black dark:text-white font-bold text-sm mb-1 line-clamp-2">
                         {product.name}
                       </p>
                       <p className="text-2xl font-black text-green-400 mb-1">
@@ -338,7 +338,7 @@ export default function POSPage() {
                         })}
                         <span className="text-sm ml-1">MT</span>
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-gray-500">
                         Stock: {product.quantity}
                       </p>
                     </div>
@@ -346,7 +346,7 @@ export default function POSPage() {
                     {/* Add Icon */}
                     {product.quantity > 0 && (
                       <div className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-green-600 flex items-center justify-center">
-                        <Plus className="w-4 h-4 text-slate-900 dark:text-white" />
+                        <Plus className="w-4 h-4 text-black dark:text-white" />
                       </div>
                     )}
                   </motion.button>
@@ -367,11 +367,11 @@ export default function POSPage() {
           <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-white/10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center">
-                <ShoppingCart className="w-5 h-5 text-slate-900 dark:text-white" />
+                <ShoppingCart className="w-5 h-5 text-black dark:text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-black text-slate-900 dark:text-white italic">Carrinho</h2>
-                <p className="text-xs text-slate-600 dark:text-slate-400">
+                <h2 className="text-xl font-black text-black dark:text-white italic">Carrinho</h2>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
                   {cart.length} {cart.length === 1 ? 'item' : 'itens'}
                 </p>
               </div>
@@ -399,8 +399,8 @@ export default function POSPage() {
                   className="flex flex-col items-center justify-center h-full"
                 >
                   <ShoppingCart className="w-16 h-16 text-slate-600 mb-4" />
-                  <p className="text-slate-600 dark:text-slate-400 font-medium">Carrinho vazio</p>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-gray-600 dark:text-gray-400 font-medium">Carrinho vazio</p>
+                  <p className="text-xs text-gray-500 mt-1">
                     Adicione produtos para começar
                   </p>
                 </motion.div>
@@ -415,10 +415,10 @@ export default function POSPage() {
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">
+                        <p className="text-sm font-bold text-black dark:text-white mb-1">
                           {item.product.name}
                         </p>
-                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
                           {item.product.price.toLocaleString('pt-MZ', {
                             minimumFractionDigits: 2,
                           })}{' '}
@@ -444,7 +444,7 @@ export default function POSPage() {
                         >
                           <Minus className="w-4 h-4" />
                         </motion.button>
-                        <span className="w-12 text-center text-lg font-black text-slate-900 dark:text-white">
+                        <span className="w-12 text-center text-lg font-black text-black dark:text-white">
                           {item.quantity}
                         </span>
                         <motion.button
@@ -460,13 +460,13 @@ export default function POSPage() {
                       </div>
 
                       <div className="text-right">
-                        <p className="text-lg font-black text-slate-900 dark:text-white">
+                        <p className="text-lg font-black text-black dark:text-white">
                           {(item.product.price * item.quantity).toLocaleString(
                             'pt-MZ',
                             { minimumFractionDigits: 2 }
                           )}
                         </p>
-                        <p className="text-xs text-slate-500">MT</p>
+                        <p className="text-xs text-gray-500">MT</p>
                       </div>
                     </div>
                   </motion.div>
@@ -483,10 +483,10 @@ export default function POSPage() {
               className="space-y-3 pt-4 border-t-2 border-green-600/30"
             >
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
                   Subtotal
                 </span>
-                <span className="text-lg font-bold text-slate-900 dark:text-white">
+                <span className="text-lg font-bold text-black dark:text-white">
                   {calculateSubtotal().toLocaleString('pt-MZ', {
                     minimumFractionDigits: 2,
                   })}{' '}
@@ -495,7 +495,7 @@ export default function POSPage() {
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600 dark:text-slate-400 font-medium flex items-center gap-1">
+                <span className="text-sm text-gray-600 dark:text-gray-400 font-medium flex items-center gap-1">
                   <Percent className="w-4 h-4" />
                   IVA (17%)
                 </span>
@@ -508,7 +508,7 @@ export default function POSPage() {
               </div>
 
               <div className="flex justify-between items-center p-4 rounded-2xl bg-green-600/20 border-2 border-green-600/50">
-                <span className="text-lg font-black text-slate-900 dark:text-white uppercase flex items-center gap-2">
+                <span className="text-lg font-black text-black dark:text-white uppercase flex items-center gap-2">
                   <DollarSign className="w-6 h-6" />
                   Total
                 </span>
@@ -526,7 +526,7 @@ export default function POSPage() {
                 whileTap={{ scale: 0.98 }}
                 onClick={handleCheckout}
                 disabled={isCheckingOut}
-                className="w-full h-16 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 text-slate-900 dark:text-white font-black text-lg flex items-center justify-center gap-3 shadow-2xl shadow-green-500/50 hover:shadow-green-500/70 disabled:opacity-50 transition-all"
+                className="w-full h-16 rounded-2xl bg-rose-400 text-white font-black text-lg flex items-center justify-center gap-3 shadow-2xl shadow-rose-400/50 hover:shadow-rose-400/70 disabled:opacity-50 transition-all"
               >
                 {isCheckingOut ? (
                   <>
@@ -569,20 +569,20 @@ export default function POSPage() {
                   transition={{ delay: 0.2, type: 'spring' }}
                   className="w-20 h-20 rounded-full bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-green-500/50"
                 >
-                  <CheckCircle className="w-10 h-10 text-slate-900 dark:text-white" />
+                  <CheckCircle className="w-10 h-10 text-black dark:text-white" />
                 </motion.div>
 
-                <h2 className="text-3xl font-black text-slate-900 dark:text-white italic mb-2">
+                <h2 className="text-3xl font-black text-black dark:text-white italic mb-2">
                   Venda <span className="text-green-500">Finalizada!</span>
                 </h2>
-                <p className="text-slate-600 dark:text-slate-400 mb-6">
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Transação processada com sucesso
                 </p>
 
                 {lastSaleId && (
                   <div className="p-4 rounded-2xl bg-green-600/10 border border-green-600/30 mb-6">
                     <p className="text-xs text-green-400 mb-1">ID da Venda</p>
-                    <p className="text-sm font-mono text-slate-900 dark:text-white">{lastSaleId}</p>
+                    <p className="text-sm font-mono text-black dark:text-white">{lastSaleId}</p>
                   </div>
                 )}
 
@@ -591,7 +591,7 @@ export default function POSPage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setShowSuccessModal(false)}
-                    className="flex-1 h-14 rounded-2xl border-2 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white font-bold hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
+                    className="flex-1 h-14 rounded-2xl border-2 border-slate-200 dark:border-white/10 text-black dark:text-white font-bold hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
                   >
                     Fechar
                   </motion.button>
@@ -601,7 +601,7 @@ export default function POSPage() {
                     onClick={() => {
                       window.open(`/api/sales/${lastSaleId}/receipt`, '_blank');
                     }}
-                    className="flex-1 h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-600 text-slate-900 dark:text-white font-bold hover:shadow-2xl hover:shadow-blue-500/50 transition-all"
+                    className="flex-1 h-14 rounded-2xl bg-rose-400 text-white font-bold hover:shadow-2xl hover:shadow-rose-400/50 transition-all"
                   >
                     🖨️ Imprimir Recibo
                   </motion.button>

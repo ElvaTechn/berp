@@ -205,19 +205,19 @@ export default function ReservationsPage() {
     };
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
             >
                 <div>
-                    <h1 className="text-4xl font-black text-slate-900 dark:text-white italic tracking-tight flex items-center gap-3">
-                        <Calendar className="w-10 h-10 text-cyan-500" />
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white italic tracking-tight flex items-center gap-2 sm:gap-3">
+                        <Calendar className="w-8 h-8 sm:w-10 sm:h-10 text-orange-500" />
                         <span className="text-slate-900 dark:text-white">Reservas</span>
                     </h1>
-                    <p className="text-slate-600 dark:text-slate-400 font-medium mt-1">
+                    <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 font-medium mt-1">
                         Gerir reservas de produtos e conversão em vendas
                     </p>
                 </div>
@@ -226,15 +226,15 @@ export default function ReservationsPage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setShowCreateModal(true)}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all"
+                    className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 text-white font-bold text-sm sm:text-base shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 transition-all w-full sm:w-auto"
                 >
                     <Plus className="w-5 h-5" />
                     Nova Reserva
                 </motion.button>
             </motion.div>
 
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* KPI Cards - Mobile: 1 col, Tablet: 2 cols, Desktop: 4 cols */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {/* Pendentes */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -337,7 +337,7 @@ export default function ReservationsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="flex flex-col md:flex-row gap-4"
+                className="flex flex-col gap-3 sm:gap-4"
             >
                 <div className="flex-1 relative">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
@@ -346,31 +346,34 @@ export default function ReservationsPage() {
                         placeholder="Pesquisar por nome, BI, telefone ou produto..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full h-12 pl-12 pr-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-cyan-500/20 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                        className="w-full h-12 pl-12 pr-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-orange-500/20 rounded-xl text-slate-900 dark:text-white text-sm sm:text-base placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
                     />
                 </div>
 
-                <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="h-12 px-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-cyan-500/20 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
-                >
-                    <option value="all">Todos os status</option>
-                    <option value="PENDING">Pendentes</option>
-                    <option value="CONFIRMED">Confirmadas</option>
-                    <option value="COMPLETED">Concluídas</option>
-                    <option value="CANCELLED">Canceladas</option>
-                    <option value="EXPIRED">Expiradas</option>
-                </select>
+                <div className="flex gap-3">
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="flex-1 sm:flex-initial h-12 px-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-orange-500/20 rounded-xl text-slate-900 dark:text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
+                    >
+                        <option value="all">Todos os status</option>
+                        <option value="PENDING">Pendentes</option>
+                        <option value="CONFIRMED">Confirmadas</option>
+                        <option value="COMPLETED">Concluídas</option>
+                        <option value="CANCELLED">Canceladas</option>
+                        <option value="EXPIRED">Expiradas</option>
+                    </select>
 
-                <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={fetchData}
-                    className="h-12 px-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-cyan-500/20 rounded-xl text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-cyan-500/10 transition-all"
-                >
-                    <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
-                </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={fetchData}
+                        className="h-12 px-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-orange-500/20 rounded-xl text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-orange-500/10 transition-all"
+                        title="Atualizar"
+                    >
+                        <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+                    </motion.button>
+                </div>
             </motion.div>
 
             {/* Reservations Table */}
@@ -378,21 +381,21 @@ export default function ReservationsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="rounded-2xl border border-slate-200 dark:border-cyan-500/20 bg-white dark:bg-white/5 backdrop-blur-sm overflow-hidden shadow-lg dark:shadow-none"
+                className="rounded-2xl border border-slate-200 dark:border-orange-500/20 bg-white dark:bg-white/5 backdrop-blur-sm overflow-hidden shadow-lg dark:shadow-none"
             >
                 {isLoading ? (
                     <div className="flex items-center justify-center h-64">
-                        <Loader2 className="w-12 h-12 text-cyan-500 animate-spin" />
+                        <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
                     </div>
                 ) : filteredReservations.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-64">
-                        <Calendar className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
-                        <p className="text-lg font-bold text-slate-900 dark:text-white mb-2">Nenhuma reserva encontrada</p>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Crie a primeira reserva clicando no botão acima</p>
+                    <div className="flex flex-col items-center justify-center h-64 px-4 text-center">
+                        <Calendar className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 dark:text-slate-600 mb-4" />
+                        <p className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-2">Nenhuma reserva encontrada</p>
+                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Crie a primeira reserva clicando no botão acima</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
+                    <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-orange-500/50 scrollbar-track-transparent">
+                        <table className="w-full min-w-[800px]">
                             <thead>
                                 <tr className="border-b border-slate-200 dark:border-cyan-500/20 bg-slate-50 dark:bg-white/5">
                                     <th className="px-6 py-4 text-left text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">

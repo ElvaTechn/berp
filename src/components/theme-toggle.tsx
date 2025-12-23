@@ -35,13 +35,13 @@ export function ThemeToggle() {
       value: 'light',
       label: 'Light',
       icon: Sun,
-      description: 'Clean High-Tech',
+      description: 'Pearl Clean',
     },
     {
       value: 'dark',
       label: 'Dark',
       icon: Moon,
-      description: 'Nave Espacial',
+      description: 'Onyx Premium',
     },
     {
       value: 'system',
@@ -62,8 +62,8 @@ export function ThemeToggle() {
         onClick={() => setShowMenu(!showMenu)}
         className="
           relative w-10 h-10 rounded-lg overflow-hidden
-          bg-gradient-to-br from-blue-500 to-purple-600
-          hover:from-blue-600 hover:to-purple-700
+          bg-rose-400
+          hover:from-orange-600 hover:to-red-600
           shadow-lg hover:shadow-xl
           transition-all duration-300
           flex items-center justify-center
@@ -72,7 +72,7 @@ export function ThemeToggle() {
         aria-label="Toggle theme"
       >
         {/* Glow Effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-400/20 to-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
         
         {/* Icon */}
         <CurrentIcon className="w-5 h-5 text-white relative z-10" />
@@ -105,8 +105,8 @@ export function ThemeToggle() {
               className="
                 absolute right-0 top-12 z-50
                 w-56 p-2 rounded-xl
-                bg-white dark:bg-[#0a0a0a]
-                border border-slate-200 dark:border-white/10
+                bg-white dark:bg-black
+                border border-black/5 dark:border-white/5
                 shadow-2xl
                 backdrop-blur-xl
               "
@@ -129,14 +129,14 @@ export function ThemeToggle() {
                       transition-all duration-200
                       ${
                         isActive
-                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
-                          : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300'
+                          ? 'bg-rose-400 text-white shadow-md'
+                          : 'hover:bg-black/5 dark:hover:bg-white/5 text-gray-700 dark:text-gray-300'
                       }
                     `}
                   >
                     <div className={`
                       p-1.5 rounded-md
-                      ${isActive ? 'bg-white/20' : 'bg-slate-200 dark:bg-white/10'}
+                      ${isActive ? 'bg-white/20' : 'bg-black/10 dark:bg-white/10'}
                     `}>
                       <Icon className="w-4 h-4" />
                     </div>
@@ -145,7 +145,7 @@ export function ThemeToggle() {
                       <div className={`text-sm font-semibold ${isActive ? 'text-white' : ''}`}>
                         {themeOption.label}
                       </div>
-                      <div className={`text-xs ${isActive ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'}`}>
+                      <div className={`text-xs ${isActive ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
                         {themeOption.description}
                       </div>
                     </div>
@@ -162,11 +162,11 @@ export function ThemeToggle() {
               })}
 
               {/* Current Theme Indicator */}
-              <div className="mt-2 pt-2 border-t border-slate-200 dark:border-white/10">
-                <div className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
+              <div className="mt-2 pt-2 border-t border-black/10 dark:border-white/10">
+                <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between">
                   <span>Tema Atual:</span>
-                  <span className="font-semibold text-slate-700 dark:text-slate-300 capitalize">
-                    {currentTheme === 'light' ? '☀️ Light' : '🌙 Dark'}
+                  <span className="font-semibold text-gray-700 dark:text-gray-300 capitalize">
+                    {currentTheme === 'light' ? '☀️ Pearl' : '🌙 Onyx'}
                   </span>
                 </div>
               </div>
@@ -191,7 +191,7 @@ export function ThemeToggleSimple() {
   }, []);
 
   if (!mounted) {
-    return <div className="w-16 h-8 rounded-full bg-slate-200 dark:bg-slate-800 animate-pulse" />;
+    return <div className="w-16 h-8 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />;
   }
 
   // Usa resolvedTheme para verificar o tema EFETIVO (resolve 'system')
@@ -204,7 +204,7 @@ export function ThemeToggleSimple() {
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       className="
         relative w-16 h-8 rounded-full
-        bg-gradient-to-r from-blue-500 to-purple-600
+        bg-rose-400
         shadow-lg hover:shadow-xl
         transition-all duration-300
         flex items-center
@@ -225,7 +225,7 @@ export function ThemeToggleSimple() {
         "
       >
         {isDark ? (
-          <Moon className="w-3.5 h-3.5 text-purple-600" />
+          <Moon className="w-3.5 h-3.5 text-orange-600" />
         ) : (
           <Sun className="w-3.5 h-3.5 text-orange-500" />
         )}

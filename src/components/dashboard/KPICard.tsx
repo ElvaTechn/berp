@@ -14,17 +14,17 @@ interface KPICardProps {
 }
 
 const colorClasses = {
-  blue: "from-blue-500/20 to-blue-500/5 border-blue-500/30 text-blue-400",
+  blue: "from-orange-500/20 to-red-500/5 border-orange-500/30 text-orange-400",
   green: "from-emerald-500/20 to-emerald-500/5 border-emerald-500/30 text-emerald-400",
-  orange: "from-orange-500/20 to-orange-500/5 border-orange-500/30 text-orange-400",
-  purple: "from-purple-500/20 to-purple-500/5 border-purple-500/30 text-purple-400"
+  orange: "from-orange-500/20 to-red-500/5 border-orange-500/30 text-orange-400",
+  purple: "from-orange-500/20 to-red-500/5 border-orange-500/30 text-orange-400"
 };
 
 const iconColorClasses = {
-  blue: "text-blue-400 bg-blue-500/10",
+  blue: "text-orange-400 bg-orange-500/10",
   green: "text-emerald-400 bg-emerald-500/10",
   orange: "text-orange-400 bg-orange-500/10",
-  purple: "text-purple-400 bg-purple-500/10"
+  purple: "text-orange-400 bg-orange-500/10"
 };
 
 export function KPICard({ 
@@ -57,7 +57,7 @@ export function KPICard({
         relative overflow-hidden rounded-2xl
         bg-gradient-to-br ${colorClasses[color]}
         border backdrop-blur-xl
-        p-6
+        p-4 sm:p-6
         group cursor-default
       `}
     >
@@ -69,26 +69,26 @@ export function KPICard({
       {/* Content */}
       <div className="relative z-10">
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-3 sm:mb-4">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-1">
+            <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400 mb-1">
               {title}
             </p>
             {subtitle && (
-              <p className="text-xs text-slate-600 dark:text-slate-500 font-medium">
+              <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-500 font-medium">
                 {subtitle}
               </p>
             )}
           </div>
           
-          <div className={`p-3 rounded-xl ${iconColorClasses[color]} transition-all group-hover:scale-110`}>
-            <Icon className="w-5 h-5" />
+          <div className={`p-2 sm:p-3 rounded-xl ${iconColorClasses[color]} transition-all group-hover:scale-110`}>
+            <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
         </div>
 
-        {/* Value */}
-        <div className="mb-3">
-          <h2 className="text-4xl font-black italic tracking-tighter text-slate-900 dark:text-white">
+        {/* Value - Tipografia Responsiva */}
+        <div className="mb-2 sm:mb-3">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black italic tracking-tighter text-black dark:text-white leading-none">
             {value}
           </h2>
         </div>

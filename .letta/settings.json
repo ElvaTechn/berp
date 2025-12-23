@@ -31,7 +31,19 @@
       "Bash(mkdir \"F:\\berp\\src\\app\\api\\admin\\stats\" 2>nul & mkdir \"F:\\berp\\src\\app\\api\\admin\\companies\\[id]\\suspend\" 2>nul & mkdir \"F:\\berp\\src\\app\\api\\admin\\companies\\[id]\\renew\" 2>nul & mkdir \"F:\\berp\\src\\app\\api\\admin\\impersonate\" 2>nul & echo Directories created)",
       "Bash(dir /s /b F:\\berp\\src\\app\\admin\\*.tsx 2>nul | findstr page)",
       "Bash(head:*)",
-      "Bash(cd /d F:\\berp && npx tsc --noEmit)"
+      "Bash(cd /d F:\\berp && npx tsc --noEmit)",
+      "Bash(dir /s /b *reservations* 2>nul | findstr /i \"\\.tsx$ \\.ts$\")",
+      "Bash(Get-ChildItem -Path \".\\src\\app\" -Directory | Select-Object Name)",
+      "Bash(dir src\\app /ad /b)",
+      "Bash(dir src\\app\\reservations /b)",
+      "Bash(dir src\\app\\api\\reservations /b 2>nul)",
+      "Bash(dir src\\app\\api\\reservations /s /b)",
+      "Bash(dir src\\app\\dashboard /b)",
+      "Bash(dir src\\app\\inventory /b)",
+      "Bash(dir src\\app\\sales /b)",
+      "Bash(dir src\\app\\sales\\pos /b)",
+      "Bash(powershell -Command \"Get-Content 'F:\\berp\\src\\components\\inventory\\ProductTable.tsx' | Select-Object -Last 20\")",
+      "Bash(type:*)"
     ]
   }
 }

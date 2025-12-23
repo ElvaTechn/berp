@@ -27,14 +27,14 @@ export default function AdminSettingsPage() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.1 }}
-                    className="p-6 rounded-2xl bg-gradient-to-br from-purple-600/10 to-purple-600/5 border border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer"
+                    className="p-6 rounded-2xl bg-gradient-to-br from-orange-600/10 to-orange-600/5 border border-orange-500/20 hover:border-orange-500/40 transition-all cursor-pointer"
                 >
-                    <div className="w-12 h-12 rounded-xl bg-purple-600/20 flex items-center justify-center mb-4">
-                        <Shield className="w-6 h-6 text-purple-400" />
+                    <div className="w-12 h-12 rounded-xl bg-orange-600/20 flex items-center justify-center mb-4">
+                        <Shield className="w-6 h-6 text-orange-400" />
                     </div>
                     <h3 className="text-lg font-bold text-white mb-2">Segurança</h3>
                     <p className="text-sm text-slate-400">
-                        Políticas de senha, 2FA, sessões activas
+                        Políticas de password, 2FA, sessões activas
                     </p>
                 </motion.div>
 
@@ -43,10 +43,10 @@ export default function AdminSettingsPage() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.2 }}
-                    className="p-6 rounded-2xl bg-gradient-to-br from-blue-600/10 to-blue-600/5 border border-blue-500/20 hover:border-blue-500/40 transition-all cursor-pointer"
+                    className="p-6 rounded-2xl bg-gradient-to-br from-orange-600/10 to-orange-600/5 border border-orange-500/20 hover:border-orange-500/40 transition-all cursor-pointer"
                 >
-                    <div className="w-12 h-12 rounded-xl bg-blue-600/20 flex items-center justify-center mb-4">
-                        <Database className="w-6 h-6 text-blue-400" />
+                    <div className="w-12 h-12 rounded-xl bg-orange-600/20 flex items-center justify-center mb-4">
+                        <Database className="w-6 h-6 text-orange-400" />
                     </div>
                     <h3 className="text-lg font-bold text-white mb-2">Base de Dados</h3>
                     <p className="text-sm text-slate-400">
@@ -75,10 +75,10 @@ export default function AdminSettingsPage() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="p-6 rounded-2xl bg-gradient-to-br from-green-600/10 to-green-600/5 border border-green-500/20 hover:border-green-500/40 transition-all cursor-pointer"
+                    className="p-6 rounded-2xl bg-gradient-to-br from-orange-600/10 to-orange-600/5 border border-orange-500/20 hover:border-orange-500/40 transition-all cursor-pointer"
                 >
-                    <div className="w-12 h-12 rounded-xl bg-green-600/20 flex items-center justify-center mb-4">
-                        <Globe className="w-6 h-6 text-green-400" />
+                    <div className="w-12 h-12 rounded-xl bg-orange-600/20 flex items-center justify-center mb-4">
+                        <Globe className="w-6 h-6 text-orange-400" />
                     </div>
                     <h3 className="text-lg font-bold text-white mb-2">Localização</h3>
                     <p className="text-sm text-slate-400">
@@ -91,10 +91,10 @@ export default function AdminSettingsPage() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="p-6 rounded-2xl bg-gradient-to-br from-pink-600/10 to-pink-600/5 border border-pink-500/20 hover:border-pink-500/40 transition-all cursor-pointer"
+                    className="p-6 rounded-2xl bg-gradient-to-br from-orange-600/10 to-orange-600/5 border border-orange-500/20 hover:border-orange-500/40 transition-all cursor-pointer"
                 >
-                    <div className="w-12 h-12 rounded-xl bg-pink-600/20 flex items-center justify-center mb-4">
-                        <Palette className="w-6 h-6 text-pink-400" />
+                    <div className="w-12 h-12 rounded-xl bg-orange-600/20 flex items-center justify-center mb-4">
+                        <Palette className="w-6 h-6 text-orange-400" />
                     </div>
                     <h3 className="text-lg font-bold text-white mb-2">Aparência</h3>
                     <p className="text-sm text-slate-400">

@@ -153,8 +153,10 @@ export default function ProductTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
-      <table className="w-full">
+    <div className="w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
+      {/* Scroll horizontal suave em mobile */}
+      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-orange-500/50 scrollbar-track-transparent">
+        <table className="w-full min-w-[800px]">
         <thead>
           <tr className="border-b border-white/10">
             <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">
@@ -370,6 +372,7 @@ export default function ProductTable({
           </AnimatePresence>
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

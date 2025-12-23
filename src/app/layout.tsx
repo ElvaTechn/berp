@@ -1,8 +1,20 @@
 // src/app/layout.tsx
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Crimson_Pro } from 'next/font/google';
 
-const inter = Inter({ subsets: ['latin'] });
+// Adult Minimalist Typography System
+const sans = Inter({ 
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap'
+});
+
+const serif = Crimson_Pro({ 
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-serif',
+  display: 'swap'
+});
 import './globals.css';
 import { getSession } from '@/lib/auth-server';
 import { db } from '@/lib/server-api';
@@ -14,8 +26,8 @@ import { OfflineIndicator } from '@/components/offline/OfflineIndicator';
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'BIZ360 | ERP Enterprise',
-  description: 'Sistema de Gestão de Alta Performance',
+  title: 'BIZ360 | Enterprise ERP',
+  description: 'Corporate Management System for High-Performance Teams',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -36,8 +48,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   } : null;
 
   return (
-    <html lang="pt-MZ" suppressHydrationWarning>
-      <body className={`${inter.className} bg-white dark:bg-[#050505] text-slate-900 dark:text-white antialiased`}>
+    <html lang="pt-MZ" suppressHydrationWarning className={`${sans.variable} ${serif.variable}`}>
+      <body className="font-sans bg-white dark:bg-black text-slate-900 dark:text-white antialiased">
         <ThemeProvider>
           <AuthProvider initialUser={initialUser}>
             <ToastProvider>
