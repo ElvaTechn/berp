@@ -1,301 +1,281 @@
 /**
  * ================================================================
- * USE OFFLINE SYNC - BIZCONTROL 360 ERP v2.0.0
+ * OFFLINE HOOK - BIZCONTROL 360 ERP v2.0.0
  * ================================================================
- * Hook para sincronização automática de dados offline
- * 
- * FUNCIONALIDADES:
- * - Detecta mudança de status (online/offline)
- * - Sincroniza vendas pendentes automaticamente
- * - Gerencia conflitos e erros
- * - Atualiza lease de subscrição
- * 
- * AUTOR: PWA Team
- * DATA: 18 Dezembro 2025
- * ================================================================
- */
+ * Hook React para gestão offline seguindo padrões agent-os:
+ * - Single Responsibility
+ * - Reusability
+ * - Clear Interface
+ * - Performance Considerations
+ * ================================================================ */
 
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import { toast } from "sonner";
-import {
-  getPendingSales,
-  markSaleAsSynced,
-  deletePendingSale,
-  getCacheStats,
-} from "@/lib/pwa/indexedDB";
-import { updateLease, updateLastSync } from "@/lib/pwa/subscription-check";
+import { useState, useEffect, useCallback } from 'react';
+import { 
+  offlineSync, 
+  syncOffline, 
+  cancelSync, 
+  setSyncProgressCallback,
+  SyncResult 
+} from '@/lib/pwa/offlineSync';
+import { pwaStorage } from '@/lib/pwa/indexedDB';
+import { ERPNotifications } from '@/lib/notifications/notificationService';
 
-// ================================================================
-// TYPES
-// ================================================================
-
-export interface SyncStatus {
+export interface UseOfflineSyncReturn {
+  // Status
   isOnline: boolean;
   isSyncing: boolean;
   pendingCount: number;
-  lastSync: Date | null;
-  syncError: string | null;
+  lastSyncTime: Date | null;
+  
+  // Actions
+  sync: () => Promise<SyncResult>;
+  cancel: () => void;
+  
+  // Progress
+  progress: {
+    current: number;
+    total: number;
+    currentItem: string;
+    status: 'syncing' | 'completed' | 'failed' | 'paused';
+  } | null;
 }
 
-// ================================================================
-// HOOK
-// ================================================================
+export function useOfflineSync(): UseOfflineSyncReturn {
+  const [isOnline, setIsOnline] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  const [progress, setProgress] = useState<UseOfflineSyncReturn['progress']>(null);
 
-export function useOfflineSync() {
-  const [status, setStatus] = useState<SyncStatus>({
-    isOnline: typeof navigator !== "undefined" ? navigator.onLine : true,
-    isSyncing: false,
-    pendingCount: 0,
-    lastSync: null,
-    syncError: null,
-  });
-
-  const syncInProgress = useRef(false);
-  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // ============================================================
-  // UPDATE PENDING COUNT
-  // ============================================================
-
+  // Atualizar contagem pendente
   const updatePendingCount = useCallback(async () => {
     try {
-      const stats = await getCacheStats();
-      setStatus((prev) => ({
-        ...prev,
-        pendingCount: stats.pending_sales,
-      }));
+      const queue = await pwaStorage.getSyncQueue();
+      setPendingCount(queue.length);
+      
+      // Atualizar progress se estiver atualizando
+      if (progress?.status === 'syncing') {
+        const total = queue.length;
+        const synced = total - queue.filter(item => item.timestamp < (Date.now() - 60000)).length;
+        setProgress(prev => prev ? { ...prev, current: synced, total } : null);
+      }
     } catch (error) {
-      console.error("Failed to update pending count:", error);
+      console.error('Error updating pending count:', error);
     }
-  }, []);
+  }, [progress?.status]);
 
-  // ============================================================
-  // SYNC FUNCTION
-  // ============================================================
-
-  const syncPendingSales = useCallback(async () => {
-    // Evitar múltiplas sincronizações simultâneas
-    if (syncInProgress.current) {
-      console.log("Sync already in progress, skipping...");
-      return;
+  // Sincronização
+  const handleSync = useCallback(async (): Promise<SyncResult> => {
+    if (!isOnline) {
+      throw new Error('Dispositivo offline');
     }
 
-    syncInProgress.current = true;
-
-    setStatus((prev) => ({
-      ...prev,
-      isSyncing: true,
-      syncError: null,
-    }));
+    setIsSyncing(true);
+    setProgress({
+      current: 0,
+      total: pendingCount,
+      currentItem: 'Iniciando...',
+      status: 'syncing',
+    });
 
     try {
-      console.log("🔄 Starting offline sync...");
-
-      // 1. Buscar vendas pendentes
-      const pendingSales = await getPendingSales();
-
-      if (pendingSales.length === 0) {
-        console.log("✅ No pending sales to sync");
-        setStatus((prev) => ({
-          ...prev,
-          isSyncing: false,
-          lastSync: new Date(),
-        }));
-        syncInProgress.current = false;
-        return;
-      }
-
-      console.log(`📦 Found ${pendingSales.length} pending sales`);
-
-      let successCount = 0;
-      let errorCount = 0;
-
-      // 2. Sincronizar cada venda
-      for (const sale of pendingSales) {
-        try {
-          // Enviar para API
-          const response = await fetch("/api/sales", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              items: sale.items,
-              payment_method: sale.payment_method,
-              discount_code: sale.discount_code,
-            }),
-          });
-
-          if (response.ok) {
-            // Sucesso: Marcar como sincronizada ou deletar
-            await deletePendingSale(sale.id);
-            successCount++;
-            console.log(`✅ Sale ${sale.id} synced successfully`);
-          } else {
-            // Erro da API
-            const error = await response.json();
-            console.error(`❌ Failed to sync sale ${sale.id}:`, error);
-            
-            // Se erro for de produto não encontrado, deletar venda local
-            if (response.status === 404 || response.status === 400) {
-              await deletePendingSale(sale.id);
-              console.log(`🗑️ Deleted invalid sale ${sale.id}`);
-            }
-            
-            errorCount++;
-          }
-        } catch (error) {
-          console.error(`❌ Error syncing sale ${sale.id}:`, error);
-          errorCount++;
+      const result = await syncOffline();
+      
+      // Notificar resultado
+      if (result.success) {
+        if (result.syncedItems > 0) {
+          ERPNotifications.sincronizacaoSucesso(result.syncedItems);
         }
+      } else {
+        ERPNotifications.erroSincronizacao(`${result.failedItems} itens falharam`);
       }
 
-      // 3. Atualizar timestamp de sincronização
-      await updateLastSync();
+      return result;
 
-      // 4. Atualizar contagem
-      await updatePendingCount();
-
-      // 5. Feedback
-      if (successCount > 0) {
-        toast.success(`${successCount} venda(s) sincronizada(s)!`);
-      }
-
-      if (errorCount > 0) {
-        toast.error(`${errorCount} venda(s) falharam ao sincronizar`);
-      }
-
-      setStatus((prev) => ({
-        ...prev,
-        isSyncing: false,
-        lastSync: new Date(),
-        syncError: errorCount > 0 ? `${errorCount} vendas falharam` : null,
-      }));
-
-      console.log(`✅ Sync completed: ${successCount} success, ${errorCount} errors`);
     } catch (error) {
-      console.error("Sync failed:", error);
-      
-      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
-      
-      setStatus((prev) => ({
-        ...prev,
-        isSyncing: false,
-        syncError: errorMessage,
-      }));
+      ERPNotifications.erroSincronizacao(
+        error instanceof Error ? error.message : 'Erro desconhecido'
+      );
+      throw error;
 
-      toast.error("Erro ao sincronizar vendas");
     } finally {
-      syncInProgress.current = false;
+      setIsSyncing(false);
+      setProgress(null);
+      await updatePendingCount();
     }
-  }, [updatePendingCount]);
+  }, [isOnline, pendingCount, updatePendingCount]);
 
-  // ============================================================
-  // NETWORK STATUS LISTENERS
-  // ============================================================
+  // Cancelar sincronização
+  const handleCancel = useCallback(() => {
+    cancelSync();
+    setIsSyncing(false);
+    setProgress(null);
+  }, []);
 
+  // Listener de status online/offline
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const handleOnline = async () => {
-      console.log("🌐 Connection restored");
-      
-      setStatus((prev) => ({
-        ...prev,
-        isOnline: true,
-      }));
-
-      toast.success("Conexão restaurada!");
-
-      // Aguardar um pouco antes de sincronizar (para estabilizar conexão)
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
+    const handleOnline = () => {
+      setIsOnline(true);
+      // Auto-sync se houver itens pendentes
+      if (pendingCount > 0) {
+        setTimeout(() => {
+          handleSync().catch(console.error);
+        }, 2000);
       }
-
-      syncTimeoutRef.current = setTimeout(() => {
-        syncPendingSales();
-      }, 2000); // 2 segundos
     };
 
     const handleOffline = () => {
-      console.log("📵 Connection lost");
-      
-      setStatus((prev) => ({
-        ...prev,
-        isOnline: false,
-      }));
-
-      toast.warning("Você está offline. As vendas serão sincronizadas quando a conexão voltar.");
-
-      // Cancelar sync pendente
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
+      setIsOnline(false);
+      if (isSyncing) {
+        handleCancel();
       }
     };
 
-    // Adicionar listeners
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
-    // Verificar estado inicial
-    setStatus((prev) => ({
-      ...prev,
-      isOnline: navigator.onLine,
-    }));
+    // Status inicial
+    setIsOnline(navigator.onLine);
 
-    // Atualizar contagem inicial
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [pendingCount, isSyncing, handleSync, handleCancel]);
+
+  // Atualizar contagem inicial e periodicamente
+  useEffect(() => {
     updatePendingCount();
 
-    // Cleanup
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-      
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
-      }
-    };
-  }, [syncPendingSales, updatePendingCount]);
-
-  // ============================================================
-  // PERIODIC SYNC (quando online)
-  // ============================================================
-
-  useEffect(() => {
-    if (!status.isOnline || typeof window === "undefined") return;
-
-    // Sincronizar periodicamente (a cada 5 minutos)
-    const interval = setInterval(() => {
-      if (navigator.onLine) {
-        syncPendingSales();
-      }
-    }, 5 * 60 * 1000); // 5 minutos
-
+    const interval = setInterval(updatePendingCount, 30000); // A cada 30s
     return () => clearInterval(interval);
-  }, [status.isOnline, syncPendingSales]);
+  }, [updatePendingCount]);
 
-  // ============================================================
-  // MANUAL SYNC
-  // ============================================================
+  // Configurar callback de progresso
+  useEffect(() => {
+    setSyncProgressCallback((newProgress) => {
+      setProgress(newProgress);
+    });
+  }, []);
 
-  const manualSync = useCallback(() => {
-    if (!status.isOnline) {
-      toast.error("Você está offline. Conecte-se à internet para sincronizar.");
-      return;
+  // Carregar última sincronização
+  useEffect(() => {
+    const lastSync = localStorage.getItem('lastSyncTime');
+    if (lastSync) {
+      setLastSyncTime(new Date(lastSync));
     }
-
-    syncPendingSales();
-  }, [status.isOnline, syncPendingSales]);
-
-  // ============================================================
-  // RETURN
-  // ============================================================
+  }, []);
 
   return {
-    ...status,
-    sync: manualSync,
-    refreshPendingCount: updatePendingCount,
+    isOnline,
+    isSyncing,
+    pendingCount,
+    lastSyncTime,
+    sync: handleSync,
+    cancel: handleCancel,
+    progress,
+  };
+}
+
+// ================================================================
+// OFFLINE STATUS HOOK
+// ================================================================
+
+export interface UseOfflineStatusReturn {
+  isOnline: boolean;
+  connectionType?: string;
+  effectiveType?: string;
+  downlink?: number;
+  rtt?: number;
+  saveData?: boolean;
+}
+
+export function useOfflineStatus(): UseOfflineStatusReturn {
+  const [status, setStatus] = useState<UseOfflineStatusReturn>({
+    isOnline: navigator.onLine,
+  });
+
+  useEffect(() => {
+    const updateStatus = () => {
+      const connection = (navigator as any).connection || 
+                        (navigator as any).mozConnection || 
+                        (navigator as any).webkitConnection;
+
+      setStatus({
+        isOnline: navigator.onLine,
+        connectionType: connection?.type,
+        effectiveType: connection?.effectiveType,
+        downlink: connection?.downlink,
+        rtt: connection?.rtt,
+        saveData: connection?.saveData,
+      });
+    };
+
+    const handleOnline = () => updateStatus();
+    const handleOffline = () => updateStatus();
+    const handleConnectionChange = () => updateStatus();
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    if ('connection' in navigator) {
+      (navigator as any).connection.addEventListener('change', handleConnectionChange);
+    }
+
+    updateStatus();
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      
+      if ('connection' in navigator) {
+        (navigator as any).connection.removeEventListener('change', handleConnectionChange);
+      }
+    };
+  }, []);
+
+  return status;
+}
+
+// ================================================================
+// CACHE ACTIONS HOOK
+// ================================================================
+
+export interface UseCacheActionsReturn {
+  clear: () => Promise<void>;
+  getStats: () => Promise<{
+    pending_sales: number;
+    cached_products: number;
+    cached_employees: number;
+    sync_queue: number;
+  }>;
+  cacheProducts: (products: any[]) => Promise<void>;
+  getCachedProducts: () => Promise<any[]>;
+}
+
+export function useCacheActions(): UseCacheActionsReturn {
+  const clearCache = useCallback(async () => {
+    await pwaStorage.clearAllCache();
+  }, []);
+
+  const getCacheStats = useCallback(async () => {
+    return await pwaStorage.getCacheStats();
+  }, []);
+
+  const cacheProducts = useCallback(async (products: any[]) => {
+    await pwaStorage.cacheProducts(products);
+  }, []);
+
+  const getCachedProducts = useCallback(async () => {
+    return await pwaStorage.getCachedProducts();
+  }, []);
+
+  return {
+    clear: clearCache,
+    getStats: getCacheStats,
+    cacheProducts,
+    getCachedProducts,
   };
 }

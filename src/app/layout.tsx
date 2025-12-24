@@ -1,20 +1,8 @@
 // src/app/layout.tsx
 import type { Metadata } from 'next';
-import { Inter, Crimson_Pro } from 'next/font/google';
 
-// Adult Minimalist Typography System
-const sans = Inter({ 
-  subsets: ['latin'],
-  variable: '--font-sans',
-  display: 'swap'
-});
-
-const serif = Crimson_Pro({ 
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-serif',
-  display: 'swap'
-});
+// Simplificando para sistema de fonts locale
+// Removendo fontes Google que estão falhando
 import './globals.css';
 import { getSession } from '@/lib/auth-server';
 import { db } from '@/lib/server-api';
@@ -24,6 +12,7 @@ import ClientLayout from '@/components/layout/ClientLayout';
 import AccessibilityHelper from '@/components/accessibility/AccessibilityHelper';
 import { OfflineIndicator } from '@/components/offline/OfflineIndicator';
 import { ThemeProvider } from '@/components/theme-provider';
+import { ToastContainer } from '@/components/notifications/toast-container';
 
 export const metadata: Metadata = {
   title: 'BIZ360 | Enterprise ERP',
@@ -48,12 +37,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   } : null;
 
   return (
-    <html lang="pt-MZ" suppressHydrationWarning className={`${sans.variable} ${serif.variable}`}>
+    <html lang="pt-MZ" suppressHydrationWarning>
       <body className="font-sans bg-white dark:bg-black text-slate-900 dark:text-white antialiased">
         <ThemeProvider>
           <AuthProvider initialUser={initialUser}>
             <ToastProvider>
               <ToastInitializer />
+              <ToastContainer />
               <AccessibilityHelper>
                 <></>
               </AccessibilityHelper>

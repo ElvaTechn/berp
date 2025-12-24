@@ -4,884 +4,375 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* =================================================================
-   🎨 ADULT MINIMALIST DESIGN SYSTEM - Corporate ERP
-   Typography: Crimson Pro (serif) + Inter (sans-serif)
-   Fontes carregadas via next/font/google no layout.tsx
+   🎨 MINIMALIST DESIGN SYSTEM - BIZCONTROL 360 ERP
+   Monochrome palette + single coral accent
+   Follows agent-os standards: performance, accessibility, consistency
    ================================================================= */
 
-/* Font Variables - As fontes são carregadas via next/font no layout.tsx */
-
-/* =================================================================
-   🎨 CORPORATE COLOR PALETTE - Onyx & Sunset (Refined)
-   ================================================================= */
-
-/* Light Mode (Pearl) - Branco Puro & Elegante */
+/* Core Monochrome Spectrum */
 :root {
-  /* Backgrounds - Pearl White */
-  --background: #ffffff;
-  --background-secondary: #ffffff;
-  --background-tertiary: #f8fafc;
+  /* Pure grayscale hierarchy */
+  --white: #ffffff;
+  --gray-50: #fafafa;
+  --gray-100: #f5f5f5;
+  --gray-200: #e5e5e5;
+  --gray-300: #d4d4d4;
+  --gray-400: #a3a3a3;
+  --gray-500: #737373;
+  --gray-600: #525252;
+  --gray-700: #404040;
+  --gray-800: #262626;
+  --gray-900: #171717;
+  --black: #000000;
   
-  /* Foregrounds - Slate-950 */
-  --foreground: #0f172a;
-  --foreground-secondary: #1e293b;
-  --foreground-muted: #64748b;
+  /* System tokens - Light mode */
+  --background: var(--white);
+  --foreground: var(--gray-900);
+  --muted: var(--gray-400);
+  --border: var(--gray-200);
+  --accent: #ef4444;
+  --accent-hover: #dc2626;
+  --ring: var(--accent);
   
-  /* Primary (Sunset Suave) - Rosa Coral Suave */
-  --primary: #fb7185;
-  --primary-hover: #f472b6;
-  --primary-foreground: #ffffff;
-  --primary-glow: rgba(251, 113, 133, 0.3);
+  /* Component specific */
+  --card: var(--white);
+  --card-border: var(--gray-200);
+  --input: var(--white);
+  --input-border: var(--gray-300);
+  --input-border-focus: var(--accent);
+  --button-primary: var(--accent);
+  --button-primary-hover: var(--accent-hover);
   
-  /* Accents - Paleta Coral/Âmbar Harmonizada */
-  --accent-sunset: #fb7185;
-  --accent-sunset-light: #fca5a5;
-  --accent-coral: #fb923c;
-  --accent-amber: #fbbf24;
-  --accent-green: #10b981;
-  --accent-emerald: #34d399;
-  --accent-red: #f87171;
-  
-  /* Borders - Slate Suave */
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --border-subtle: #f1f5f9;
-  
-  /* Cards - Pearl White */
-  --card-bg: #ffffff;
-  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(251, 113, 133, 0.06);
-  --card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.1), 0 8px 24px rgba(251, 113, 133, 0.1);
-  --card-border: rgba(0, 0, 0, 0.05);
-  
-  /* Glass Effect */
-  --glass-bg: rgba(255, 255, 255, 0.95);
-  --glass-border: rgba(226, 232, 240, 0.6);
-  
-  /* Focus & Ring */
-  --ring: #fb7185;
-  --ring-offset: #ffffff;
-  
-  /* Gradients - Sunset Suave (mesma família de cores) */
-  --gradient-sunset: linear-gradient(135deg, #fb7185 0%, #fca5a5 100%);
-  --gradient-sunset-text: linear-gradient(135deg, #fb7185 0%, #fb923c 100%);
+  /* Shadows - Minimal */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
-/* Dark Mode (Onyx) - Preto Absoluto & Nítido */
+/* Dark mode - Inverted */
 .dark {
-  /* Backgrounds - Onyx Black */
-  --background: #000000;
-  --background-secondary: #000000;
-  --background-tertiary: #0a0a0a;
-  --background-quaternary: #111111;
+  --background: var(--black);
+  --foreground: var(--white);
+  --muted: var(--gray-400);
+  --border: var(--gray-800);
+  --accent: #ef4444;
+  --accent-hover: #f87171;
+  --ring: var(--accent);
   
-  /* Foregrounds - White Pure */
-  --foreground: #ffffff;
-  --foreground-secondary: #fafafa;
-  --foreground-muted: #a1a1aa;
+  --card: var(--black);
+  --card-border: var(--gray-800);
+  --input: var(--gray-900);
+  --input-border: var(--gray-700);
+  --button-primary: var(--accent);
+  --button-primary-hover: var(--accent-hover);
   
-  /* Primary (Sunset Suave) - Laranja Suave Dark */
-  --primary: #fb923c;
-  --primary-hover: #fbbf24;
-  --primary-foreground: #ffffff;
-  --primary-glow: rgba(251, 146, 60, 0.4);
-  
-  /* Accents - Paleta Laranja/Âmbar Dark Mode */
-  --accent-sunset: #fb923c;
-  --accent-sunset-light: #fbbf24;
-  --accent-coral: #fb7185;
-  --accent-amber: #fcd34d;
-  --accent-green: #34d399;
-  --accent-emerald: #10b981;
-  --accent-red: #f87171;
-  
-  /* Borders - White Subtle */
-  --border: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.15);
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  
-  /* Cards - Onyx Black */
-  --card-bg: #000000;
-  --card-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 12px rgba(0, 0, 0, 0.8);
-  --card-shadow-hover: 0 0 0 1px rgba(251, 146, 60, 0.3), 0 8px 24px rgba(251, 146, 60, 0.15);
-  --card-border: rgba(255, 255, 255, 0.05);
-  
-  /* Glass Effect */
-  --glass-bg: rgba(0, 0, 0, 0.95);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  
-  /* Focus & Ring */
-  --ring: #fb923c;
-  --ring-offset: #000000;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
 }
 
+/* Tailwind theme integration */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-ring: var(--ring);
 }
 
+/* Base styles */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-variant-numeric: tabular-nums;
   line-height: 1.6;
 }
 
 /* =================================================================
-   🎨 ADULT MINIMALIST TYPOGRAPHY SYSTEM
+   🎨 TYPOGRAPHY MINIMALIST SYSTEM
+   Clear hierarchy, single responsibility
    ================================================================= */
 
-/* Serif Headings (Crimson Pro) - Corporate Authority */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-serif), Georgia, serif;
-  font-weight: 500;
-  color: var(--foreground);
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-}
-
-/* Display - Maximum Impact */
+/* Display - Maximum impact */
 .text-display {
-  font-family: var(--font-serif), Georgia, serif;
-  font-weight: 600;
-  font-size: clamp(2.5rem, 8vw, 5rem);
-  line-height: 0.95;
-  letter-spacing: -0.04em; /* tracking-tight mais apertado */
+  font-size: clamp(2rem, 6vw, 4rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  color: var(--foreground);
 }
 
-/* Corporate Headings - Editorial Authority */
+/* Headings - Clear hierarchy */
 .heading-1 {
-  font-family: var(--font-serif), Georgia, serif;
-  font-weight: 500; /* Medium weight já mostra elegância na serif */
-  font-size: clamp(2rem, 6vw, 4rem);
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: 700;
   line-height: 1.1;
-  letter-spacing: -0.025em; /* tracking-tight editorial */
+  letter-spacing: -0.025em;
+  color: var(--foreground);
 }
 
 .heading-2 {
-  font-family: var(--font-serif), Georgia, serif;
-  font-weight: 500;
-  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.02em;
+  color: var(--foreground);
 }
 
 .heading-3 {
-  font-family: var(--font-serif), Georgia, serif;
-  font-weight: 600; /* Mais forte para subtítulos importantes */
-  font-size: clamp(1.25rem, 4vw, 2rem);
+  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+  font-weight: 600;
   line-height: 1.3;
-  letter-spacing: -0.015em;
+  color: var(--foreground);
 }
 
-/* Sans-serif Body Text (Inter) - Technical Clarity */
+/* Body text - Readable */
 .text-body {
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 400;
   font-size: 1rem;
+  font-weight: 400;
   line-height: 1.6;
-  color: var(--foreground-muted);
+  color: var(--muted);
 }
 
 .text-caption {
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 400;
   font-size: 0.875rem;
+  font-weight: 400;
   line-height: 1.5;
-  color: var(--foreground-muted);
+  color: var(--muted);
 }
 
 .text-label {
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 500;
   font-size: 0.75rem;
-  line-height: 1.4;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--foreground-muted);
+  color: var(--muted);
 }
 
-/* Financial/Data Display - Technical Sans */
-.text-mono {
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  letter-spacing: 0;
-}
-
-/* Brand Gradient - Refined Sunset */
-.brand-gradient {
-  background: linear-gradient(135deg, #fb7185 0%, #fb923c 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 600;
+/* Accent text - Single accent color */
+.text-accent {
+  color: var(--accent);
 }
 
 /* =================================================================
-   🎨 ADULT MINIMALIST UI SYSTEM
-   Arredondamentos sóbrios, whitespace controlado, elementos arquitetónicos
+   🎯 COMPONENT SYSTEM - Minimal & Functional
+   Single responsibility, clear interface
    ================================================================= */
 
-/* Cards Minimalistas - Arquitetónicos, não "brinquedos" */
+/* Cards - Architectural, not decorative */
 .card-minimal {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 0.375rem; /* rounded-sm - arquitetônico */
-  box-shadow: var(--card-shadow);
-  padding: 2rem; /* whitespace generoso */
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow);
+  transition: all 0.15s ease;
 }
 
-.card-minimal-hover:hover {
-  box-shadow: var(--card-shadow-hover);
+.card-minimal:hover {
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
-/* Input System - Técnico e limpo */
-.input-minimal {
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 400;
-  border: 1px solid var(--border);
-  border-radius: 0.375rem; /* rounded-sm - arquitetônico */
-  background: var(--background);
+/* Buttons - Clear hierarchy */
+.btn-primary {
+  background: var(--button-primary);
+  color: white;
+  border: 1px solid var(--button-primary);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: var(--button-primary-hover);
+  border-color: var(--button-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+  background: transparent;
   color: var(--foreground);
-  padding: 0.875rem 1.25rem;
-  transition: all 0.2s ease;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: var(--muted);
+  opacity: 0.1;
+}
+
+/* Inputs - Clean & functional */
+.input-minimal {
+  background: var(--input);
+  border: 1px solid var(--input-border);
+  border-radius: 0.5rem;
+  color: var(--foreground);
+  padding: 0.75rem 1rem;
+  transition: all 0.15s ease;
+  width: 100%;
 }
 
 .input-minimal:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 1px var(--ring);
+  border-color: var(--input-border-focus);
+  box-shadow: 0 0 0 3px rgb(239 68 68 / 0.1);
 }
 
-/* Buttons - Sóbrios, autoritários */
-.btn-primary-minimal {
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 500;
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 0.375rem; /* rounded-sm */
-  padding: 0.875rem 2.25rem;
-  transition: all 0.2s ease;
-  letter-spacing: 0.025em;
+.input-minimal::placeholder {
+  color: var(--muted);
 }
 
-.btn-primary-minimal:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--primary) / 0.25;
-}
-
-.btn-secondary-minimal {
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 500;
-  background: transparent;
-  color: var(--foreground);
-  border: 1px solid var(--border);
-  border-radius: 0.375rem;
-  padding: 0.875rem 2.25rem;
-  transition: all 0.2s ease;
-  letter-spacing: 0.025em;
-}
-
-.btn-secondary-minimal:hover {
-  background: var(--background-secondary);
-}
-
-/* Tabelas Financeiras - Luxo e clareza */
+/* Tables - Data focused */
 .table-minimal {
-  font-family: var(--font-sans), system-ui, sans-serif;
-  border-collapse: collapse;
   width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
 }
 
 .table-minimal th {
-  font-weight: 500;
+  text-align: left;
+  font-weight: 600;
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--foreground-muted);
-  border-bottom: 1px solid var(--border);
-  opacity: 0.7;
-  padding: 1rem 0.5rem;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  background: var(--background);
+  border-bottom: 1px solid var(--card-border);
+  padding: 1rem;
 }
 
 .table-minimal td {
-  border-bottom: 1px solid var(--border);
-  opacity: 0.05;
-  padding: 0.75rem 0.5rem;
-  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+  border-bottom: 1px solid var(--card-border);
+  padding: 0.75rem 1rem;
 }
 
 .table-minimal tbody tr:hover {
-  background: var(--background-secondary);
+  background: var(--background);
 }
 
-/* Whitespace System - Minimalista respirado */
-.section-spacing {
-  padding: clamp(2rem, 8vw, 8rem) 0;
+.table-minimal tbody tr:last-child td {
+  border-bottom: none;
 }
 
-.section-spacing-small {
-  padding: clamp(1rem, 4vw, 4rem) 0;
-}
-
-.element-spacing {
-  margin-bottom: clamp(1rem, 3vw, 2rem);
-}
-
-.element-spacing-small {
-  margin-bottom: clamp(0.5rem, 2vw, 1rem);
-}
-
-/* Layout Grid - Arquitetónico */
-.grid-minimal {
-  display: grid;
-  gap: clamp(1rem, 3vw, 3rem);
-}
-
-.flex-minimal {
-  display: flex;
-  gap: clamp(0.75rem, 2vw, 2rem);
-  align-items: center;
-}
-
-/* Badges e Labels - Corporativos */
+/* Badges - Status */
 .badge-minimal {
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 500;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-radius: 0.25rem; /* rounded-xs */
+  display: inline-flex;
+  align-items: center;
   padding: 0.25rem 0.75rem;
-  background: var(--background-tertiary);
-  color: var(--foreground-muted);
-}
-
-.badge-primary {
-  background: var(--primary);
-  color: white;
-}
-
-/* KPI Numeric Display - Financeiro */
-.kpi-value {
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  font-size: clamp(1.5rem, 4vw, 3rem);
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-
-.kpi-label {
-  font-family: var(--font-sans), system-ui, sans-serif;
+  border-radius: 9999rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--foreground-muted);
-  margin-top: 0.5rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  color: var(--muted);
 }
 
-/* Sunset Application - Cirúrgica e elegante */
+.badge-accent {
+  background: rgb(239 68 68 / 0.1);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* =================================================================
+   🎨 ACCENT APPLICATION - Minimal coral usage
+   Only where it adds value, not decorative
+   ================================================================= */
+
 .sunset-accent {
-  color: var(--primary);
+  color: var(--accent);
 }
 
 .sunset-border {
-  border-color: var(--primary);
+  border-color: var(--accent);
 }
 
 .sunset-bg {
-  background: var(--primary);
+  background: var(--accent);
 }
 
-/* Corporate Layout System */
-.corporate-section {
-  padding: clamp(4rem, 10vw, 12rem) 0;
+.text-gradient-sunset {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.corporate-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 clamp(1rem, 3vw, 2rem);
-}
+/* =================================================================
+   ✨ TRANSITIONS & ANIMATIONS
+   Subtle, purposeful, performant
+   ================================================================= */
 
-.corporate-grid {
-  display: grid;
-  gap: clamp(1.5rem, 4vw, 4rem);
-}
-
-/* Landing Page - Adult Minimalist */
-.hero-section {
-  min-height: 100vh;
-  padding: clamp(2rem, 5vw, 6rem) 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.hero-content {
-  text-align: center;
-  max-width: 800px;
-}
-
-.feature-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: clamp(1.5rem, 3vw, 2rem);
-  padding: clamp(2rem, 5vw, 4rem) 0;
-}
-
-.benefits-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(3rem, 6vw, 8rem);
-  align-items: center;
-}
-
-.cta-section {
-  text-align: center;
-  padding: clamp(4rem, 10vw, 12rem) 0;
-}
-
-/* KPI Cards - Corporate Financial Style */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: clamp(1rem, 2vw, 2rem);
-}
-
-/* Buttons - Authoritative */
-.btn-corporate {
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 500;
-  letter-spacing: 0.025em;
-  padding: 0.875rem 2.5rem;
-  border-radius: 0.375rem;
-  transition: all 0.2s ease;
-}
-
-.btn-corporate-primary {
-  background: var(--primary);
-  color: white;
-  border: none;
-}
-
-.btn-corporate-primary:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-}
-
-.btn-corporate-outline {
-  background: transparent;
-  color: var(--foreground);
-  border: 1px solid var(--border);
-}
-
-.btn-corporate-outline:hover {
-  background: var(--background-secondary);
-}
-
-/* Navigation - Corporate */
-.nav-desktop {
-  display: flex;
-  align-items: center;
-  gap: clamp(1.5rem, 3vw, 2rem);
-}
-
-.nav-links {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.nav-link {
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 400;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--foreground-muted);
-  transition: color 0.2s ease;
-}
-
-.nav-link:hover {
-  color: var(--foreground);
-}
-
-/* Minimalist Footer */
-.corporate-footer {
-  padding: clamp(3rem, 8vw, 6rem) 0;
-  border-top: 1px solid var(--border);
-}
-
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 clamp(1rem, 3vw, 2rem);
-}
-
-.footer-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.footer-legal {
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 400;
-  font-size: 0.75rem;
-  color: var(--foreground-muted);
-  text-align: center;
-}
-
-/* Responsive Typography Clamp Utilities */
-.responsive-h1 {
-  font-size: clamp(2rem, 6vw, 4rem);
-  line-height: 1;
-}
-
-.responsive-h2 {
-  font-size: clamp(1.5rem, 5vw, 2.5rem);
-  line-height: 1.2;
-}
-
-.responsive-h3 {
-  font-size: clamp(1.25rem, 4vw, 2rem);
-  line-height: 1.3;
-}
-
-.responsive-body {
-  font-size: clamp(0.875rem, 2vw, 1.125rem);
-  line-height: 1.6;
-}
-
-.responsive-caption {
-  font-size: clamp(0.75rem, 1.5vw, 0.875rem);
-  line-height: 1.5;
-}
-
-/* Loading States - Corporate */
-.loading-skeleton {
-  background: linear-gradient(90deg, var(--background) 0%, var(--background-tertiary) 50%, var(--background) 100%);
-  background-size: 200% 100%;
-  animation: corporate-shimmer 1.5s ease-in-out infinite;
-}
-
-@keyframes corporate-shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-/* Smooth Theme Transitions */
 * {
   transition-property: background-color, border-color, color, fill, stroke, box-shadow, transform;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
+  transition-duration: 150ms;
 }
 
-/* Scrollbar Premium - Dual Theme */
+/* Focus states */
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Hover states */
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* =================================================================
+   ♿ ACCESSIBILITY ENHANCEMENTS
+   High contrast, semantic HTML, keyboard navigation
+   ================================================================= */
+
+/* High contrast mode */
+@media (prefers-contrast: more) {
+  :root {
+    --border: var(--gray-400);
+    --muted: var(--gray-500);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Scrollbar - Minimal */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background-tertiary);
-  border-radius: 3px;
+  background: var(--background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
+  background: var(--border);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--foreground-muted);
-}
-
-.dark ::-webkit-scrollbar-track {
-  background: #0a0a0a;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* PWA Offline Animations */
-@keyframes slide-in-from-top {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slide-in-from-bottom {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-slide-in-from-top {
-  animation: slide-in-from-top 0.3s ease-out;
-}
-
-.animate-slide-in-from-bottom {
-  animation: slide-in-from-bottom 0.3s ease-out;
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.4s ease-out;
-}
-
-/* Focus rings */
-*:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
-
-/* Cards Premium - High Contrast */
-.card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  box-shadow: var(--card-shadow);
-}
-
-.card-hover:hover {
-  box-shadow: var(--card-shadow-hover);
-  transform: translateY(-2px);
-}
-
-/* Botões Premium - Sunset Theme */
-.btn-primary {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border-radius: 0.75rem;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  transition: all 0.2s ease;
-  box-shadow: 0 0 20px rgba(251, 113, 133, 0.2);
-}
-
-.btn-primary:hover {
-  background: var(--primary-hover);
-  box-shadow: 0 0 30px rgba(251, 113, 133, 0.4);
-  transform: translateY(-1px) scale(1.02);
-}
-
-.btn-primary:active {
-  transform: translateY(0) scale(0.98);
-}
-
-/* Inputs Premium - Focus Sunset */
-input,
-select,
-textarea {
-  border: 1px solid var(--border);
-  background: var(--background);
-  color: var(--foreground);
-  transition: all 0.2s ease;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.15);
-  border-color: var(--primary);
-  outline: none;
-}
-
-/* Gradient Text - Sunset */
-.text-gradient-sunset {
-  background: var(--gradient-sunset-text);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Glow Effects */
-.sunset-glow {
-  box-shadow: 0 0 30px rgba(251, 113, 133, 0.3);
-}
-
-.sunset-glow:hover {
-  box-shadow: 0 0 40px rgba(251, 113, 133, 0.5);
-}
-
-/* High Contrast Typography */
-.text-display {
-  font-weight: 900;
-  letter-spacing: -0.05em;
-  line-height: 0.9;
-}
-
-.text-heading {
-  font-weight: 800;
-  letter-spacing: -0.025em;
-}
-
-.text-body {
-  font-weight: 500;
-  letter-spacing: 0;
-}
-
-/* Premium Tables */
-.table-th {
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  border-bottom: 2px solid var(--primary);
-}
-
-.table-row {
-  border-bottom: 1px solid var(--border);
-  transition: all 0.2s ease;
-}
-
-.table-row:hover {
-  background: var(--background-secondary);
-  border-left: 3px solid var(--primary);
-}
-
-/* Premium Modals */
-.modal-overlay {
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
-}
-
-.modal-content {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-/* Dark Mode Specific Overrides */
-.dark .modal-overlay {
-  background: rgba(0, 0, 0, 0.95);
-}
-
-/* Premium Shadows */
-.shadow-sunset {
-  box-shadow: 0 4px 20px rgba(251, 113, 133, 0.15);
-}
-
-.shadow-sunset-strong {
-  box-shadow: 0 8px 40px rgba(251, 113, 133, 0.25);
-}
-
-/* Glass Morphism */
-.glass-card {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(20px);
-}
-
-/* Loading States */
-.loading-shimmer {
-  background: linear-gradient(90deg, var(--background) 0%, var(--background-tertiary) 50%, var(--background) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-/* =================================================================
-   📱 CUSTOM SCROLLBAR - Mobile & Desktop Responsive
-   ================================================================= */
-
-/* Scrollbar fino e elegante */
-.scrollbar-thin::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
-  border-radius: 4px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(249, 115, 22, 0.3);
-  border-radius: 4px;
-  transition: background 0.2s ease;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: rgba(249, 115, 22, 0.5);
-}
-
-/* Dark mode scrollbar */
-.dark .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(251, 146, 60, 0.4);
-}
-
-.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: rgba(251, 146, 60, 0.6);
-}
-
-/* Scrollbar de track transparente */
-.scrollbar-track-transparent::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-/* Scrollbar thumb laranja/sunset */
-.scrollbar-thumb-orange-500\/50::-webkit-scrollbar-thumb {
-  background: rgba(249, 115, 22, 0.5);
-}
-
-.scrollbar-thumb-orange-500\/50::-webkit-scrollbar-thumb:hover {
-  background: rgba(249, 115, 22, 0.7);
-}
-
-/* Firefox scrollbar support */
-.scrollbar-thin {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(249, 115, 22, 0.5) transparent;
-}
-
-.dark .scrollbar-thin {
-  scrollbar-color: rgba(251, 146, 60, 0.5) transparent;
+  background: var(--muted);
 }

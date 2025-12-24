@@ -21,8 +21,7 @@ import {
   Zap,
   ArrowRight,
   Menu,
-  X,
-  Users
+  X
 } from 'lucide-react';
 import { ThemeToggleSimple } from '@/components/theme-toggle';
 import { useState } from 'react';

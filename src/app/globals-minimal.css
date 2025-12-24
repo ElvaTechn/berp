@@ -1,0 +1,505 @@
+/**
+ * ================================================================
+ * MINIMALIST DESIGN SYSTEM - BIZCONTROL 360 ERP v2.0.0
+ * ================================================================
+ * Seguindo padrões agent-os:
+ * - Single Responsibility: Design focused
+ * - Clear Interface: Consistent tokens
+ * - Performance: Minimal CSS
+ * - Accessibility: High contrast
+ * ================================================================ */
+
+@import "tailwindcss";
+
+/* Habilita dark mode via classe (necessário para Tailwind v4) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* =================================================================
+   🎨 MINIMALIST COLOR PALETTE - Monochrome + Single Accent
+   Base: Strict black/white hierarchy
+   Accent: Coral single (versus rainbow)
+   ================================================================= */
+
+/* Light Mode - Pure Monochrome */
+:root {
+  /* Core Grays - Single spectrum */
+  --color-white: #ffffff;
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f5f5f5;
+  --color-gray-200: #e5e5e5;
+  --color-gray-300: #d4d4d4;
+  --color-gray-400: #a3a3a3;
+  --color-gray-500: #737373;
+  --color-gray-600: #525252;
+  --color-gray-700: #404040;
+  --color-gray-800: #262626;
+  --color-gray-900: #171717;
+  --color-black: #000000;
+  
+  /* Backgrounds - White hierarchy */
+  --bg-primary: var(--color-white);
+  --bg-secondary: var(--color-gray-50);
+  --bg-tertiary: var(--color-gray-100);
+  
+  /* Text - Gray hierarchy */
+  --text-primary: var(--color-gray-900);
+  --text-secondary: var(--color-gray-600);
+  --text-tertiary: var(--color-gray-400);
+  --text-inverse: var(--color-white);
+  
+  /* Borders - Subtle hierarchy */
+  --border-primary: var(--color-gray-200);
+  --border-secondary: var(--color-gray-300);
+  --border-focus: var(--color-gray-400);
+  
+  /* Single Accent - Coral */
+  --accent: #ef4444;
+  --accent-hover: #dc2626;
+  --accent-light: #fca5a5;
+  --accent-ultra-light: #fee2e2;
+  
+  /* Shadows - Minimal */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  
+  /* Focus - High contrast */
+  --ring: var(--accent);
+  --ring-offset: var(--color-white);
+}
+
+/* Dark Mode - Inverted monochrome */
+.dark {
+  /* Backgrounds - Black hierarchy */
+  --bg-primary: var(--color-black);
+  --bg-secondary: #0a0a0a;
+  --bg-tertiary: #111111;
+  
+  /* Text - White hierarchy */
+  --text-primary: var(--color-white);
+  --text-secondary: var(--color-gray-300);
+  --text-tertiary: var(--color-gray-500);
+  --text-inverse: var(--color-gray-900);
+  
+  /* Borders - Subtle */
+  --border-primary: #1f1f1f;
+  --border-secondary: #2f2f2f;
+  --border-focus: var(--color-gray-400);
+  
+  /* Accent - Same coral (consistency) */
+  --accent: #ef4444;
+  --accent-hover: #f87171;
+  --accent-light: #ef4444;
+  --accent-ultra-light: #991b1b;
+  
+  /* Shadows - Dark mode */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  
+  /* Focus - High contrast */
+  --ring: var(--accent);
+  --ring-offset: var(--color-black);
+}
+
+/* Tailwind integration */
+@theme inline {
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  --color-muted: var(--text-tertiary);
+  --color-border: var(--border-primary);
+  --color-accent: var(--accent);
+  --color-ring: var(--ring);
+}
+
+/* Base typography system */
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+/* =================================================================
+   🎨 MINIMALIST COMPONENT SYSTEM
+   Consistent design tokens, single responsibility components
+   ================================================================= */
+
+/* Core Components - Single responsibility classes */
+
+/* Cards - Architectural, not decorative */
+.minimal-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.5rem; /* Standard rounded */
+  box-shadow: var(--shadow);
+  transition: all 0.15s ease;
+}
+
+.minimal-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.minimal-card-flat {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.5rem;
+}
+
+/* Buttons - Clear hierarchy */
+.btn {
+  font-weight: 500;
+  border-radius: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-primary);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--text-inverse);
+  border-color: var(--accent);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: var(--text-inverse);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.btn-outline:hover {
+  background: var(--accent);
+  color: var(--text-inverse);
+}
+
+/* Input system - Minimal and functional */
+.input {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.375rem;
+  color: var(--text-primary);
+  padding: 0.625rem 0.875rem;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgb(239 68 68 / 0.1);
+}
+
+.input::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* Labels - Clear hierarchy */
+.label {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.label-muted {
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+/* Badges - Status indicators */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999rem; /* pill */
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.badge-accent {
+  background: var(--accent-ultra-light);
+  color: var(--accent);
+}
+
+.badge-gray {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+/* Tables - Clean data display */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 0.75rem;
+}
+
+.table td {
+  border-bottom: 1px solid var(--border-primary);
+  padding: 0.75rem;
+  color: var(--text-primary);
+}
+
+.table tr:hover {
+  background: var(--bg-secondary);
+}
+
+/* =================================================================
+   📱 RESPONSIVE UX SYSTEM
+   Mobile-first, performance optimized
+   ================================================================= */
+
+/* Spacing system - Consistent scale */
+.minimal-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .minimal-container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .minimal-container {
+    padding: 0 2rem;
+  }
+}
+
+/* Grid system - Flexible, semantic */
+.minimal-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.minimal-grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.minimal-grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.minimal-grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.minimal-grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+@media (min-width: 768px) {
+  .minimal-grid-cols-md-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  .minimal-grid-cols-md-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .minimal-grid-cols-md-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .minimal-grid-cols-md-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* Flex utilities - Semantic */
+.minimal-flex {
+  display: flex;
+  gap: 1rem;
+}
+
+.minimal-flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.minimal-flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* =================================================================
+   🎯 STATE SYSTEM
+   Consistent visual feedback
+   ================================================================= */
+
+/* Loading states */
+.minimal-skeleton {
+  background: var(--bg-tertiary);
+  border-radius: 0.375rem;
+  animation: minimal-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes minimal-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Focus states */
+.minimal-focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.minimal-focus-ring {
+  box-shadow: 0 0 0 3px rgb(239 68 68 / 0.1);
+}
+
+/* Hover states */
+.minimal-hover-lift {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.minimal-hover-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* =================================================================
+   ♿ ACCESSIBILITY ENHANCEMENTS
+   High contrast, semantic HTML, keyboard navigation
+   ================================================================= */
+
+/* Skip link for screen readers */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--accent);
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  :root {
+    --border-primary: var(--color-gray-400);
+    --text-tertiary: var(--color-gray-500);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =================================================================
+   🎨 COMPONENT OVERRIDES - Existing system migration
+   Gradual migration to minimal system
+   ================================================================= */
+
+/* Legacy component class names - mapped to minimal */
+.card-minimal { @extend .minimal-card; }
+.btn-primary-minimal { @extend .btn-primary; }
+.btn-secondary-minimal { @extend .btn-ghost; }
+.input-minimal { @extend .input; }
+.badge-minimal { @extend .badge-gray; }
+.table-minimal { @extend .table; }
+
+/* Legacy color mappings */
+.sunset-accent { color: var(--accent); }
+.sunset-border { border-color: var(--accent); }
+.sunset-bg { background: var(--accent); }
+
+/* Typography - Simplified hierarchy */
+.text-display { 
+  font-size: clamp(2rem, 6vw, 4rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+.heading-1 {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.heading-2 {
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.heading-3 {
+  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.text-body {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.text-caption {
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+/* =================================================================
+   🚀 PERFORMANCE OPTIMIZATIONS
+   Minimal custom CSS, leverage Tailwind utilities
+   ================================================================= */
+
+/* Smooth transitions - global */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Focus visible - accessibility */
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Dark mode transitions */
+.dark * {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+}
