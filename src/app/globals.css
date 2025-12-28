@@ -4,77 +4,196 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* =================================================================
-   🎨 MINIMALIST DESIGN SYSTEM - BIZCONTROL 360 ERP
-   Monochrome palette + single coral accent
-   Follows agent-os standards: performance, accessibility, consistency
+   🎨 NEUMORPHISM DESIGN SYSTEM - BIZCONTROL 360 ERP v2.0
+   Soft UI with dimensional depth through dual shadows
+   Adapted for ERP accessibility with enhanced contrast
    ================================================================= */
 
-/* Core Monochrome Spectrum */
+/* ============================================
+   NEUMORPHISM COLOR TOKENS
+   ============================================ */
+
+/* Light Mode - Soft Off-White Base */
 :root {
-  /* Pure grayscale hierarchy */
-  --white: #ffffff;
-  --gray-50: #fafafa;
-  --gray-100: #f5f5f5;
-  --gray-200: #e5e5e5;
-  --gray-300: #d4d4d4;
-  --gray-400: #a3a3a3;
-  --gray-500: #737373;
-  --gray-600: #525252;
-  --gray-700: #404040;
-  --gray-800: #262626;
-  --gray-900: #171717;
-  --black: #000000;
+  /* Neumorphic Base Colors - Off-white/Cream for soft shadows */
+  --neu-base: #E8ECEF;
+  --neu-base-light: #F5F8FA;
+  --neu-base-dark: #D8DCE2;
   
-  /* System tokens - Light mode */
-  --background: var(--white);
-  --foreground: var(--gray-900);
-  --muted: var(--gray-400);
-  --border: var(--gray-200);
-  --accent: #ef4444;
-  --accent-hover: #dc2626;
-  --ring: var(--accent);
+  /* Surface Colors (same as base for neumorphic effect) */
+  --neu-surface: #E8ECEF;
+  --neu-surface-hover: #EEF2F5;
+  --neu-surface-active: #E2E7EB;
   
-  /* Component specific */
-  --card: var(--white);
-  --card-border: var(--gray-200);
-  --input: var(--white);
-  --input-border: var(--gray-300);
-  --input-border-focus: var(--accent);
-  --button-primary: var(--accent);
-  --button-primary-hover: var(--accent-hover);
+  /* Text Colors (high contrast for accessibility) */
+  --neu-text-primary: #1A1D21;
+  --neu-text-secondary: #4A5058;
+  --neu-text-muted: #7A8088;
+  --neu-text-disabled: #A8ACB4;
   
-  /* Shadows - Minimal */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  /* Accent Colors (Coral/Red maintained for brand) */
+  --neu-accent: #EF4444;
+  --neu-accent-light: #F87171;
+  --neu-accent-dark: #DC2626;
+  --neu-accent-hover: #FEE2E2;
+  
+  /* Status Colors */
+  --neu-success: #10B981;
+  --neu-success-light: #D1FAE5;
+  --neu-warning: #F59E0B;
+  --neu-warning-light: #FEF3C7;
+  --neu-error: #EF4444;
+  --neu-error-light: #FEE2E2;
+  --neu-info: #3B82F6;
+  --neu-info-light: #DBEAFE;
+  
+  /* Shadow Colors for Neumorphic Effect */
+  --neu-shadow-light: #FFFFFF;
+  --neu-shadow-dark: #C4C9D0;
+  
+  /* Borders (subtle for neumorphism) */
+  --neu-border: #D1D5DB;
+  --neu-border-light: #E5E7EB;
+  
+  /* Legacy tokens for backward compatibility */
+  --background: var(--neu-base);
+  --foreground: var(--neu-text-primary);
+  --muted: var(--neu-text-muted);
+  --border: var(--neu-border);
+  --accent: var(--neu-accent);
+  --ring: var(--neu-accent);
 }
 
-/* Dark mode - Inverted */
+/* Dark Mode - Deep Gray Base */
 .dark {
-  --background: var(--black);
-  --foreground: var(--white);
-  --muted: var(--gray-400);
-  --border: var(--gray-800);
-  --accent: #ef4444;
-  --accent-hover: #f87171;
-  --ring: var(--accent);
+  /* Neumorphic Base Colors - Dark Gray */
+  --neu-base: #2A2D33;
+  --neu-base-light: #35393F;
+  --neu-base-dark: #1E2126;
   
-  --card: var(--black);
-  --card-border: var(--gray-800);
-  --input: var(--gray-900);
-  --input-border: var(--gray-700);
-  --button-primary: var(--accent);
-  --button-primary-hover: var(--accent-hover);
+  /* Surface Colors */
+  --neu-surface: #2A2D33;
+  --neu-surface-hover: #32363C;
+  --neu-surface-active: #25282D;
   
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  /* Text Colors (high contrast) */
+  --neu-text-primary: #F3F4F6;
+  --neu-text-secondary: #D1D5DB;
+  --neu-text-muted: #9CA3AF;
+  --neu-text-disabled: #6B7280;
+  
+  /* Accent Colors (slightly lighter for dark mode) */
+  --neu-accent: #F87171;
+  --neu-accent-light: #FCA5A5;
+  --neu-accent-dark: #EF4444;
+  --neu-accent-hover: #3F1619;
+  
+  /* Status Colors (lighter for dark mode) */
+  --neu-success: #34D399;
+  --neu-success-light: #064E3B;
+  --neu-warning: #FBBF24;
+  --neu-warning-light: #78350F;
+  --neu-error: #F87171;
+  --neu-error-light: #7F1D1D;
+  --neu-info: #60A5FA;
+  --neu-info-light: #1E3A5F;
+  
+  /* Shadow Colors (adjusted for dark mode) */
+  --neu-shadow-light: #3F444C;
+  --neu-shadow-dark: #15181C;
+  
+  /* Borders */
+  --neu-border: #404550;
+  --neu-border-light: #4A505C;
+  
+  /* Legacy tokens for backward compatibility */
+  --background: var(--neu-base);
+  --foreground: var(--neu-text-primary);
+  --muted: var(--neu-text-muted);
+  --border: var(--neu-border);
+  --accent: var(--neu-accent);
+  --ring: var(--neu-accent);
+}
+
+/* ============================================
+   NEUMORPHISM SHADOW SYSTEM
+   Dual shadows create depth: light from top-left, dark from bottom-right
+   ============================================ */
+
+/* Light Mode Shadows */
+:root {
+  /* Convex (extruded) - Elements that pop out of surface */
+  --neu-shadow-convex-sm: 
+    2px 2px 4px var(--neu-shadow-dark),
+    -2px -2px 4px var(--neu-shadow-light);
+    
+  --neu-shadow-convex-md: 
+    4px 4px 8px var(--neu-shadow-dark),
+    -4px -4px 8px var(--neu-shadow-light);
+    
+  --neu-shadow-convex-lg: 
+    8px 8px 16px var(--neu-shadow-dark),
+    -8px -8px 16px var(--neu-shadow-light);
+  
+  --neu-shadow-convex-xl:
+    12px 12px 24px var(--neu-shadow-dark),
+    -12px -12px 24px var(--neu-shadow-light);
+    
+  /* Concave (pressed in) - Elements that are recessed into surface */
+  --neu-shadow-concave-sm: 
+    inset 2px 2px 4px var(--neu-shadow-dark),
+    inset -2px -2px 4px var(--neu-shadow-light);
+    
+  --neu-shadow-concave-md: 
+    inset 4px 4px 8px var(--neu-shadow-dark),
+    inset -4px -4px 8px var(--neu-shadow-light);
+    
+  --neu-shadow-concave-lg: 
+    inset 8px 8px 16px var(--neu-shadow-dark),
+    inset -8px -8px 16px var(--neu-shadow-light);
+    
+  /* Flat (no depth - for text, icons, overlays) */
+  --neu-shadow-flat: none;
+}
+
+/* Dark Mode Shadows (same structure, different color intensity) */
+.dark {
+  --neu-shadow-convex-sm: 
+    2px 2px 4px var(--neu-shadow-dark),
+    -2px -2px 4px var(--neu-shadow-light);
+    
+  --neu-shadow-convex-md: 
+    4px 4px 8px var(--neu-shadow-dark),
+    -4px -4px 8px var(--neu-shadow-light);
+    
+  --neu-shadow-convex-lg: 
+    8px 8px 16px var(--neu-shadow-dark),
+    -8px -8px 16px var(--neu-shadow-light);
+  
+  --neu-shadow-convex-xl:
+    12px 12px 24px var(--neu-shadow-dark),
+    -12px -12px 24px var(--neu-shadow-light);
+    
+  --neu-shadow-concave-sm: 
+    inset 2px 2px 4px var(--neu-shadow-dark),
+    inset -2px -2px 4px var(--neu-shadow-light);
+    
+  --neu-shadow-concave-md: 
+    inset 4px 4px 8px var(--neu-shadow-dark),
+    inset -4px -4px 8px var(--neu-shadow-light);
+    
+  --neu-shadow-concave-lg: 
+    inset 8px 8px 16px var(--neu-shadow-dark),
+    inset -8px -8px 16px var(--neu-shadow-light);
 }
 
 /* Tailwind theme integration */
 @theme inline {
+  --color-neu-base: var(--neu-base);
+  --color-neu-surface: var(--neu-surface);
+  --color-neu-text-primary: var(--neu-text-primary);
+  --color-neu-text-secondary: var(--neu-text-secondary);
+  --color-neu-accent: var(--neu-accent);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
@@ -83,273 +202,172 @@
   --color-ring: var(--ring);
 }
 
-/* Base styles */
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--neu-base);
+  color: var(--neu-text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
 }
 
-/* =================================================================
-   🎨 TYPOGRAPHY MINIMALIST SYSTEM
-   Clear hierarchy, single responsibility
-   ================================================================= */
+/* ============================================
+   NEUMORPHISM TYPOGRAPHY SYSTEM
+   Enhanced hierarchy for ERP readability
+   ============================================ */
 
-/* Display - Maximum impact */
-.text-display {
-  font-size: clamp(2rem, 6vw, 4rem);
-  font-weight: 800;
-  line-height: 0.9;
-  letter-spacing: -0.03em;
-  color: var(--foreground);
-}
-
-/* Headings - Clear hierarchy */
-.heading-1 {
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
+.neu-text-display {
+  font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 700;
   line-height: 1.1;
-  letter-spacing: -0.025em;
-  color: var(--foreground);
+  letter-spacing: -0.02em;
+  color: var(--neu-text-primary);
 }
 
-.heading-2 {
-  font-size: clamp(1.25rem, 3vw, 2rem);
+.neu-text-h1 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
   font-weight: 600;
   line-height: 1.2;
-  letter-spacing: -0.02em;
-  color: var(--foreground);
+  letter-spacing: -0.01em;
+  color: var(--neu-text-primary);
 }
 
-.heading-3 {
-  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+.neu-text-h2 {
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
   font-weight: 600;
   line-height: 1.3;
-  color: var(--foreground);
+  color: var(--neu-text-primary);
 }
 
-/* Body text - Readable */
-.text-body {
+.neu-text-h3 {
+  font-size: clamp(1.125rem, 2vw, 1.375rem);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--neu-text-primary);
+}
+
+.neu-text-body {
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--muted);
+  color: var(--neu-text-secondary);
 }
 
-.text-caption {
+.neu-text-caption {
   font-size: 0.875rem;
   font-weight: 400;
   line-height: 1.5;
-  color: var(--muted);
+  color: var(--neu-text-muted);
 }
 
-.text-label {
+.neu-text-label {
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--muted);
+  color: var(--neu-text-muted);
 }
 
-/* Accent text - Single accent color */
-.text-accent {
-  color: var(--accent);
+/* ============================================
+   NEUMORPHISM UTILITY CLASSES
+   Quick access to common neumorphic styles
+   ============================================ */
+
+/* Surface Utilities */
+.neu-surface {
+  background: var(--neu-surface);
 }
 
-/* =================================================================
-   🎯 COMPONENT SYSTEM - Minimal & Functional
-   Single responsibility, clear interface
-   ================================================================= */
-
-/* Cards - Architectural, not decorative */
-.card-minimal {
-  background: var(--card);
-  border: 1px solid var(--card-border);
-  border-radius: 0.75rem;
-  box-shadow: var(--shadow);
-  transition: all 0.15s ease;
+.neu-surface-hover {
+  background: var(--neu-surface-hover);
 }
 
-.card-minimal:hover {
-  box-shadow: var(--shadow-md);
+/* Shadow Utilities */
+.neu-convex-sm {
+  box-shadow: var(--neu-shadow-convex-sm);
+}
+
+.neu-convex-md {
+  box-shadow: var(--neu-shadow-convex-md);
+}
+
+.neu-convex-lg {
+  box-shadow: var(--neu-shadow-convex-lg);
+}
+
+.neu-convex-xl {
+  box-shadow: var(--neu-shadow-convex-xl);
+}
+
+.neu-concave-sm {
+  box-shadow: var(--neu-shadow-concave-sm);
+}
+
+.neu-concave-md {
+  box-shadow: var(--neu-shadow-concave-md);
+}
+
+.neu-concave-lg {
+  box-shadow: var(--neu-shadow-concave-lg);
+}
+
+/* Hover Effects */
+.neu-hover-lift {
+  transition: all 0.2s ease;
+}
+
+.neu-hover-lift:hover {
   transform: translateY(-1px);
+  box-shadow: var(--neu-shadow-convex-lg);
 }
 
-/* Buttons - Clear hierarchy */
-.btn-primary {
-  background: var(--button-primary);
-  color: white;
-  border: 1px solid var(--button-primary);
-  border-radius: 0.75rem;
-  padding: 0.75rem 1.5rem;
-  font-weight: 500;
-  transition: all 0.15s ease;
-  cursor: pointer;
+.neu-hover-press:active {
+  box-shadow: var(--neu-shadow-concave-sm);
+  transform: scale(0.98);
 }
 
-.btn-primary:hover {
-  background: var(--button-primary-hover);
-  border-color: var(--button-primary-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-secondary {
-  background: transparent;
-  color: var(--foreground);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  padding: 0.75rem 1.5rem;
-  font-weight: 500;
-  transition: all 0.15s ease;
-  cursor: pointer;
-}
-
-.btn-secondary:hover {
-  background: var(--muted);
-  opacity: 0.1;
-}
-
-/* Inputs - Clean & functional */
-.input-minimal {
-  background: var(--input);
-  border: 1px solid var(--input-border);
-  border-radius: 0.5rem;
-  color: var(--foreground);
-  padding: 0.75rem 1rem;
-  transition: all 0.15s ease;
-  width: 100%;
-}
-
-.input-minimal:focus {
-  outline: none;
-  border-color: var(--input-border-focus);
-  box-shadow: 0 0 0 3px rgb(239 68 68 / 0.1);
-}
-
-.input-minimal::placeholder {
-  color: var(--muted);
-}
-
-/* Tables - Data focused */
-.table-minimal {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--card);
-  border-radius: 0.75rem;
-  overflow: hidden;
-  border: 1px solid var(--card-border);
-}
-
-.table-minimal th {
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  background: var(--background);
-  border-bottom: 1px solid var(--card-border);
-  padding: 1rem;
-}
-
-.table-minimal td {
-  color: var(--foreground);
-  border-bottom: 1px solid var(--card-border);
-  padding: 0.75rem 1rem;
-}
-
-.table-minimal tbody tr:hover {
-  background: var(--background);
-}
-
-.table-minimal tbody tr:last-child td {
-  border-bottom: none;
-}
-
-/* Badges - Status */
-.badge-minimal {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  background: var(--background);
-  border: 1px solid var(--border);
-  color: var(--muted);
-}
-
-.badge-accent {
-  background: rgb(239 68 68 / 0.1);
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-/* =================================================================
-   🎨 ACCENT APPLICATION - Minimal coral usage
-   Only where it adds value, not decorative
-   ================================================================= */
-
-.sunset-accent {
-  color: var(--accent);
-}
-
-.sunset-border {
-  border-color: var(--accent);
-}
-
-.sunset-bg {
-  background: var(--accent);
-}
-
-.text-gradient-sunset {
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* =================================================================
-   ✨ TRANSITIONS & ANIMATIONS
-   Subtle, purposeful, performant
-   ================================================================= */
+/* ============================================
+   TRANSITIONS & ANIMATIONS
+   Smooth, purposeful, performant
+   ============================================ */
 
 * {
   transition-property: background-color, border-color, color, fill, stroke, box-shadow, transform;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+  transition-duration: 200ms;
 }
 
-/* Focus states */
+/* Focus states - Enhanced for accessibility */
 *:focus-visible {
-  outline: 2px solid var(--ring);
+  outline: 2px solid var(--neu-accent);
   outline-offset: 2px;
 }
 
-/* Hover states */
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
+/* ============================================
+   ACCESSIBILITY ENHANCEMENTS
+   High contrast, semantic, keyboard-friendly
+   ============================================ */
 
-/* =================================================================
-   ♿ ACCESSIBILITY ENHANCEMENTS
-   High contrast, semantic HTML, keyboard navigation
-   ================================================================= */
-
-/* High contrast mode */
+/* High contrast mode support */
 @media (prefers-contrast: more) {
   :root {
-    --border: var(--gray-400);
-    --muted: var(--gray-500);
+    --neu-text-primary: #000000;
+    --neu-text-secondary: #2A2D33;
+    --neu-border: #6B7280;
+  }
+  
+  .dark {
+    --neu-text-primary: #FFFFFF;
+    --neu-text-secondary: #F3F4F6;
+    --neu-border: #9CA3AF;
   }
 }
 
-/* Reduced motion */
+/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
@@ -358,21 +376,71 @@ body {
   }
 }
 
-/* Scrollbar - Minimal */
+/* ============================================
+   SCROLLBAR - Neumorphic Style
+   ============================================ */
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background);
+  background: var(--neu-surface);
+  box-shadow: var(--neu-shadow-concave-sm);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
+  background: var(--neu-surface-hover);
+  box-shadow: var(--neu-shadow-convex-sm);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--muted);
+  background: var(--neu-surface-active);
+  box-shadow: var(--neu-shadow-convex-md);
+}
+
+/* ============================================
+   LOADING & SKELETON STATES
+   ============================================ */
+
+@keyframes neu-pulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: var(--neu-shadow-convex-sm);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: var(--neu-shadow-concave-sm);
+  }
+}
+
+.neu-skeleton {
+  background: var(--neu-surface);
+  box-shadow: var(--neu-shadow-convex-sm);
+  animation: neu-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  border-radius: 0.75rem;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  
+  .neu-convex-sm,
+  .neu-convex-md,
+  .neu-convex-lg,
+  .neu-concave-sm,
+  .neu-concave-md,
+  .neu-concave-lg {
+    box-shadow: none !important;
+    border: 1px solid #E5E7EB;
+  }
 }

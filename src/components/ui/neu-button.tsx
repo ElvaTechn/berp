@@ -1,0 +1,112 @@
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
+
+/* =================================================================
+   NEU BUTTON - Neumorphic Button Component
+   
+   Variants:
+   - convex: Raised button that pops out (default)
+   - concave: Pressed button (for active states)
+   - accent: Primary action with accent color
+   - ghost: Transparent, minimal interaction
+   
+   Sizes:
+   - sm: Small (h-8, text-sm)
+   - md: Medium (h-10, text-sm) - default
+   - lg: Large (h-12, text-base)
+   - icon: Square icon button (h-10 w-10)
+   
+   Usage:
+   <NeuButton variant="convex" size="md">Click me</NeuButton>
+   <NeuButton variant="accent" loading>Saving...</NeuButton>
+   <NeuButton variant="ghost" size="icon"><Icon /></NeuButton>
+   ================================================================= */
+
+const buttonVariants = cva(
+  // Base styles
+  [
+    "inline-flex items-center justify-center",
+    "font-medium",
+    "transition-all duration-200",
+    "disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neu-accent)] focus-visible:ring-offset-2",
+  ],
+  {
+    variants: {
+      variant: {
+        convex: [
+          "neu-surface",
+          "neu-convex-sm",
+          "text-[var(--neu-text-primary)]",
+          "hover:neu-convex-md hover:-translate-y-0.5",
+          "active:neu-concave-sm active:translate-y-0",
+        ],
+        concave: [
+          "neu-surface",
+          "neu-concave-sm",
+          "text-[var(--neu-text-primary)]",
+          "active:neu-concave-md",
+        ],
+        accent: [
+          "bg-[var(--neu-accent)]",
+          "text-white",
+          "shadow-[4px_4px_8px_var(--neu-shadow-dark),-4px_-4px_8px_var(--neu-shadow-light)]",
+          "hover:shadow-[6px_6px_12px_var(--neu-shadow-dark),-6px_-6px_12px_var(--neu-shadow-light)]",
+          "hover:-translate-y-0.5",
+          "active:shadow-[2px_2px_4px_var(--neu-shadow-dark),-2px_-2px_4px_var(--neu-shadow-light)]",
+          "active:translate-y-0",
+        ],
+        ghost: [
+          "bg-transparent",
+          "shadow-none",
+          "text-[var(--neu-text-secondary)]",
+          "hover:bg-[var(--neu-surface-hover)]",
+          "active:bg-[var(--neu-surface-active)]",
+        ],
+      },
+      size: {
+        sm: "h-8 px-3 rounded-lg text-sm",
+        md: "h-10 px-5 rounded-xl text-sm",
+        lg: "h-12 px-7 rounded-2xl text-base",
+        icon: "h-10 w-10 rounded-xl",
+      },
+    },
+    defaultVariants: {
+      variant: "convex",
+      size: "md",
+    },
+  }
+);
+
+export interface NeuButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+  loading?: boolean;
+}
+
+const NeuButton = React.forwardRef<HTMLButtonElement, NeuButtonProps>(
+  ({ className, variant, size, asChild = false, loading = false, children, disabled, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button";
+    
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        disabled={disabled || loading}
+        {...props}
+      >
+        {loading && (
+          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+        )}
+        {children}
+      </Comp>
+    );
+  }
+);
+NeuButton.displayName = "NeuButton";
+
+export { NeuButton, buttonVariants };

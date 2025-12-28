@@ -1,7 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Edit2, Trash2, Users, ShieldCheck, UserX } from "lucide-react";
+import { Edit2, Trash2, Users, ShieldCheck, Loader2 } from "lucide-react";
+import { NeuCard, NeuCardHeader, NeuCardTitle, NeuCardContent } from "@/components/ui/neu-card";
+import { NeuBadge } from "@/components/ui/neu-badge";
+import { NeuButton } from "@/components/ui/neu-button";
 
 interface Employee {
   id: string;
@@ -29,25 +32,20 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
     ADMIN: "Administrador"
   };
 
-  const roleColors: Record<string, string> = {
-    GESTOR: "from-purple-500 to-purple-600",
-    VENDEDOR: "from-blue-500 to-blue-600",
-    ADMIN: "from-red-500 to-red-600"
+  const roleColors: Record<string, { status: 'info' | 'success' | 'error' }> = {
+    GESTOR: { status: 'info' },
+    VENDEDOR: { status: 'success' },
+    ADMIN: { status: 'error' }
   };
 
   if (loading) {
     return (
-      <div className="
-        rounded-2xl p-12
-        bg-white dark:bg-gradient-to-br dark:from-slate-900/50 dark:to-slate-900/20
-        border border-slate-200 dark:border-slate-800
-        shadow-sm dark:shadow-none
-        backdrop-blur-xl
-        text-center
-      ">
-        <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
-        <p className="text-slate-600 dark:text-slate-400 font-medium">Carregando funcionários...</p>
-      </div>
+      <NeuCard variant="convex" size="lg">
+        <div className="flex flex-col items-center justify-center py-16">
+          <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin mb-4" />
+          <p className="neu-text-body font-medium">Carregando funcionários...</p>
+        </div>
+      </NeuCard>
     );
   }
 
@@ -56,22 +54,20 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="
-          rounded-2xl p-12
-          bg-white dark:bg-gradient-to-br dark:from-slate-900/50 dark:to-slate-900/20
-          border border-slate-200 dark:border-slate-800
-          shadow-sm dark:shadow-none
-          backdrop-blur-xl
-          text-center
-        "
       >
-        <Users className="w-16 h-16 text-slate-400 dark:text-slate-600 mx-auto mb-4" />
-        <p className="text-xl font-bold text-slate-600 dark:text-slate-400 mb-2">
-          Nenhum funcionário encontrado
-        </p>
-        <p className="text-sm text-slate-500">
-          Clique em "Adicionar Funcionário" para começar
-        </p>
+        <NeuCard variant="convex" size="lg">
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-20 h-20 rounded-2xl neu-surface neu-convex-md flex items-center justify-center mb-6">
+              <Users className="w-10 h-10 text-[var(--neu-text-muted)]" />
+            </div>
+            <h3 className="neu-text-h3 mb-2">
+              Nenhum funcionário encontrado
+            </h3>
+            <p className="neu-text-body text-[var(--neu-text-muted)]">
+              Clique em "Adicionar Funcionário" para começar
+            </p>
+          </div>
+        </NeuCard>
       </motion.div>
     );
   }
@@ -81,168 +77,135 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
-      className="
-        relative overflow-hidden rounded-2xl
-        bg-white dark:bg-gradient-to-br dark:from-slate-900/50 dark:to-slate-900/20
-        border border-slate-200 dark:border-slate-800
-        shadow-sm dark:shadow-none
-        backdrop-blur-xl
-      "
     >
-      {/* Table Header */}
-      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
-        <h3 className="text-2xl font-black italic tracking-tighter text-slate-900 dark:text-white">
-          Lista de Funcionários
-        </h3>
-      </div>
+      <NeuCard variant="convex" size="md">
+        <NeuCardHeader>
+          <NeuCardTitle>Lista de Funcionários</NeuCardTitle>
+        </NeuCardHeader>
+        <NeuCardContent>
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[var(--neu-border-light)] bg-[var(--neu-base-light)]">
+                  <th className="px-6 py-4 text-left neu-text-label font-semibold">
+                    Nome
+                  </th>
+                  <th className="px-6 py-4 text-left neu-text-label font-semibold">
+                    Email
+                  </th>
+                  <th className="px-6 py-4 text-left neu-text-label font-semibold">
+                    Função
+                  </th>
+                  <th className="px-6 py-4 text-left neu-text-label font-semibold">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left neu-text-label font-semibold">
+                    Data de Criação
+                  </th>
+                  <th className="px-6 py-4 text-right neu-text-label font-semibold">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--neu-border-light)]">
+                {employees.map((employee, index) => (
+                  <motion.tr
+                    key={employee.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="hover:bg-[var(--neu-surface-hover)] transition-colors"
+                  >
+                    {/* Nome */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full neu-surface neu-convex-sm flex items-center justify-center">
+                          <span className="neu-text-body font-bold text-[var(--neu-accent)]">
+                            {employee.full_name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="neu-text-body font-semibold text-[var(--neu-text-primary)]">
+                            {employee.full_name}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-transparent">
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                Nome
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                Email
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                Função
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                Status
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                Data de Criação
-              </th>
-              <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {employees.map((employee, index) => (
-              <motion.tr
-                key={employee.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
-              >
-                {/* Nome */}
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="
-                      w-10 h-10 rounded-full
-                      bg-blue-100 dark:bg-gradient-to-br dark:from-blue-500/20 dark:to-purple-500/20
-                      border border-blue-200 dark:border-blue-500/30
-                      flex items-center justify-center
-                    ">
-                      <span className="text-sm font-black text-blue-600 dark:text-blue-400">
-                        {employee.full_name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">
-                        {employee.full_name}
+                    {/* Email */}
+                    <td className="px-6 py-4">
+                      <p className="neu-text-body text-[var(--neu-text-secondary)]">
+                        {employee.user?.email || employee.email || "—"}
                       </p>
-                    </div>
-                  </div>
-                </td>
+                    </td>
 
-                {/* Email */}
-                <td className="px-6 py-4">
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                    {employee.user?.email || employee.email || "—"}
-                  </p>
-                </td>
+                    {/* Função */}
+                    <td className="px-6 py-4">
+                      <NeuBadge 
+                        status={roleColors[employee.role]?.status || 'default'}
+                        variant="flat"
+                      >
+                        {employee.role === "GESTOR" && <ShieldCheck className="w-3 h-3 inline mr-1" />}
+                        {roleLabels[employee.role] || employee.role}
+                      </NeuBadge>
+                    </td>
 
-                {/* Função */}
-                <td className="px-6 py-4">
-                  <span className={`
-                    inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold
-                    bg-gradient-to-br ${roleColors[employee.role] || "from-slate-500 to-slate-600"}
-                    text-white
-                  `}>
-                    {employee.role === "GESTOR" && <ShieldCheck className="w-3 h-3" />}
-                    {roleLabels[employee.role] || employee.role}
-                  </span>
-                </td>
+                    {/* Status */}
+                    <td className="px-6 py-4">
+                      {employee.is_active ? (
+                        <NeuBadge status="success" variant="flat">
+                          <div className="w-2 h-2 rounded-full bg-[var(--neu-success)] inline-block mr-1.5" />
+                          Ativo
+                        </NeuBadge>
+                      ) : (
+                        <NeuBadge status="error" variant="flat">
+                          <div className="w-2 h-2 rounded-full bg-[var(--neu-error)] inline-block mr-1.5" />
+                          Inativo
+                        </NeuBadge>
+                      )}
+                    </td>
 
-                {/* Status */}
-                <td className="px-6 py-4">
-                  {employee.is_active ? (
-                    <span className="
-                      inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold
-                      bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400
-                    ">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                      Ativo
-                    </span>
-                  ) : (
-                    <span className="
-                      inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold
-                      bg-red-100 dark:bg-red-500/10 border border-red-300 dark:border-red-500/30 text-red-700 dark:text-red-400
-                    ">
-                      <div className="w-2 h-2 rounded-full bg-red-500" />
-                      Inativo
-                    </span>
-                  )}
-                </td>
+                    {/* Data */}
+                    <td className="px-6 py-4">
+                      <p className="neu-text-body text-[var(--neu-text-muted)]">
+                        {new Date(employee.created_at).toLocaleDateString('pt-MZ', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </p>
+                    </td>
 
-                {/* Data */}
-                <td className="px-6 py-4">
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                    {new Date(employee.created_at).toLocaleDateString('pt-MZ', {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                  </p>
-                </td>
+                    {/* Ações */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <NeuButton
+                          variant="convex"
+                          size="icon"
+                          onClick={() => onEdit(employee)}
+                          title="Editar"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </NeuButton>
 
-                {/* Ações */}
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-end gap-2">
-                    <motion.button
-                      onClick={() => onEdit(employee)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="
-                        p-2 rounded-lg
-                        bg-blue-100 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30
-                        text-blue-600 dark:text-blue-400
-                        hover:bg-blue-200 dark:hover:bg-blue-500/20
-                        transition-all
-                      "
-                      title="Editar"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </motion.button>
-
-                    <motion.button
-                      onClick={() => onDelete(employee.id)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="
-                        p-2 rounded-lg
-                        bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30
-                        text-red-600 dark:text-red-400
-                        hover:bg-red-200 dark:hover:bg-red-500/20
-                        transition-all
-                      "
-                      title="Remover"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </motion.button>
-                  </div>
-                </td>
-              </motion.tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                        <NeuButton
+                          variant="convex"
+                          size="icon"
+                          onClick={() => onDelete(employee.id)}
+                          title="Remover"
+                        >
+                          <Trash2 className="w-4 h-4 text-[var(--neu-error)]" />
+                        </NeuButton>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </NeuCardContent>
+      </NeuCard>
     </motion.div>
   );
 }

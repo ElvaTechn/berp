@@ -17,6 +17,10 @@ import { toast } from 'sonner';
 import ProductTable from '@/components/inventory/ProductTable';
 import AddProductModal from '@/components/inventory/AddProductModal';
 import EditProductModal from '@/components/inventory/EditProductModal';
+import { NeuButton } from '@/components/ui/neu-button';
+import { NeuInput } from '@/components/ui/neu-input';
+import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
+import { NeuSelect, NeuSelectTrigger, NeuSelectValue, NeuSelectContent, NeuSelectItem } from '@/components/ui/neu-select';
 
 interface Product {
   id: string;
@@ -62,6 +66,7 @@ export default function InventoryPage() {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterStock, setFilterStock] = useState<string>('all');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   // Fetch products
@@ -69,14 +74,24 @@ export default function InventoryPage() {
     setIsLoading(true);
     try {
       const response = await fetch('/api/products');
-      if (!response.ok) throw new Error('Erro ao carregar produtos');
+      
+      if (!response.ok) {
+        // Erro real (401, 403, 500, etc.)
+        const errorData = await response.json().catch(() => ({ error: 'Erro ao conectar ao servidor' }));
+        throw new Error(errorData.error || `Erro ${response.status}: Falha ao carregar produtos`);
+      }
       
       const data = await response.json();
-      setProducts(data.products || []);
-      calculateStats(data.products || []);
+      const productsList = data.products || [];
+      setProducts(productsList);
+      calculateStats(productsList);
     } catch (error) {
-      toast.error('Erro ao carregar produtos');
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao carregar produtos';
+      toast.error(errorMessage);
       console.error(error);
+      // Em caso de erro, limpar a lista
+      setProducts([]);
+      calculateStats([]);
     } finally {
       setIsLoading(false);
     }
@@ -156,169 +171,149 @@ export default function InventoryPage() {
   ).map((c) => JSON.parse(c));
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row items-start sm:items-center gap-3"
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
-        <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-500/30 flex-shrink-0">
-          <Package className="w-5 h-5 sm:w-6 sm:h-6 text-black dark:text-white" />
-        </div>
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-black dark:text-white tracking-tight italic">
-            Gestão de <span className="text-orange-500">Inventário</span>
+          <h1 className="neu-text-h1">
+            Inventário
           </h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 font-medium">
+          <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
             Controle total do seu stock
           </p>
         </div>
+        
+        <NeuButton
+          onClick={() => setShowAddModal(true)}
+          variant="accent"
+          size="md"
+        >
+          <Plus className="w-5 h-5" />
+          <span>Adicionar Produto</span>
+        </NeuButton>
       </motion.div>
 
-      {/* Statistics Cards - Mobile: 1 col, Tablet: 2 cols, Desktop: 4 cols */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      {/* Statistics Cards */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      >
         {/* Total Products */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-600/10 to-orange-600/5 border border-orange-600/20 p-6 backdrop-blur-sm"
-        >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-600/10 rounded-full blur-3xl" />
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-orange-600/20">
-                <Package className="w-6 h-6 text-orange-400" />
+        <NeuCard variant="convex" size="sm">
+          <NeuCardContent className="p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                <Package className="w-5 h-5 text-[var(--neu-accent)]" />
               </div>
-              <span className="text-xs font-bold text-orange-400 bg-orange-600/20 px-2 py-1 rounded-full">
-                TOTAL
-              </span>
+              <p className="neu-text-label text-[var(--neu-text-muted)]">
+                Total
+              </p>
             </div>
-            <p className="text-4xl font-black text-black dark:text-white mb-1">{stats.total}</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+            <p className="neu-text-h2">{stats.total}</p>
+            <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
               Produtos cadastrados
             </p>
-          </div>
-        </motion.div>
+          </NeuCardContent>
+        </NeuCard>
 
         {/* Active Products */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-600/10 to-green-600/5 border border-green-600/20 p-6 backdrop-blur-sm"
-        >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-green-600/10 rounded-full blur-3xl" />
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-green-600/20">
-                <TrendingUp className="w-6 h-6 text-green-400" />
+        <NeuCard variant="convex" size="sm">
+          <NeuCardContent className="p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-[var(--neu-success)]" />
               </div>
-              <span className="text-xs font-bold text-green-400 bg-green-600/20 px-2 py-1 rounded-full">
-                ATIVOS
-              </span>
+              <p className="neu-text-label text-[var(--neu-text-muted)]">
+                Ativos
+              </p>
             </div>
-            <p className="text-4xl font-black text-black dark:text-white mb-1">{stats.active}</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Produtos ativos</p>
-          </div>
-        </motion.div>
+            <p className="neu-text-h2 text-[var(--neu-success)]">{stats.active}</p>
+            <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+              Produtos ativos
+            </p>
+          </NeuCardContent>
+        </NeuCard>
 
         {/* Low Stock */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-600/10 to-red-600/5 border border-red-600/20 p-6 backdrop-blur-sm"
-        >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/10 rounded-full blur-3xl" />
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-red-600/20">
-                <AlertTriangle className="w-6 h-6 text-red-400" />
+        <NeuCard variant="convex" size="sm">
+          <NeuCardContent className="p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-[var(--neu-error)]" />
               </div>
-              <span className="text-xs font-bold text-red-400 bg-red-600/20 px-2 py-1 rounded-full">
-                ALERTA
-              </span>
+              <p className="neu-text-label text-[var(--neu-text-muted)]">
+                Alerta
+              </p>
             </div>
-            <p className="text-4xl font-black text-black dark:text-white mb-1">
-              {stats.lowStock}
+            <p className="neu-text-h2 text-[var(--neu-error)]">{stats.lowStock}</p>
+            <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+              Stock baixo
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Stock baixo</p>
-          </div>
-        </motion.div>
+          </NeuCardContent>
+        </NeuCard>
 
         {/* Total Value */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600/10 to-purple-600/5 border border-purple-600/20 p-6 backdrop-blur-sm"
-        >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600/10 rounded-full blur-3xl" />
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-purple-600/20">
-                <DollarSign className="w-6 h-6 text-purple-400" />
+        <NeuCard variant="convex" size="sm">
+          <NeuCardContent className="p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-[var(--neu-success)]" />
               </div>
-              <span className="text-xs font-bold text-purple-400 bg-purple-600/20 px-2 py-1 rounded-full">
-                VALOR
-              </span>
+              <p className="neu-text-label text-[var(--neu-text-muted)]">
+                Valor
+              </p>
             </div>
-            <p className="text-4xl font-black text-black dark:text-white mb-1">
+            <p className="neu-text-h2 text-[var(--neu-success)]">
               {stats.totalValue.toLocaleString('pt-MZ', {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
               })}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">MT em stock</p>
-          </div>
-        </motion.div>
-      </div>
+            <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+              MT em stock
+            </p>
+          </NeuCardContent>
+        </NeuCard>
+      </motion.div>
 
-      {/* Filters and Actions */}
+      {/* Filters */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="flex flex-col gap-3 sm:gap-4"
+        transition={{ delay: 0.2 }}
+        className="flex flex-col sm:flex-row gap-3"
       >
         {/* Search */}
-        <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-          <input
+        <div className="flex-1">
+          <NeuInput
             type="text"
             placeholder="Buscar por nome, código de barras ou SKU..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-12 sm:h-14 pl-12 pr-4 bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-black dark:text-white text-sm sm:text-base placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
+            icon={<Search className="w-5 h-5" />}
+            variant="concave"
+            size="md"
           />
         </div>
 
-        {/* Filters and Action Button */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <select
-            value={filterStock}
-            onChange={(e) => setFilterStock(e.target.value)}
-            className="h-12 sm:h-14 px-4 bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-black dark:text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all flex-1 sm:flex-initial"
-          >
-            <option value="all">Todos os stocks</option>
-            <option value="ok">Stock OK</option>
-            <option value="low">Stock Baixo</option>
-            <option value="critical">Esgotado</option>
-          </select>
-
-          {/* Add Product Button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setShowAddModal(true)}
-            className="h-12 sm:h-14 px-6 bg-rose-400 rounded-2xl text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-rose-400/30 hover:shadow-rose-400/50 transition-all"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Adicionar Produto</span>
-          </motion.button>
-        </div>
+        {/* Stock Filter */}
+        <NeuSelect value={filterStock} onValueChange={setFilterStock}>
+          <NeuSelectTrigger variant="concave" size="md" className="w-full sm:w-[200px]">
+            <NeuSelectValue placeholder="Filtrar stock..." />
+          </NeuSelectTrigger>
+          <NeuSelectContent>
+            <NeuSelectItem value="all">Todos os stocks</NeuSelectItem>
+            <NeuSelectItem value="ok">Stock OK</NeuSelectItem>
+            <NeuSelectItem value="low">Stock Baixo</NeuSelectItem>
+            <NeuSelectItem value="critical">Esgotado</NeuSelectItem>
+          </NeuSelectContent>
+        </NeuSelect>
       </motion.div>
 
       {/* Products Table */}
@@ -334,25 +329,31 @@ export default function InventoryPage() {
         ) : (
           <ProductTable
             products={filteredProducts}
-            onEdit={setEditingProduct}
+            onEdit={(product) => {
+              setEditingProduct(product);
+              setShowEditModal(true);
+            }}
             onDelete={handleProductDeleted}
           />
         )}
       </motion.div>
 
       {/* Modals */}
-      {showAddModal && (
-        <AddProductModal
-          onClose={() => setShowAddModal(false)}
-          onSuccess={handleProductAdded}
-        />
-      )}
+      <AddProductModal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
+        onSuccess={fetchProducts}
+      />
 
       {editingProduct && (
         <EditProductModal
           product={editingProduct}
-          onClose={() => setEditingProduct(null)}
-          onSuccess={handleProductUpdated}
+          open={showEditModal}
+          onOpenChange={(open) => {
+            setShowEditModal(open);
+            if (!open) setEditingProduct(null);
+          }}
+          onSuccess={fetchProducts}
         />
       )}
     </div>

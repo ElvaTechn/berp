@@ -146,11 +146,6 @@ export default function Sidebar({ user, company }: SidebarProps) {
   const NavLink = ({ item }: { item: NavItem }) => {
     const isActive = pathname === item.href;
     const Icon = item.icon;
-    
-    // Aplicar tema "Onyx & Sunset" (Laranja/Coral) para Reservas
-    const isReservationsLink = item.href === '/reservations';
-    
-    const activeColors = 'bg-rose-400 dark:bg-rose-400 text-white shadow-lg shadow-rose-400/30';
 
     return (
       <Link
@@ -162,35 +157,31 @@ export default function Sidebar({ user, company }: SidebarProps) {
           whileHover={{ x: 4 }}
           whileTap={{ scale: 0.98 }}
           className={`
-            relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
+            relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
             ${
               isActive
-                ? activeColors
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+                ? 'neu-concave-sm text-[var(--neu-accent)] font-semibold'
+                : 'text-[var(--neu-text-secondary)] hover:text-[var(--neu-text-primary)] hover:bg-[var(--neu-surface-hover)]'
             }
           `}
         >
-          {/* Barra lateral esquerda no item ativo */}
+          {/* Active Indicator */}
           {isActive && (
             <motion.div
               layoutId="activeIndicator"
-              className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full"
+              className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--neu-accent)] rounded-r-full neu-convex-sm"
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             />
           )}
 
           <Icon className="w-5 h-5 flex-shrink-0" />
-          <span
-            className={`font-bold tracking-tight ${
-              isActive ? 'italic' : ''
-            }`}
-          >
+          <span className={`font-medium tracking-tight ${isActive ? 'font-semibold' : ''}`}>
             {item.label}
           </span>
 
           {/* Badge (se houver) */}
           {item.badge && (
-            <span className="ml-auto bg-red-500 text-white text-xs font-black px-2 py-0.5 rounded-full">
+            <span className="ml-auto bg-[var(--neu-accent)] text-white text-xs font-bold px-2 py-0.5 rounded-full neu-convex-sm">
               {item.badge}
             </span>
           )}
@@ -202,18 +193,20 @@ export default function Sidebar({ user, company }: SidebarProps) {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       {/* Header - Logo e Empresa */}
-      <div className="p-6 border-b border-slate-200 dark:border-white/5">
+      <div className="p-6 border-b border-[var(--neu-border)]">
         <Link href="/dashboard" onClick={() => setIsOpen(false)}>
           <motion.div
             whileHover={{ scale: 1.02 }}
             className="flex items-center gap-3 cursor-pointer"
           >
-            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-rose-400 shadow-lg shadow-rose-400/30">
+            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-[var(--neu-accent)] neu-convex-md">
               <Store className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="heading-1 text-slate-900 dark:text-white tracking-tight italic whitespace-nowrap">BIZ<span className="sunset-accent">360</span></h2>
-              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium truncate">
+              <h2 className="neu-text-h2 text-[var(--neu-text-primary)] tracking-tight font-bold whitespace-nowrap">
+                BIZ<span className="text-[var(--neu-accent)]">360</span>
+              </h2>
+              <p className="neu-text-caption truncate">
                 {company.name}
               </p>
             </div>
@@ -223,51 +216,51 @@ export default function Sidebar({ user, company }: SidebarProps) {
 
       {/* Navigation Links */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {/* Menu para GESTOR e VENDEDOR - ADMIN usa sidebar própria em /admin */}
         {navItems.map((item) => (
           <NavLink key={item.href} item={item} />
         ))}
       </nav>
 
       {/* User Profile */}
-      <div className="p-4 border-t border-slate-200 dark:border-white/5">
-        <div className="mb-3 p-3 rounded-xl bg-slate-100 dark:bg-white/5 backdrop-blur-sm">
+      <div className="p-4 border-t border-[var(--neu-border)]">
+        {/* User Info Card */}
+        <div className="mb-3 p-3 rounded-xl neu-convex-sm">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-rose-400 text-white font-black text-sm">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--neu-accent)] text-white font-bold text-sm neu-convex-sm">
               {user.full_name.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+              <p className="neu-text-body font-semibold text-[var(--neu-text-primary)] truncate">
                 {user.full_name}
               </p>
-              <p className="text-xs text-slate-600 dark:text-slate-400 truncate">{user.email}</p>
+              <p className="neu-text-caption truncate">{user.email}</p>
             </div>
           </div>
           
           {/* Role Badge */}
           <div className="mt-2 flex items-center gap-2">
-            <div className="flex-1 h-px bg-slate-300 dark:bg-white/5" />
+            <div className="flex-1 h-px bg-[var(--neu-border-light)]" />
             <span
               className={`
-                text-[10px] font-black uppercase px-2 py-1 rounded-md
+                neu-text-label font-bold px-2 py-1 rounded-md neu-convex-sm
                 ${
                   user.role === 'ADMIN'
-                    ? 'bg-red-500/20 text-red-400'
+                    ? 'bg-[var(--neu-error-light)] text-[var(--neu-error)]'
                     : user.role === 'GESTOR'
-                    ? 'bg-orange-500/20 text-orange-400'
-                    : 'bg-amber-500/20 text-amber-400'
+                    ? 'bg-[var(--neu-accent-hover)] text-[var(--neu-accent)]'
+                    : 'bg-[var(--neu-warning-light)] text-[var(--neu-warning)]'
                 }
               `}
             >
               {user.role}
             </span>
-            <div className="flex-1 h-px bg-slate-300 dark:bg-white/5" />
+            <div className="flex-1 h-px bg-[var(--neu-border-light)]" />
           </div>
         </div>
 
         {/* Theme Toggle */}
         <div className="mb-3 flex items-center justify-between px-2">
-          <span className="text-xs font-bold text-slate-600 dark:text-slate-500 uppercase tracking-wide">
+          <span className="neu-text-label font-semibold text-[var(--neu-text-muted)]">
             Tema
           </span>
           <ThemeToggleSimple />
@@ -275,11 +268,11 @@ export default function Sidebar({ user, company }: SidebarProps) {
 
         {/* Logout Button */}
         <motion.button
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ scale: 1.02, y: -1 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleLogout}
           disabled={isLoggingOut}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-600/10 hover:bg-red-600/20 text-red-400 hover:text-red-300 transition-all duration-300 font-bold border border-red-600/20"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[var(--neu-error-light)] text-[var(--neu-error)] transition-all duration-200 font-semibold neu-convex-sm hover:neu-convex-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoggingOut ? (
             <>
@@ -308,7 +301,7 @@ export default function Sidebar({ user, company }: SidebarProps) {
       <motion.button
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 flex items-center justify-center w-12 h-12 rounded-2xl bg-white dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-2xl"
+        className="lg:hidden fixed top-4 left-4 z-50 flex items-center justify-center w-12 h-12 rounded-2xl neu-surface neu-convex-md text-[var(--neu-text-primary)]"
       >
         <AnimatePresence mode="wait">
           {isOpen ? (
@@ -336,7 +329,7 @@ export default function Sidebar({ user, company }: SidebarProps) {
       </motion.button>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-72 h-screen bg-white dark:bg-[#050505] border-r border-slate-200 dark:border-white/5 fixed left-0 top-0 z-40 shadow-xl">
+      <aside className="hidden lg:flex flex-col w-72 h-screen bg-[var(--neu-base)] border-r border-[var(--neu-border)] fixed left-0 top-0 z-40">
         <SidebarContent />
       </aside>
 
@@ -359,7 +352,7 @@ export default function Sidebar({ user, company }: SidebarProps) {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="lg:hidden fixed left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white dark:bg-[#050505] border-r border-slate-200 dark:border-white/5 z-50 flex flex-col"
+              className="lg:hidden fixed left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-[var(--neu-base)] border-r border-[var(--neu-border)] z-50 flex flex-col"
             >
               <SidebarContent />
             </motion.aside>

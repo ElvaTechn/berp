@@ -115,13 +115,19 @@ export const apiClient = {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
             });
-            if (!res.ok) throw new Error('Failed to create sale');
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ error: 'Erro ao conectar ao servidor' }));
+                throw new Error(errorData.error || `Erro ${res.status}: Falha ao criar venda`);
+            }
             return res.json();
         },
         list: async (filters?: Record<string, string>): Promise<Sale[]> => {
             const params = new URLSearchParams(filters);
             const res = await fetch(`/api/sales?${params}`);
-            if (!res.ok) throw new Error('Failed to fetch sales');
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ error: 'Erro ao conectar ao servidor' }));
+                throw new Error(errorData.error || `Erro ${res.status}: Falha ao carregar vendas`);
+            }
             return res.json();
         }
     },

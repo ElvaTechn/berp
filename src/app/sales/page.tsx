@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { NeuButton } from '@/components/ui/neu-button';
+import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
 
 interface SaleItem {
   id: string;
@@ -66,13 +68,22 @@ export default function SalesPage() {
     setIsLoading(true);
     try {
       const response = await fetch('/api/sales');
-      if (!response.ok) throw new Error('Erro ao carregar vendas');
+      
+      if (!response.ok) {
+        // Erro real (401, 403, 500, etc.)
+        const errorData = await response.json().catch(() => ({ error: 'Erro ao conectar ao servidor' }));
+        throw new Error(errorData.error || `Erro ${response.status}: Falha ao carregar vendas`);
+      }
 
       const data = await response.json();
-      setSales(data.sales || []);
+      const salesList = data.sales || [];
+      setSales(salesList);
     } catch (error) {
-      toast.error('Erro ao carregar vendas');
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao carregar vendas';
+      toast.error(errorMessage);
       console.error(error);
+      // Em caso de erro, limpar a lista
+      setSales([]);
     } finally {
       setIsLoading(false);
     }
@@ -112,303 +123,294 @@ export default function SalesPage() {
   const todayTotal = todaySales.reduce((sum, sale) => sum + Number(sale.total), 0);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-gradient-to-br dark:from-[#0a0a0a] dark:via-[#0f0f0f] dark:to-[#0a0a0a]">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
-              <Receipt className="w-6 h-6 text-slate-900 dark:text-white" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-black text-slate-900 dark:text-white italic tracking-tight">
-                Histórico de <span className="text-blue-500">Transações</span>
-              </h1>
-              <p className="text-slate-600 dark:text-slate-400 font-medium">
-                Todas as vendas realizadas
-              </p>
-            </div>
+    <div className="min-h-screen bg-[var(--neu-base)] p-4 md:p-6">
+      <div className="max-w-[1800px] mx-auto space-y-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        >
+          <div>
+            <h1 className="neu-text-h1">
+              Histórico de Vendas
+            </h1>
+            <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+              Todas as transações realizadas
+            </p>
           </div>
 
           {/* Nova Venda Button */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <NeuButton
             onClick={() => router.push('/sales/pos')}
-            className="h-14 px-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl text-white font-black text-lg flex items-center gap-3 shadow-2xl shadow-green-500/50 hover:shadow-green-500/70 transition-all"
+            variant="accent"
+            size="lg"
           >
             <Plus className="w-6 h-6" />
             NOVA VENDA (PDV)
-          </motion.button>
-        </div>
+          </NeuButton>
+        </motion.div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+        >
           {/* Total Vendas */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
-            className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600/10 to-blue-600/5 border border-blue-600/20 p-6 backdrop-blur-sm"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 rounded-full blur-3xl" />
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-600/20">
-                  <ShoppingCart className="w-6 h-6 text-blue-400" />
+          <NeuCard variant="convex" size="sm">
+            <NeuCardContent className="p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                  <Receipt className="w-5 h-5 text-[var(--neu-accent)]" />
                 </div>
-                <span className="text-xs font-bold text-blue-400 bg-blue-600/20 px-2 py-1 rounded-full">
-                  TOTAL
-                </span>
+                <p className="neu-text-label text-[var(--neu-text-muted)]">
+                  Total Vendas
+                </p>
               </div>
-              <p className="text-4xl font-black text-slate-900 dark:text-white mb-1">{sales.length}</p>
-              <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Vendas realizadas</p>
-            </div>
-          </motion.div>
+              <p className="neu-text-h2">{sales.length}</p>
+              <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+                Vendas realizadas
+              </p>
+            </NeuCardContent>
+          </NeuCard>
 
           {/* Vendas Hoje */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-600/10 to-green-600/5 border border-green-600/20 p-6 backdrop-blur-sm"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-green-600/10 rounded-full blur-3xl" />
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-green-600/20">
-                  <Calendar className="w-6 h-6 text-green-400" />
+          <NeuCard variant="convex" size="sm">
+            <NeuCardContent className="p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-[var(--neu-success)]" />
                 </div>
-                <span className="text-xs font-bold text-green-400 bg-green-600/20 px-2 py-1 rounded-full">
-                  HOJE
-                </span>
+                <p className="neu-text-label text-[var(--neu-text-muted)]">
+                  Vendas Hoje
+                </p>
               </div>
-              <p className="text-4xl font-black text-slate-900 dark:text-white mb-1">{todaySales.length}</p>
-              <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Vendas de hoje</p>
-            </div>
-          </motion.div>
+              <p className="neu-text-h2 text-[var(--neu-success)]">{todaySales.length}</p>
+              <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+                Vendas de hoje
+              </p>
+            </NeuCardContent>
+          </NeuCard>
 
-          {/* Receita Total */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-            className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600/10 to-purple-600/5 border border-purple-600/20 p-6 backdrop-blur-sm"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600/10 rounded-full blur-3xl" />
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-purple-600/20">
-                  <TrendingUp className="w-6 h-6 text-purple-400" />
+          {/* Receita Hoje */}
+          <NeuCard variant="convex" size="sm">
+            <NeuCardContent className="p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-[var(--neu-success)]" />
                 </div>
-                <span className="text-xs font-bold text-purple-400 bg-purple-600/20 px-2 py-1 rounded-full">
-                  RECEITA HOJE
-                </span>
+                <p className="neu-text-label text-[var(--neu-text-muted)]">
+                  Receita Hoje
+                </p>
               </div>
-              <p className="text-4xl font-black text-slate-900 dark:text-white mb-1">
+              <p className="neu-text-h2 text-[var(--neu-success)]">
                 {todayTotal.toLocaleString('pt-MZ', {
                   minimumFractionDigits: 0,
                   maximumFractionDigits: 0,
                 })}
               </p>
-              <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">MT hoje</p>
-            </div>
-          </motion.div>
-        </div>
-      </motion.div>
+              <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+                MT hoje
+              </p>
+            </NeuCardContent>
+          </NeuCard>
+        </motion.div>
 
-      {/* Sales Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden"
-      >
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
-          </div>
-        ) : sales.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64">
-            <Package className="w-16 h-16 text-slate-600 mb-4" />
-            <p className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-              Nenhuma venda realizada
-            </p>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              As vendas aparecerão aqui quando forem finalizadas
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-white/10">
-                  <th className="px-6 py-4 text-left text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    ID
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Data/Hora
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Vendedor
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Pagamento
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Total (MT)
-                  </th>
-                  <th className="px-6 py-4 text-center text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {sales.map((sale, index) => (
-                  <React.Fragment key={sale.id}>
-                    <motion.tr
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="border-b border-slate-200 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/5 transition-all cursor-pointer"
-                      onClick={() => toggleExpand(sale.id)}
-                    >
-                      <td className="px-6 py-4">
-                        <span className="text-xs font-mono text-slate-600 dark:text-slate-400">
-                          {sale.id.slice(0, 8)}...
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-blue-400" />
-                          <span className="text-sm text-slate-900 dark:text-white font-medium">
-                            {formatDate(sale.created_at)}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-green-400" />
-                          <span className="text-sm text-slate-900 dark:text-white font-medium">
-                            {sale.employee.full_name}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <CreditCard className="w-4 h-4 text-purple-400" />
-                          <span className="text-sm text-slate-900 dark:text-white font-medium">
-                            {paymentMethodLabels[sale.payment_method] ||
-                              sale.payment_method}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <DollarSign className="w-4 h-4 text-green-400" />
-                          <span className="text-lg font-black text-green-400">
-                            {Number(sale.total).toLocaleString('pt-MZ', {
-                              minimumFractionDigits: 2,
-                            })}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-center gap-2">
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.open(`/api/sales/${sale.id}/receipt`, '_blank');
-                            }}
-                            className="p-2 rounded-xl bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition-all"
-                            title="Imprimir Recibo"
+        {/* Sales Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <NeuCard variant="concave" size="md">
+            <NeuCardContent className="p-0">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-64">
+                  <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin" />
+                </div>
+              ) : sales.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-64 p-8">
+                  <div className="w-20 h-20 rounded-full neu-surface neu-convex-md flex items-center justify-center mb-6">
+                    <Receipt className="w-10 h-10 text-[var(--neu-accent)]" />
+                  </div>
+                  <h3 className="neu-text-h2 mb-3">
+                    Nenhuma venda realizada
+                  </h3>
+                  <p className="neu-text-body text-[var(--neu-text-muted)] text-center max-w-md">
+                    As vendas aparecerão aqui quando forem finalizadas no PDV
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-[var(--neu-base)]">
+                      <tr className="border-b border-[var(--neu-border)]">
+                        <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
+                          ID
+                        </th>
+                        <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
+                          Data/Hora
+                        </th>
+                        <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
+                          Vendedor
+                        </th>
+                        <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
+                          Pagamento
+                        </th>
+                        <th className="px-6 py-4 text-right neu-text-label text-[var(--neu-text-muted)]">
+                          Total (MT)
+                        </th>
+                        <th className="px-6 py-4 text-center neu-text-label text-[var(--neu-text-muted)]">
+                          Ações
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sales.map((sale, index) => (
+                        <React.Fragment key={sale.id}>
+                          <motion.tr
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="border-b border-[var(--neu-border)] hover:bg-[var(--neu-surface-hover)] transition-all cursor-pointer"
+                            onClick={() => toggleExpand(sale.id)}
                           >
-                            <Receipt className="w-4 h-4" />
-                          </motion.button>
-                          <motion.button
-                            animate={{ rotate: expandedSaleId === sale.id ? 180 : 0 }}
-                            className="p-2 rounded-xl bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-white/10 transition-all"
-                          >
-                            {expandedSaleId === sale.id ? (
-                              <ChevronUp className="w-4 h-4" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4" />
-                            )}
-                          </motion.button>
-                        </div>
-                      </td>
-                    </motion.tr>
-
-                    {/* Expanded Sale Items */}
-                    <AnimatePresence>
-                      {expandedSaleId === sale.id && (
-                        <motion.tr
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                        >
-                          <td colSpan={6} className="px-6 py-4 bg-white/5">
-                            <div className="space-y-2">
-                              <p className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase mb-3">
-                                Items da Venda
-                              </p>
-                              {sale.sale_items.map((item) => (
-                                <div
-                                  key={item.id}
-                                  className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-slate-200 dark:border-white/10"
+                            <td className="px-6 py-4">
+                              <span className="neu-text-caption font-mono text-[var(--neu-text-muted)]">
+                                {sale.id.slice(0, 8)}...
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <Calendar className="w-4 h-4 text-[var(--neu-accent)]" />
+                                <span className="neu-text-body">
+                                  {formatDate(sale.created_at)}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <User className="w-4 h-4 text-[var(--neu-success)]" />
+                                <span className="neu-text-body">
+                                  {sale.employee.full_name}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <CreditCard className="w-4 h-4 text-[var(--neu-accent)]" />
+                                <span className="neu-text-body">
+                                  {paymentMethodLabels[sale.payment_method] ||
+                                    sale.payment_method}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <DollarSign className="w-4 h-4 text-[var(--neu-success)]" />
+                                <span className="neu-text-h3 text-[var(--neu-success)]">
+                                  {Number(sale.total).toLocaleString('pt-MZ', {
+                                    minimumFractionDigits: 2,
+                                  })}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center justify-center gap-2">
+                                <NeuButton
+                                  variant="convex"
+                                  size="icon"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open(`/api/sales/${sale.id}/receipt`, '_blank');
+                                  }}
+                                  title="Imprimir Recibo"
                                 >
-                                  <div className="flex items-center gap-3">
-                                    <div
-                                      className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-900 dark:text-white text-xs font-black"
-                                      style={{
-                                        backgroundColor: item.product.category.color,
-                                      }}
-                                    >
-                                      {item.product.name.charAt(0)}
-                                    </div>
-                                    <div>
-                                      <p className="text-sm font-bold text-slate-900 dark:text-white">
-                                        {item.product.name}
-                                      </p>
-                                      <p className="text-xs text-slate-600 dark:text-slate-400">
-                                        {item.quantity}x{' '}
-                                        {Number(item.unit_price).toLocaleString('pt-MZ', {
-                                          minimumFractionDigits: 2,
-                                        })}{' '}
-                                        MT
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <p className="text-lg font-black text-slate-900 dark:text-white">
-                                      {(
-                                        Number(item.unit_price) * item.quantity
-                                      ).toLocaleString('pt-MZ', {
-                                        minimumFractionDigits: 2,
-                                      })}
+                                  <Receipt className="w-4 h-4" />
+                                </NeuButton>
+                                <motion.button
+                                  animate={{ rotate: expandedSaleId === sale.id ? 180 : 0 }}
+                                  className="p-2 rounded-xl neu-surface neu-convex-xs hover:neu-convex-sm transition-all"
+                                >
+                                  {expandedSaleId === sale.id ? (
+                                    <ChevronUp className="w-4 h-4 text-[var(--neu-text-primary)]" />
+                                  ) : (
+                                    <ChevronDown className="w-4 h-4 text-[var(--neu-text-primary)]" />
+                                  )}
+                                </motion.button>
+                              </div>
+                            </td>
+                          </motion.tr>
+
+                          {/* Expanded Sale Items */}
+                          <AnimatePresence>
+                            {expandedSaleId === sale.id && (
+                              <motion.tr
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                              >
+                                <td colSpan={6} className="px-6 py-4 bg-[var(--neu-base)]">
+                                  <div className="space-y-2">
+                                    <p className="neu-text-label text-[var(--neu-text-muted)] mb-3">
+                                      Items da Venda
                                     </p>
-                                    <p className="text-xs text-slate-500">MT</p>
+                                    {sale.sale_items.map((item) => (
+                                      <div
+                                        key={item.id}
+                                        className="flex items-center justify-between p-3 rounded-xl neu-surface neu-concave-sm border border-[var(--neu-border)]"
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <div
+                                            className="w-8 h-8 rounded-lg neu-convex-xs flex items-center justify-center text-white text-xs font-black"
+                                            style={{
+                                              backgroundColor: item.product.category.color,
+                                            }}
+                                          >
+                                            {item.product.name.charAt(0)}
+                                          </div>
+                                          <div>
+                                            <p className="neu-text-body font-semibold">
+                                              {item.product.name}
+                                            </p>
+                                            <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                                              {item.quantity}x{' '}
+                                              {Number(item.unit_price).toLocaleString('pt-MZ', {
+                                                minimumFractionDigits: 2,
+                                              })}{' '}
+                                              MT
+                                            </p>
+                                          </div>
+                                        </div>
+                                        <div className="text-right">
+                                          <p className="neu-text-h3">
+                                            {(
+                                              Number(item.unit_price) * item.quantity
+                                            ).toLocaleString('pt-MZ', {
+                                              minimumFractionDigits: 2,
+                                            })}
+                                          </p>
+                                          <p className="neu-text-caption text-[var(--neu-text-muted)]">MT</p>
+                                        </div>
+                                      </div>
+                                    ))}
                                   </div>
-                                </div>
-                              ))}
-                            </div>
-                          </td>
-                        </motion.tr>
-                      )}
-                    </AnimatePresence>
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </motion.div>
+                                </td>
+                              </motion.tr>
+                            )}
+                          </AnimatePresence>
+                        </React.Fragment>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </NeuCardContent>
+          </NeuCard>
+        </motion.div>
+      </div>
     </div>
   );
 }

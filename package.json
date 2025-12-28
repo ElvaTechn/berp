@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed-clean.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.1",

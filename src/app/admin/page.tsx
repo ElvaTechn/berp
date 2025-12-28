@@ -84,13 +84,13 @@ export default function AdminPage() {
           </p>
         </div>
         
-        <Link
-          href="/admin/companies/new"
+        <button
+          onClick={() => window.location.href = '/admin/companies'}
           className="inline-flex items-center gap-2 px-4 py-2 bg-rose-400 hover:bg-rose-500 text-white font-bold rounded-xl transition-colors"
         >
           <Plus className="w-4 h-4" />
-          <span>Nova Empresa</span>
-        </Link>
+          <span>Ver Empresas</span>
+        </button>
       </motion.div>
 
       {/* Stats Grid */}
@@ -197,13 +197,13 @@ export default function AdminPage() {
               {searchQuery ? 'Nenhuma empresa encontrada' : 'Nenhuma empresa cadastrada'}
             </p>
             {!searchQuery && (
-              <Link
-                href="/admin/companies/new"
+              <button
+                onClick={() => window.location.href = '/admin/companies'}
                 className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-rose-400 hover:bg-rose-500 text-white font-bold rounded-xl transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                <span>Cadastrar Primeira Empresa</span>
-              </Link>
+                <span>Ver Todas as Empresas</span>
+              </button>
             )}
           </div>
         ) : (

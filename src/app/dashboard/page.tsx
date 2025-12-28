@@ -11,8 +11,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-// Components
-import { KPICardMinimal } from "@/components/dashboard/KPICardMinimal";
+// Components - Neumorphic
+import { NeuKPICard } from "@/components/dashboard/NeuKPICard";
+import { NeuButton } from "@/components/ui/neu-button";
+import { NeuCard, NeuCardHeader, NeuCardTitle, NeuCardContent } from "@/components/ui/neu-card";
 import { TrendChart } from "@/components/dashboard/TrendChart";
 import { TopProductsRanking } from "@/components/dashboard/TopProductsRanking";
 import { PaymentDistribution } from "@/components/dashboard/PaymentDistribution";
@@ -68,7 +70,9 @@ export default function DashboardPage() {
       });
 
       if (!res.ok) {
-        throw new Error("Falha ao carregar dashboard");
+        // Erro real (401, 403, 500, etc.)
+        const errorData = await res.json().catch(() => ({ error: 'Erro ao conectar ao servidor' }));
+        throw new Error(errorData.error || `Erro ${res.status}: Falha ao carregar dashboard`);
       }
 
       const json = await res.json();
@@ -83,7 +87,9 @@ export default function DashboardPage() {
       }
     } catch (error) {
       console.error("Dashboard error:", error);
-      toast.error("Erro ao carregar dashboard");
+      const errorMessage = error instanceof Error ? error.message : "Erro ao carregar dashboard";
+      toast.error(errorMessage);
+      // Não definir data como null - mantém dados anteriores se houver
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -107,149 +113,224 @@ export default function DashboardPage() {
     return <DashboardSkeleton />;
   }
 
-  // No data state - only show error if truly failed to load
-  // If data exists but is empty, still render the dashboard with zeros
-  if (!data && !loading) {
+  // Se não há dados (primeiro carregamento com banco vazio ou erro), 
+  // ainda renderizar com valores vazios para não confundir com erro
+  if (!data) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center px-4">
-          <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg font-medium mb-4">
-            Erro ao carregar dados do dashboard
-          </p>
-          <button
-            onClick={() => fetchDashboard()}
-            className="px-6 py-3 bg-orange-500 hover:bg-orange-400 text-white font-bold rounded-xl transition-colors"
+      <div className="space-y-4">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+        >
+          <div>
+            <h1 className="neu-text-h1">Dashboard</h1>
+            <p className="neu-text-caption mt-1">Visão em tempo real do seu negócio</p>
+          </div>
+
+          {/* Refresh Button */}
+          <NeuButton
+            onClick={() => fetchDashboard(true)}
+            disabled={refreshing}
+            variant="accent"
+            size="md"
           >
-            Tentar Novamente
-          </button>
-        </div>
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline ml-2">{refreshing ? "Atualizando..." : "Atualizar"}</span>
+          </NeuButton>
+        </motion.div>
+
+        {/* Empty State */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <NeuCard variant="convex" size="lg">
+            <div className="text-center py-12">
+              <div className="w-24 h-24 mx-auto mb-6 rounded-full neu-surface neu-convex-md flex items-center justify-center">
+                <ShoppingCart className="w-12 h-12 text-[var(--neu-accent)]" />
+              </div>
+              <h3 className="neu-text-h2 mb-3">
+                Ainda não há vendas
+              </h3>
+              <p className="neu-text-body max-w-md mx-auto mb-4">
+                Comece a registar vendas no sistema para ver as estatísticas em tempo real aqui no dashboard.
+              </p>
+              <div className="neu-surface neu-concave-sm rounded-xl p-4 max-w-md mx-auto">
+                <p className="neu-text-caption">
+                  💡 <strong>Dica:</strong> Os KPIs abaixo mostram valores iniciais (0 MT). Assim que fizer a primeira venda, verá os dados atualizados automaticamente.
+                </p>
+              </div>
+            </div>
+          </NeuCard>
+        </motion.div>
       </div>
     );
   }
-  
-  // If data is null but we're not loading, return null to avoid rendering
-  if (!data) {
-    return null;
-  }
 
   return (
-    <div className="space-y-2 sm:space-y-3">
+    <div className="space-y-4">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
       >
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white mb-0.5">Dashboard</h1>
-          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Visão em tempo real do seu negócio</p>
+          <h1 className="neu-text-h1">Dashboard</h1>
+          <p className="neu-text-caption mt-1">Visão em tempo real do seu negócio</p>
         </div>
 
         {/* Refresh Button */}
-        <motion.button
+        <NeuButton
           onClick={() => fetchDashboard(true)}
           disabled={refreshing}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className={`
-            flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl
-            bg-rose-400
-            border border-orange-400/30
-            font-bold text-white text-sm sm:text-base
-            hover:from-orange-600 hover:to-red-600
-            transition-all sunset-glow
-            disabled:opacity-50 disabled:cursor-not-allowed
-            w-full sm:w-auto
-          `}
+          variant="accent"
+          size="md"
+          loading={refreshing}
         >
-          <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-          <span className="hidden sm:inline">{refreshing ? "Atualizando..." : "Atualizar"}</span>
-          <span className="sm:hidden">Refresh</span>
-        </motion.button>
+          <RefreshCw className="w-4 h-4" />
+          <span className="hidden sm:inline ml-2">Atualizar</span>
+        </NeuButton>
       </motion.div>
 
-      {/* Empty State - Show friendly message when no sales exist */}
+      {/* Empty State Banner - Only if no sales today and yesterday */}
       {data.kpis.today.sales_count === 0 && (data.kpis.yesterday?.sales_count === 0 || !data.kpis.yesterday) && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-orange-50 to-rose-50 dark:from-orange-950/20 dark:to-rose-950/20 rounded-2xl p-8 text-center border border-orange-200 dark:border-orange-800/30"
         >
-          <div className="max-w-md mx-auto">
-            <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <ShoppingCart className="w-8 h-8 text-orange-500" />
+          <NeuCard variant="convex" size="lg">
+            <div className="text-center py-8">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full neu-surface neu-convex-md flex items-center justify-center">
+                <ShoppingCart className="w-10 h-10 text-[var(--neu-accent)]" />
+              </div>
+              <h3 className="neu-text-h3 mb-2">
+                Ainda não há vendas
+              </h3>
+              <p className="neu-text-body max-w-md mx-auto">
+                Comece a registar vendas para ver as estatísticas em tempo real.
+              </p>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              Ainda não há vendas
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Comece a registar vendas no sistema para ver as estatísticas aqui.
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-500">
-              Os KPIs abaixo mostram valores iniciais (0 MT). Assim que fizer a primeira venda, verá os dados atualizados automaticamente.
-            </p>
-          </div>
+          </NeuCard>
         </motion.div>
       )}
 
       {/* KPI Grid - Mobile: 1 col, Tablet: 2 cols, Desktop: 4 cols */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 w-full">
-          <KPICardMinimal
-            title="Faturação Hoje"
-            value={data.kpis.today.revenue_formatted}
-            subtitle={`vs ${(data.kpis.yesterday?.revenue || 0).toLocaleString("pt-MZ")} MT ontem`}
-            growth={data.kpis.growth.revenue_percent}
-            icon={DollarSign}
-            color="blue"
-            index={0}
-          />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <NeuKPICard
+          title="Faturação Hoje"
+          value={data.kpis.today.revenue_formatted}
+          subtitle={`vs ${(data.kpis.yesterday?.revenue || 0).toLocaleString("pt-MZ")} MT ontem`}
+          trend={
+            data.kpis.growth.revenue_percent !== 0
+              ? {
+                  value: data.kpis.growth.revenue_percent,
+                  isPositive: data.kpis.growth.revenue_percent > 0
+                }
+              : undefined
+          }
+          icon={DollarSign}
+          color="accent"
+          index={0}
+        />
 
-          <KPICardMinimal
-            title="Lucro Real"
-            value={data.kpis.today.profit_formatted}
-            subtitle={`Margem de ${data.kpis.today.profit_margin.toFixed(1)}%`}
-            growth={data.kpis.growth.profit_percent}
-            icon={TrendingUp}
-            color="green"
-            index={1}
-          />
+        <NeuKPICard
+          title="Lucro Real"
+          value={data.kpis.today.profit_formatted}
+          subtitle={`Margem de ${data.kpis.today.profit_margin.toFixed(1)}%`}
+          trend={
+            data.kpis.growth.profit_percent !== 0
+              ? {
+                  value: data.kpis.growth.profit_percent,
+                  isPositive: data.kpis.growth.profit_percent > 0
+                }
+              : undefined
+          }
+          icon={TrendingUp}
+          color="success"
+          index={1}
+        />
 
-          <KPICardMinimal
-            title="Vendas Hoje"
-            value={data.kpis.today.sales_count}
-            subtitle={`vs ${data.kpis.yesterday.sales_count} ontem`}
-            growth={data.kpis.growth.sales_percent}
-            icon={ShoppingCart}
-            color="purple"
-            index={2}
-          />
+        <NeuKPICard
+          title="Vendas Hoje"
+          value={data.kpis.today.sales_count}
+          subtitle={`vs ${data.kpis.yesterday.sales_count} ontem`}
+          trend={
+            data.kpis.growth.sales_percent !== 0
+              ? {
+                  value: data.kpis.growth.sales_percent,
+                  isPositive: data.kpis.growth.sales_percent > 0
+                }
+              : undefined
+          }
+          icon={ShoppingCart}
+          color="default"
+          index={2}
+        />
 
-          <KPICardMinimal
-            title="Ticket Médio"
-            value={data.kpis.today.avg_ticket_formatted}
-            subtitle="Por venda"
-            growth={data.kpis.growth.avg_ticket_percent}
-            icon={Receipt}
-            color="orange"
-            index={3}
-          />
-        </div>
+        <NeuKPICard
+          title="Ticket Médio"
+          value={data.kpis.today.avg_ticket_formatted}
+          subtitle="Por venda"
+          trend={
+            data.kpis.growth.avg_ticket_percent !== 0
+              ? {
+                  value: data.kpis.growth.avg_ticket_percent,
+                  isPositive: data.kpis.growth.avg_ticket_percent > 0
+                }
+              : undefined
+          }
+          icon={Receipt}
+          color="warning"
+          index={3}
+        />
+      </div>
 
       {/* Main Chart */}
-      <TrendChart data={data.trend} />
+      <NeuCard variant="convex" size="md">
+        <NeuCardHeader>
+          <NeuCardTitle>Tendência de Vendas (7 dias)</NeuCardTitle>
+        </NeuCardHeader>
+        <NeuCardContent>
+          <TrendChart data={data.trend} />
+        </NeuCardContent>
+      </NeuCard>
 
       {/* Bottom Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
-          {/* Left: Top Products */}
-          <TopProductsRanking products={data.top_products} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Left: Top Products */}
+        <NeuCard variant="convex" size="md">
+          <NeuCardHeader>
+            <NeuCardTitle>Produtos Mais Vendidos</NeuCardTitle>
+          </NeuCardHeader>
+          <NeuCardContent>
+            <TopProductsRanking products={data.top_products} />
+          </NeuCardContent>
+        </NeuCard>
 
         {/* Right: Split Column */}
-        <div className="space-y-2 sm:space-y-3">
+        <div className="space-y-4">
           {/* Payment Distribution */}
-          <PaymentDistribution distribution={data.payment_distribution} />
+          <NeuCard variant="convex" size="md">
+            <NeuCardHeader>
+              <NeuCardTitle>Distribuição de Pagamentos</NeuCardTitle>
+            </NeuCardHeader>
+            <NeuCardContent>
+              <PaymentDistribution distribution={data.payment_distribution} />
+            </NeuCardContent>
+          </NeuCard>
 
           {/* Inventory Alerts */}
-          <InventoryAlerts alerts={data.inventory_alerts} />
+          <NeuCard variant="convex" size="md">
+            <NeuCardHeader>
+              <NeuCardTitle>Alertas de Stock</NeuCardTitle>
+            </NeuCardHeader>
+            <NeuCardContent>
+              <InventoryAlerts alerts={data.inventory_alerts} />
+            </NeuCardContent>
+          </NeuCard>
         </div>
       </div>
 
@@ -258,10 +339,10 @@ export default function DashboardPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
-        className="text-center py-6 sm:py-8"
+        className="text-center py-8"
       >
-        <p className="text-xs text-gray-500 dark:text-gray-600 font-medium uppercase tracking-wider">
-          BizControl 360 ERP • High-Contrast Premium • v2.0.0
+        <p className="neu-text-label text-[var(--neu-text-muted)]">
+          BizControl 360 ERP • Neumorphism Design • v2.0.0
         </p>
       </motion.div>
     </div>

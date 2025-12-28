@@ -11,8 +11,12 @@ import {
   CheckCircle,
   Calendar,
   Barcode,
+  Package,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { NeuBadge } from '@/components/ui/neu-badge';
+import { NeuButton } from '@/components/ui/neu-button';
+import { NeuCard } from '@/components/ui/neu-card';
 
 interface Product {
   id: string;
@@ -51,23 +55,23 @@ export default function ProductTable({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  const getStockStatus = (product: Product) => {
+  const getStockStatus = (product: Product): { label: string; status: 'error' | 'warning' | 'success'; icon: any } => {
     if (product.quantity === 0) {
       return {
         label: 'ESGOTADO',
-        color: 'bg-red-600/20 text-red-400 border-red-600/30',
+        status: 'error',
         icon: AlertTriangle,
       };
     } else if (product.quantity <= product.min_stock) {
       return {
         label: 'BAIXO',
-        color: 'bg-yellow-600/20 text-yellow-400 border-yellow-600/30',
+        status: 'warning',
         icon: AlertTriangle,
       };
     } else {
       return {
         label: 'OK',
-        color: 'bg-green-600/20 text-green-400 border-green-600/30',
+        status: 'success',
         icon: CheckCircle,
       };
     }
@@ -138,46 +142,48 @@ export default function ProductTable({
 
   if (products.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
-        <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-purple-600/20 mb-4">
-          <AlertTriangle className="w-8 h-8 text-purple-400" />
+      <NeuCard variant="convex" size="lg">
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-20 h-20 rounded-2xl neu-surface neu-convex-md flex items-center justify-center mb-6">
+            <Package className="w-10 h-10 text-[var(--neu-text-muted)]" />
+          </div>
+          <h3 className="neu-text-h3 mb-2">
+            Nenhum produto encontrado
+          </h3>
+          <p className="neu-text-body text-[var(--neu-text-muted)]">
+            Adicione produtos para começar a gerenciar seu inventário
+          </p>
         </div>
-        <p className="text-lg font-bold text-white mb-2">
-          Nenhum produto encontrado
-        </p>
-        <p className="text-sm text-slate-400">
-          Adicione produtos para começar a gerenciar seu inventário
-        </p>
-      </div>
+      </NeuCard>
     );
   }
 
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
+    <div className="w-full overflow-hidden rounded-2xl neu-surface neu-concave-md">
       {/* Scroll horizontal suave em mobile */}
-      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-orange-500/50 scrollbar-track-transparent">
+      <div className="overflow-x-auto">
         <table className="w-full min-w-[800px]">
         <thead>
-          <tr className="border-b border-white/10">
-            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">
+          <tr className="border-b border-[var(--neu-border-light)] bg-[var(--neu-base-light)]">
+            <th className="px-6 py-4 text-left neu-text-label font-semibold">
               Produto
             </th>
-            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left neu-text-label font-semibold">
               Categoria
             </th>
-            <th className="px-6 py-4 text-center text-xs font-black text-slate-400 uppercase tracking-wider">
+            <th className="px-6 py-4 text-center neu-text-label font-semibold">
               Stock
             </th>
-            <th className="px-6 py-4 text-right text-xs font-black text-slate-400 uppercase tracking-wider">
+            <th className="px-6 py-4 text-right neu-text-label font-semibold">
               Preço Venda
             </th>
-            <th className="px-6 py-4 text-right text-xs font-black text-slate-400 uppercase tracking-wider">
+            <th className="px-6 py-4 text-right neu-text-label font-semibold">
               Preço Custo
             </th>
-            <th className="px-6 py-4 text-center text-xs font-black text-slate-400 uppercase tracking-wider">
+            <th className="px-6 py-4 text-center neu-text-label font-semibold">
               Estado
             </th>
-            <th className="px-6 py-4 text-right text-xs font-black text-slate-400 uppercase tracking-wider">
+            <th className="px-6 py-4 text-right neu-text-label font-semibold">
               Ações
             </th>
           </tr>
@@ -198,7 +204,9 @@ export default function ProductTable({
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ delay: index * 0.05 }}
                   className={`
-                    border-b border-white/5 hover:bg-white/5 transition-all duration-300
+                    border-b border-[var(--neu-border-light)] 
+                    hover:bg-[var(--neu-surface-hover)] 
+                    transition-all duration-200
                     ${!product.is_active ? 'opacity-50' : ''}
                   `}
                 >
@@ -206,38 +214,35 @@ export default function ProductTable({
                   <td className="px-6 py-4">
                     <div className="flex items-start gap-3">
                       <div
-                        className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-lg"
-                        style={{ background: product.category.color }}
+                        className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg neu-convex-sm"
+                        style={{ backgroundColor: product.category.color }}
                       >
                         {product.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-white truncate">
+                        <p className="neu-text-body font-semibold truncate text-[var(--neu-text-primary)]">
                           {product.name}
                         </p>
                         {product.description && (
-                          <p className="text-xs text-slate-400 truncate">
+                          <p className="neu-text-caption truncate">
                             {product.description}
                           </p>
                         )}
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
                           {product.barcode && (
-                            <span className="inline-flex items-center gap-1 text-[10px] text-slate-500">
+                            <span className="inline-flex items-center gap-1 neu-text-label text-[var(--neu-text-muted)]">
                               <Barcode className="w-3 h-3" />
                               {product.barcode}
                             </span>
                           )}
                           {(expired || expiringSoon) && (
-                            <span
-                              className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                expired
-                                  ? 'bg-red-600/20 text-red-400'
-                                  : 'bg-yellow-600/20 text-yellow-400'
-                              }`}
+                            <NeuBadge 
+                              status={expired ? 'error' : 'warning'}
+                              variant="flat"
                             >
-                              <Calendar className="w-3 h-3" />
+                              <Calendar className="w-3 h-3 inline mr-1" />
                               {expired ? 'Vencido' : 'A vencer'}
-                            </span>
+                            </NeuBadge>
                           )}
                         </div>
                       </div>
@@ -246,27 +251,24 @@ export default function ProductTable({
 
                   {/* Category */}
                   <td className="px-6 py-4">
-                    <span
-                      className="inline-block px-3 py-1 rounded-full text-xs font-bold text-white"
-                      style={{ backgroundColor: product.category.color + '40' }}
-                    >
-                      {product.category.name}
-                    </span>
+                    <NeuBadge variant="convex" status="info">
+                      <span style={{ color: product.category.color }}>
+                        {product.category.name}
+                      </span>
+                    </NeuBadge>
                   </td>
 
                   {/* Stock Status */}
                   <td className="px-6 py-4">
                     <div className="flex flex-col items-center gap-2">
-                      <span className="text-2xl font-black text-white">
+                      <span className="text-2xl font-bold text-[var(--neu-text-primary)]">
                         {product.quantity}
                       </span>
-                      <span
-                        className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-1 rounded-full border ${stockStatus.color}`}
-                      >
-                        <StockIcon className="w-3 h-3" />
+                      <NeuBadge status={stockStatus.status} variant="flat">
+                        <StockIcon className="w-3 h-3 inline mr-1" />
                         {stockStatus.label}
-                      </span>
-                      <span className="text-[10px] text-slate-500">
+                      </NeuBadge>
+                      <span className="neu-text-label text-[var(--neu-text-muted)]">
                         Min: {product.min_stock}
                       </span>
                     </div>
@@ -274,27 +276,27 @@ export default function ProductTable({
 
                   {/* Sale Price */}
                   <td className="px-6 py-4 text-right">
-                    <p className="text-lg font-black text-white">
+                    <p className="neu-text-h3 font-bold text-[var(--neu-text-primary)]">
                       {product.price.toLocaleString('pt-MZ', {
                         minimumFractionDigits: 2,
                       })}
                     </p>
-                    <p className="text-xs text-slate-500">MT</p>
+                    <p className="neu-text-caption">MT</p>
                   </td>
 
                   {/* Cost Price */}
                   <td className="px-6 py-4 text-right">
                     {product.cost_price ? (
                       <>
-                        <p className="text-lg font-black text-slate-400">
+                        <p className="neu-text-h3 font-bold text-[var(--neu-text-secondary)]">
                           {product.cost_price.toLocaleString('pt-MZ', {
                             minimumFractionDigits: 2,
                           })}
                         </p>
-                        <p className="text-xs text-slate-500">MT</p>
+                        <p className="neu-text-caption">MT</p>
                       </>
                     ) : (
-                      <p className="text-sm text-slate-600">-</p>
+                      <p className="neu-text-body text-[var(--neu-text-muted)]">-</p>
                     )}
                   </td>
 
@@ -302,15 +304,15 @@ export default function ProductTable({
                   <td className="px-6 py-4">
                     <div className="flex justify-center">
                       {product.is_active ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-green-600/20 text-green-400 border border-green-600/30">
-                          <CheckCircle className="w-3 h-3" />
+                        <NeuBadge status="success" variant="flat">
+                          <CheckCircle className="w-3 h-3 inline mr-1" />
                           ATIVO
-                        </span>
+                        </NeuBadge>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-slate-600/20 text-slate-400 border border-slate-600/30">
-                          <EyeOff className="w-3 h-3" />
+                        <NeuBadge status="default" variant="flat">
+                          <EyeOff className="w-3 h-3 inline mr-1" />
                           INATIVO
-                        </span>
+                        </NeuBadge>
                       )}
                     </div>
                   </td>
@@ -319,51 +321,42 @@ export default function ProductTable({
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
                       {/* Edit */}
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                      <NeuButton
+                        variant="convex"
+                        size="icon"
                         onClick={() => onEdit(product)}
-                        className="p-2 rounded-xl bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition-all"
                         title="Editar"
                       >
                         <Edit2 className="w-4 h-4" />
-                      </motion.button>
+                      </NeuButton>
 
                       {/* Toggle Active */}
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                      <NeuButton
+                        variant="convex"
+                        size="icon"
                         onClick={() =>
                           handleToggleActive(product.id, product.is_active)
                         }
                         disabled={togglingId === product.id}
-                        className={`p-2 rounded-xl transition-all ${
-                          product.is_active
-                            ? 'bg-yellow-600/20 text-yellow-400 hover:bg-yellow-600/30'
-                            : 'bg-green-600/20 text-green-400 hover:bg-green-600/30'
-                        }`}
-                        title={
-                          product.is_active ? 'Desativar' : 'Ativar'
-                        }
+                        title={product.is_active ? 'Desativar' : 'Ativar'}
                       >
                         {product.is_active ? (
                           <EyeOff className="w-4 h-4" />
                         ) : (
                           <Eye className="w-4 h-4" />
                         )}
-                      </motion.button>
+                      </NeuButton>
 
                       {/* Delete */}
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                      <NeuButton
+                        variant="convex"
+                        size="icon"
                         onClick={() => handleDelete(product.id, product.name)}
                         disabled={deletingId === product.id}
-                        className="p-2 rounded-xl bg-red-600/20 text-red-400 hover:bg-red-600/30 transition-all"
                         title="Deletar Permanentemente"
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </motion.button>
+                        <Trash2 className="w-4 h-4 text-[var(--neu-error)]" />
+                      </NeuButton>
                     </div>
                   </td>
                 </motion.tr>

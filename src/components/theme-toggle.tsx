@@ -6,10 +6,10 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /**
- * Theme Toggle - Interruptor de Luxo
+ * Theme Toggle - Neumorphic Design
  * Alterna entre Light, Dark e System
  * 
- * Design: Botão elegante com animações suaves
+ * Design: Botão Neumorphic com dropdown animado
  */
 export function ThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -23,7 +23,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-800 animate-pulse" />
+      <div className="w-10 h-10 rounded-xl neu-surface neu-skeleton" />
     );
   }
 
@@ -35,13 +35,13 @@ export function ThemeToggle() {
       value: 'light',
       label: 'Light',
       icon: Sun,
-      description: 'Pearl Clean',
+      description: 'Modo Claro',
     },
     {
       value: 'dark',
       label: 'Dark',
       icon: Moon,
-      description: 'Onyx Premium',
+      description: 'Modo Escuro',
     },
     {
       value: 'system',
@@ -61,29 +61,16 @@ export function ThemeToggle() {
         whileTap={{ scale: 0.95 }}
         onClick={() => setShowMenu(!showMenu)}
         className="
-          relative w-10 h-10 rounded-lg overflow-hidden
-          bg-rose-400
-          hover:from-orange-600 hover:to-red-600
-          shadow-lg hover:shadow-xl
-          transition-all duration-300
+          relative w-10 h-10 rounded-xl overflow-hidden
+          neu-surface neu-convex-md
+          hover:neu-convex-lg
+          transition-all duration-200
           flex items-center justify-center
           group
         "
         aria-label="Toggle theme"
       >
-        {/* Glow Effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-400/20 to-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-        
-        {/* Icon */}
-        <CurrentIcon className="w-5 h-5 text-white relative z-10" />
-        
-        {/* Ripple on hover */}
-        <motion.div
-          className="absolute inset-0 bg-white/20 rounded-lg"
-          initial={{ scale: 0, opacity: 0 }}
-          whileHover={{ scale: 1.5, opacity: 0 }}
-          transition={{ duration: 0.5 }}
-        />
+        <CurrentIcon className="w-5 h-5 text-[var(--neu-accent)]" />
       </motion.button>
 
       {/* Dropdown Menu */}
@@ -105,10 +92,9 @@ export function ThemeToggle() {
               className="
                 absolute right-0 top-12 z-50
                 w-56 p-2 rounded-xl
-                bg-white dark:bg-black
-                border border-black/5 dark:border-white/5
-                shadow-2xl
-                backdrop-blur-xl
+                neu-surface
+                neu-convex-lg
+                border border-[var(--neu-border)]
               "
             >
               {themes.map((themeOption) => {
@@ -129,30 +115,30 @@ export function ThemeToggle() {
                       transition-all duration-200
                       ${
                         isActive
-                          ? 'bg-rose-400 text-white shadow-md'
-                          : 'hover:bg-black/5 dark:hover:bg-white/5 text-gray-700 dark:text-gray-300'
+                          ? 'bg-[var(--neu-accent)] text-white neu-convex-sm'
+                          : 'text-[var(--neu-text-secondary)] hover:bg-[var(--neu-surface-hover)]'
                       }
                     `}
                   >
                     <div className={`
                       p-1.5 rounded-md
-                      ${isActive ? 'bg-white/20' : 'bg-black/10 dark:bg-white/10'}
+                      ${isActive ? 'bg-white/20' : 'neu-convex-sm'}
                     `}>
                       <Icon className="w-4 h-4" />
                     </div>
                     
                     <div className="flex-1 text-left">
-                      <div className={`text-sm font-semibold ${isActive ? 'text-white' : ''}`}>
+                      <div className={`neu-text-body font-semibold ${isActive ? 'text-white' : ''}`}>
                         {themeOption.label}
                       </div>
-                      <div className={`text-xs ${isActive ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
+                      <div className={`neu-text-caption ${isActive ? 'text-white/80' : ''}`}>
                         {themeOption.description}
                       </div>
                     </div>
 
                     {isActive && (
                       <motion.div
-                        layoutId="active-indicator"
+                        layoutId="active-indicator-theme"
                         className="w-2 h-2 rounded-full bg-white"
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                       />
@@ -162,11 +148,11 @@ export function ThemeToggle() {
               })}
 
               {/* Current Theme Indicator */}
-              <div className="mt-2 pt-2 border-t border-black/10 dark:border-white/10">
-                <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between">
+              <div className="mt-2 pt-2 border-t border-[var(--neu-border-light)]">
+                <div className="px-3 py-2 neu-text-caption flex items-center justify-between">
                   <span>Tema Atual:</span>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300 capitalize">
-                    {currentTheme === 'light' ? '☀️ Pearl' : '🌙 Onyx'}
+                  <span className="font-semibold text-[var(--neu-text-primary)] capitalize">
+                    {currentTheme === 'light' ? '☀️ Claro' : '🌙 Escuro'}
                   </span>
                 </div>
               </div>
@@ -180,7 +166,7 @@ export function ThemeToggle() {
 
 /**
  * Theme Toggle Simples - Apenas Light/Dark
- * Para uso em lugares com menos espaço
+ * Versão compacta para Sidebar
  */
 export function ThemeToggleSimple() {
   const { setTheme, resolvedTheme } = useTheme();
@@ -191,7 +177,7 @@ export function ThemeToggleSimple() {
   }, []);
 
   if (!mounted) {
-    return <div className="w-16 h-8 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />;
+    return <div className="w-16 h-8 rounded-full neu-surface neu-skeleton" />;
   }
 
   // Usa resolvedTheme para verificar o tema EFETIVO (resolve 'system')
@@ -204,9 +190,9 @@ export function ThemeToggleSimple() {
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       className="
         relative w-16 h-8 rounded-full
-        bg-rose-400
-        shadow-lg hover:shadow-xl
-        transition-all duration-300
+        neu-surface
+        neu-convex-sm
+        transition-all duration-200
         flex items-center
         px-1
         group
@@ -219,22 +205,22 @@ export function ThemeToggleSimple() {
         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         className="
           w-6 h-6 rounded-full
-          bg-white
-          shadow-md
+          bg-[var(--neu-accent)]
+          neu-convex-sm
           flex items-center justify-center
         "
       >
         {isDark ? (
-          <Moon className="w-3.5 h-3.5 text-orange-600" />
+          <Moon className="w-3.5 h-3.5 text-white" />
         ) : (
-          <Sun className="w-3.5 h-3.5 text-orange-500" />
+          <Sun className="w-3.5 h-3.5 text-white" />
         )}
       </motion.div>
 
       {/* Background Icons */}
       <div className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
-        <Sun className="w-4 h-4 text-white/50" />
-        <Moon className="w-4 h-4 text-white/50" />
+        <Sun className="w-4 h-4 text-[var(--neu-text-muted)]" />
+        <Moon className="w-4 h-4 text-[var(--neu-text-muted)]" />
       </div>
     </motion.button>
   );

@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import Sidebar from './Sidebar';
 import { Loader2 } from 'lucide-react';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
+import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -147,7 +148,7 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
   // ROTA PÚBLICA: Renderiza APENAS o conteúdo (sem Sidebar)
   if (isPublicRoute) {
     return (
-      <div className="min-h-screen bg-white dark:bg-black">
+      <div className="min-h-screen bg-[var(--neu-base)]">
         {children}
       </div>
     );
@@ -156,7 +157,7 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
   // SEM UTILIZADOR: Mostra conteúdo sem sidebar (provavelmente vai redirecionar)
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-white dark:bg-black">
+      <div className="min-h-screen bg-[var(--neu-base)]">
         {children}
       </div>
     );
@@ -165,10 +166,12 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
   // LOADING: Ainda não hidratou ou está a carregar autenticação
   if (!isHydrated || authLoading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--neu-base)] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
-          <p className="text-slate-600 dark:text-slate-400 font-medium">A carregar...</p>
+          <div className="neu-surface neu-convex-md rounded-2xl p-8 inline-block">
+            <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin mx-auto mb-4" />
+            <p className="neu-text-body font-medium">A carregar...</p>
+          </div>
         </div>
       </div>
     );
@@ -176,7 +179,10 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
 
   // LAYOUT COMPLETO: Utilizador autenticado com Sidebar
   return (
-    <div className="flex h-screen bg-white dark:bg-black overflow-hidden">
+    <div className="flex h-screen bg-[var(--neu-base)] overflow-hidden">
+      {/* Banner de Impersonation */}
+      <ImpersonationBanner />
+      
       {/* Sidebar */}
       <Sidebar
         user={{
@@ -196,9 +202,9 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
         className="flex-1 flex flex-col lg:ml-72 overflow-hidden"
       >
         {/* Content with independent scroll */}
-        <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-black">
+        <div className="flex-1 overflow-y-auto bg-[var(--neu-base-light)]">
           {/* Container compacto - máximo aproveitamento do espaço */}
-          <div className="w-full px-2 sm:px-3 lg:px-4 py-2 sm:py-3 lg:py-4 pt-16 lg:pt-4">
+          <div className="w-full px-2 sm:px-3 lg:px-4 py-2 sm:py-3 lg:py-4 pt-20 lg:pt-8">
             {children}
           </div>
         </div>
