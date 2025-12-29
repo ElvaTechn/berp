@@ -1,11 +1,11 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Wifi, WifiOff, RefreshCw, Check, AlertTriangle } from "lucide-react";
+import { Wifi, WifiOff, RefreshCw, Check } from "lucide-react";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 
 export function NetworkStatus() {
-  const { isOnline, isSyncing, pendingCount, syncError, sync } = useOfflineSync();
+  const { isOnline, isSyncing, pendingCount, sync } = useOfflineSync();
 
   // Não mostrar se online e sem vendas pendentes
   if (isOnline && pendingCount === 0 && !isSyncing) {
@@ -119,26 +119,6 @@ export function NetworkStatus() {
                 <span className="text-xs text-slate-400 font-medium">
                   {pendingCount} venda{pendingCount !== 1 ? "s" : ""} pendente{pendingCount !== 1 ? "s" : ""}
                 </span>
-              )}
-
-              {syncError && (
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs text-red-400 font-medium flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" />
-                    {syncError}
-                  </span>
-                  {syncError.includes('sessão') || syncError.includes('401') ? (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.dispatchEvent(new CustomEvent('force-logout'));
-                      }}
-                      className="text-[10px] bg-red-500/20 hover:bg-red-500/30 text-red-300 px-2 py-1 rounded transition-colors"
-                    >
-                      Fazer Login Novamente
-                    </button>
-                  ) : null}
-                </div>
               )}
             </div>
 

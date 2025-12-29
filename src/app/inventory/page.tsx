@@ -190,7 +190,6 @@ export default function InventoryPage() {
         <NeuButton
           onClick={() => setShowAddModal(true)}
           variant="accent"
-          size="md"
         >
           <Plus className="w-5 h-5" />
           <span>Adicionar Produto</span>
@@ -297,8 +296,6 @@ export default function InventoryPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             icon={<Search className="w-5 h-5" />}
-            variant="concave"
-            size="md"
           />
         </div>
 

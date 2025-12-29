@@ -37,6 +37,7 @@ import {
 import { format } from 'date-fns';
 import PageHeader from '@/components/Common/PageHeader';
 import LoadingSpinner from '@/components/Common/LoadingSpinner';
+import { toast } from 'sonner';
 
 export default function Team() {
   const [loading, setLoading] = useState(true);
@@ -75,8 +76,15 @@ export default function Team() {
         const allEmployees = await apiClient.employees.list({ company_id: companyId });
         setEmployees(allEmployees);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading team:', error);
+      const errorMessage = error?.message || 'Erro ao carregar equipe';
+      toast.error(errorMessage);
+
+      // If the error indicates no company is configured, show helpful message
+      if (error?.message?.includes('empresa') && error?.message?.includes('não configurada')) {
+        toast.info('Vá para /setup para configurar sua empresa.');
+      }
     } finally {
       setLoading(false);
     }

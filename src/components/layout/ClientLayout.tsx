@@ -199,12 +199,21 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
       <main 
         id="main-content" 
         role="main"
-        className="flex-1 flex flex-col lg:ml-72 overflow-hidden"
+        className="flex-1 flex flex-col overflow-hidden"
+        style={{
+          marginLeft: typeof window !== 'undefined' && window.innerWidth >= 1024 ? '288px' : '0'
+        }}
       >
         {/* Content with independent scroll */}
         <div className="flex-1 overflow-y-auto bg-[var(--neu-base-light)]">
-          {/* Container compacto - máximo aproveitamento do espaço */}
-          <div className="w-full px-2 sm:px-3 lg:px-4 py-2 sm:py-3 lg:py-4 pt-20 lg:pt-8">
+          {/* Container com padding adequado para aproveitar espaço */}
+          <div 
+            className="h-full px-6 lg:px-8 py-6 lg:py-8 pt-20 lg:pt-8"
+            style={{ 
+              width: '100%',
+              maxWidth: '100%'
+            }}
+          >
             {children}
           </div>
         </div>

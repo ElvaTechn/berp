@@ -11,7 +11,16 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --watchAll=false",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "convert-icons": "node scripts/convert-icons.js",
+    "generate-favicon": "node scripts/generate-favicon.js",
+    "activate-optimized-sw": "node scripts/activate-optimized-sw.js",
+    "revert-sw": "node scripts/revert-sw.js",
+    "install-sharp": "npm install sharp",
+    "install-favicon-tools": "npm install sharp to-ico",
+    "setup-pwa": "npm run install-sharp && npm run convert-icons",
+    "setup-pwa-complete": "npm run install-favicon-tools && npm run convert-icons && npm run generate-favicon",
+    "setup-pwa-full": "npm run setup-pwa-complete && npm run activate-optimized-sw"
   },
   "prisma": {
     "seed": "ts-node prisma/seed-clean.ts"
@@ -51,8 +60,10 @@
     "react-dom": "19.2.1",
     "recharts": "^3.6.0",
     "redis": "^5.10.0",
+    "sharp": "^0.34.5",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
+    "to-ico": "^1.1.5",
     "workbox-webpack-plugin": "^7.4.0",
     "zod": "^4.1.13"
   },

@@ -1,17 +1,13 @@
 "use client";
+
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { motion } from 'framer-motion';
+import { NeuButton } from '@/components/ui/neu-button';
+import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
+import { NeuInput } from '@/components/ui/neu-input';
+import { NeuDialog, NeuDialogContent, NeuDialogHeader, NeuDialogTitle, NeuDialogFooter } from '@/components/ui/neu-dialog';
 import { Plus, Pencil, Trash2, Tags, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Category {
   id: string;
@@ -49,6 +45,7 @@ export default function CategoriesPage() {
       }
     } catch (error) {
       console.error('Erro ao carregar categorias:', error);
+      toast.error('Erro ao carregar categorias');
     } finally {
       setLoading(false);
     }
@@ -57,25 +54,29 @@ export default function CategoriesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    
+
     try {
-      const url = editingCategory 
-        ? `/api/categories/${editingCategory.id}` 
+      const url = editingCategory
+        ? `/api/categories/${editingCategory.id}`
         : '/api/categories';
       const method = editingCategory ? 'PUT' : 'POST';
-      
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-      
+
       if (res.ok) {
+        toast.success(editingCategory ? 'Categoria atualizada!' : 'Categoria criada!');
         await loadCategories();
         closeDialog();
+      } else {
+        toast.error('Erro ao salvar categoria');
       }
     } catch (error) {
       console.error('Erro ao salvar categoria:', error);
+      toast.error('Erro ao salvar categoria');
     } finally {
       setSaving(false);
     }
@@ -83,14 +84,18 @@ export default function CategoriesPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir esta categoria?')) return;
-    
+
     try {
       const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
       if (res.ok) {
+        toast.success('Categoria excluída!');
         await loadCategories();
+      } else {
+        toast.error('Erro ao excluir categoria');
       }
     } catch (error) {
       console.error('Erro ao excluir categoria:', error);
+      toast.error('Erro ao excluir categoria');
     }
   };
 
@@ -114,116 +119,173 @@ export default function CategoriesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--neu-accent)]" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Categorias</h1>
-          <p className="text-slate-500">Gerencie as categorias dos seus produtos</p>
+          <h1 className="neu-text-h1">Categorias</h1>
+          <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+            Gerencie as categorias dos seus produtos
+          </p>
         </div>
-        <Button onClick={() => openDialog()}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Categoria
-        </Button>
-      </div>
+        <NeuButton onClick={() => openDialog()} variant="accent" size="md">
+          <Plus className="h-4 w-4" />
+          <span>Nova Categoria</span>
+        </NeuButton>
+      </motion.div>
 
+      {/* Empty State */}
       {categories.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Tags className="h-12 w-12 text-slate-300 mb-4" />
-            <h3 className="text-lg font-medium text-slate-900 mb-2">Nenhuma categoria</h3>
-            <p className="text-slate-500 mb-4">Comece criando sua primeira categoria</p>
-            <Button onClick={() => openDialog()}>
-              <Plus className="h-4 w-4 mr-2" />
-              Criar Categoria
-            </Button>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+        >
+          <NeuCard variant="concave" size="lg">
+            <NeuCardContent className="flex flex-col items-center justify-center py-12">
+              <div className="w-20 h-20 rounded-full neu-surface neu-convex-lg flex items-center justify-center mb-4">
+                <Tags className="h-10 w-10 text-[var(--neu-accent)]" />
+              </div>
+              <h3 className="neu-text-h2 mb-2">Nenhuma categoria</h3>
+              <p className="neu-text-body text-[var(--neu-text-muted)] mb-4">
+                Comece criando sua primeira categoria
+              </p>
+              <NeuButton onClick={() => openDialog()} variant="accent" size="md">
+                <Plus className="h-4 w-4" />
+                <span>Criar Categoria</span>
+              </NeuButton>
+            </NeuCardContent>
+          </NeuCard>
+        </motion.div>
       ) : (
+        /* Categories Grid */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categories.map((category) => (
-            <Card key={category.id} className="group hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="h-10 w-10 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: category.color || COLORS[0] }}
-                    >
-                      <Tags className="h-5 w-5 text-white" />
+          {categories.map((category, index) => (
+            <motion.div
+              key={category.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+            >
+              <NeuCard variant="convex" size="md" className="group">
+                <NeuCardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {/* Color Preview */}
+                      <div
+                        className="h-12 w-12 rounded-xl neu-convex-md flex items-center justify-center"
+                        style={{ backgroundColor: category.color || COLORS[0] }}
+                      >
+                        <Tags className="h-6 w-6 text-white drop-shadow-md" />
+                      </div>
+                      <div>
+                        <h3 className="neu-text-body font-bold">{category.name}</h3>
+                        <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                          {category.color}
+                        </p>
+                      </div>
                     </div>
-                    <CardTitle className="text-lg">{category.name}</CardTitle>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <NeuButton
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openDialog(category)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </NeuButton>
+                      <NeuButton
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(category.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-[var(--neu-error)]" />
+                      </NeuButton>
+                    </div>
                   </div>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon" onClick={() => openDialog(category)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(category.id)}>
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
+                </NeuCardContent>
+              </NeuCard>
+            </motion.div>
           ))}
         </div>
       )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
+      {/* Create/Edit Dialog */}
+      <NeuDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <NeuDialogContent size="md">
+          <NeuDialogHeader>
+            <NeuDialogTitle>
               {editingCategory ? 'Editar Categoria' : 'Nova Categoria'}
-            </DialogTitle>
-          </DialogHeader>
+            </NeuDialogTitle>
+          </NeuDialogHeader>
+
           <form onSubmit={handleSubmit}>
-            <div className="space-y-4 py-4">
+            <div className="space-y-6 py-4">
+              {/* Name Input */}
               <div className="space-y-2">
-                <Label htmlFor="name">Nome</Label>
-                <Input
-                  id="name"
+                <label className="neu-text-label">Nome</label>
+                <NeuInput
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Nome da categoria"
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label>Cor</Label>
+
+              {/* Color Picker */}
+              <div className="space-y-3">
+                <label className="neu-text-label">Cor</label>
                 <div className="flex flex-wrap gap-2">
                   {COLORS.map((color) => (
-                    <button
+                    <motion.button
                       key={color}
                       type="button"
-                      className={`h-8 w-8 rounded-lg transition-all ${
-                        formData.color === color 
-                          ? 'ring-2 ring-offset-2 ring-slate-900 scale-110' 
-                          : 'hover:scale-105'
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`h-10 w-10 rounded-xl transition-all ${
+                        formData.color === color
+                          ? 'neu-concave-md scale-110'
+                          : 'neu-convex-sm'
                       }`}
                       style={{ backgroundColor: color }}
                       onClick={() => setFormData({ ...formData, color })}
-                    />
+                    >
+                      {formData.color === color && (
+                        <div className="flex items-center justify-center">
+                          <div className="w-3 h-3 bg-white rounded-full shadow-lg" />
+                        </div>
+                      )}
+                    </motion.button>
                   ))}
                 </div>
+                <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                  Cor selecionada: {formData.color}
+                </p>
               </div>
             </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={closeDialog}>
+
+            <NeuDialogFooter>
+              <NeuButton type="button" variant="convex" size="md" onClick={closeDialog}>
                 Cancelar
-              </Button>
-              <Button type="submit" disabled={saving}>
-                {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                {editingCategory ? 'Salvar' : 'Criar'}
-              </Button>
-            </DialogFooter>
+              </NeuButton>
+              <NeuButton type="submit" variant="accent" size="md" disabled={saving}>
+                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                <span>{editingCategory ? 'Salvar' : 'Criar'}</span>
+              </NeuButton>
+            </NeuDialogFooter>
           </form>
-        </DialogContent>
-      </Dialog>
+        </NeuDialogContent>
+      </NeuDialog>
     </div>
   );
 }

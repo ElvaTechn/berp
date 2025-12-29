@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Shield, ArrowLeft, Eye } from "lucide-react";
+import { NeuCard, NeuCardContent } from "@/components/ui/neu-card";
+import { NeuButton } from "@/components/ui/neu-button";
+import { ArrowLeft, Eye, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 export function ImpersonationBanner() {
@@ -62,37 +64,52 @@ export function ImpersonationBanner() {
   }
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 shadow-lg">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full">
-            <Eye className="w-4 h-4" />
-            <span className="text-sm font-medium">MODO SUPORTE</span>
-          </div>
-          <div className="text-sm">
-            <span className="font-medium">A visualizar como:</span>{' '}
-            <span className="font-bold">{targetUser.fullName}</span>{' '}
-            <span className="text-purple-200">({targetUser.email})</span>
-          </div>
-        </div>
-        
-        <button
-          onClick={handleEndImpersonation}
-          disabled={isLoading}
-          className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>A voltar...</span>
-            </>
-          ) : (
-            <>
-              <ArrowLeft className="w-4 h-4" />
-              <span>Voltar para Admin</span>
-            </>
-          )}
-        </button>
+    <div className="fixed top-0 left-0 right-0 z-50 p-4">
+      <div className="max-w-7xl mx-auto">
+        <NeuCard variant="concave" size="sm">
+          <NeuCardContent className="p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-[var(--neu-warning)]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Eye className="w-4 h-4 text-[var(--neu-warning)]" />
+                    <span className="neu-text-body font-bold text-[var(--neu-warning)]">
+                      MODO SUPORTE
+                    </span>
+                  </div>
+                  <div className="neu-text-caption text-[var(--neu-text-muted)]">
+                    <span className="font-medium">A visualizar como:</span>{' '}
+                    <span className="font-bold">{targetUser.fullName}</span>{' '}
+                    <span className="hidden sm:inline">({targetUser.email})</span>
+                  </div>
+                </div>
+              </div>
+              
+              <NeuButton
+                onClick={handleEndImpersonation}
+                disabled={isLoading}
+                variant="accent"
+                size="sm"
+                className="flex-shrink-0"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>A voltar...</span>
+                  </>
+                ) : (
+                  <>
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Voltar para Admin</span>
+                  </>
+                )}
+              </NeuButton>
+            </div>
+          </NeuCardContent>
+        </NeuCard>
       </div>
     </div>
   );

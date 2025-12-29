@@ -3,18 +3,20 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { 
-  LayoutDashboard, 
-  Building2, 
-  Settings, 
-  Shield, 
+import {
+  LayoutDashboard,
+  Building2,
+  Settings,
+  Shield,
   Database,
   Server,
   LogOut,
   Menu,
-  X
+  X,
+  FileText,
 } from 'lucide-react';
 import { ThemeToggleSimple } from '@/components/theme-toggle';
 
@@ -27,7 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const { user: contextUser, loading: authLoading, logout } = useAuth();
-  
+
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [isLoadingCompany, setIsLoadingCompany] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -38,16 +40,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsHydrated(true);
   }, []);
 
-  // Admin não precisa de empresa específica
-  // Remove o useEffect de fetchCompanyData
-
   // Se não está hidratado ou está carregando auth
   if (!isHydrated || authLoading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--neu-base)] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
-          <p className="text-slate-600 dark:text-slate-400 font-medium">A carregar...</p>
+          <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin mx-auto mb-4" />
+          <p className="neu-text-body text-[var(--neu-text-muted)] font-medium">
+            A carregar...
+          </p>
         </div>
       </div>
     );
@@ -57,194 +58,204 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!contextUser || contextUser.role.toUpperCase() !== 'ADMIN') {
     router.push('/login');
     return (
-      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--neu-base)] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
-          <p className="text-slate-600 dark:text-slate-400 font-medium">A redirecionar...</p>
+          <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin mx-auto mb-4" />
+          <p className="neu-text-body text-[var(--neu-text-muted)] font-medium">
+            A redirecionar...
+          </p>
         </div>
       </div>
     );
   }
 
+  const NavLink = ({ href, icon: Icon, label }: { href: string; icon: any; label: string }) => {
+    const isActive = pathname === href;
+
+    return (
+      <Link href={href} onClick={() => setIsOpen(false)} className="relative block">
+        <motion.div
+          whileHover={{ x: 4 }}
+          whileTap={{ scale: 0.98 }}
+          className={`
+            relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+            ${
+              isActive
+                ? 'neu-concave-sm text-[var(--neu-accent)] font-bold'
+                : 'text-[var(--neu-text-secondary)] hover:text-[var(--neu-text-primary)] hover:bg-[var(--neu-surface-hover)]'
+            }
+          `}
+        >
+          {/* Active Indicator */}
+          {isActive && (
+            <motion.div
+              layoutId="adminActiveIndicator"
+              className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--neu-accent)] rounded-r-full neu-convex-sm"
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            />
+          )}
+
+          <Icon className="w-5 h-5 flex-shrink-0" />
+          <span className={`font-medium tracking-tight ${isActive ? 'font-bold' : ''}`}>
+            {label}
+          </span>
+        </motion.div>
+      </Link>
+    );
+  };
+
   const SidebarContent = () => (
-    <>
-      {/* Header */}
-      <div className="p-6 border-b border-purple-200 dark:border-purple-500/20">
+    <div className="flex flex-col h-full">
+      {/* Header - Logo */}
+      <div className="p-6 border-b border-[var(--neu-border)]">
         <Link href="/admin/dashboard" onClick={() => setIsOpen(false)}>
-          <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight italic">
-            ADMIN<span className="text-purple-500 dark:text-purple-400">360</span>
-          </h1>
-          <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">
-            Torre de Controlo
-          </p>
+          <motion.div whileHover={{ scale: 1.02 }} className="cursor-pointer">
+            <h1 className="neu-text-h2 tracking-tight italic">
+              ADMIN<span className="text-[var(--neu-accent)]">360</span>
+            </h1>
+            <p className="neu-text-caption text-[var(--neu-accent)]">Torre de Controlo</p>
+          </motion.div>
         </Link>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 space-y-1 px-3">
-        <Link 
-          href="/admin/dashboard" 
-          onClick={() => setIsOpen(false)}
-          className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${
-            pathname === '/admin/dashboard'
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-purple-500/10 hover:text-white'
-          }`}
-        >
-          <LayoutDashboard className="w-5 h-5" />
-          Dashboard
-        </Link>
-
-        <Link 
-          href="/admin/companies" 
-          onClick={() => setIsOpen(false)}
-          className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${
-            pathname === '/admin/companies'
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-purple-500/10 hover:text-white'
-          }`}
-        >
-          <Building2 className="w-5 h-5" />
-          Empresas
-        </Link>
-
-        <Link 
-          href="/admin/system" 
-          onClick={() => setIsOpen(false)}
-          className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${
-            pathname === '/admin/system'
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-purple-500/10 hover:text-white'
-          }`}
-        >
-          <Server className="w-5 h-5" />
-          Sistema
-        </Link>
-
-        <Link 
-          href="/admin/settings" 
-          onClick={() => setIsOpen(false)}
-          className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${
-            pathname === '/admin/settings'
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-purple-500/10 hover:text-white'
-          }`}
-        >
-          <Settings className="w-5 h-5" />
-          Configurações
-        </Link>
-
-        <Link 
-          href="/admin/subscriptions" 
-          onClick={() => setIsOpen(false)}
-          className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${
-            pathname === '/admin/subscriptions'
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-purple-500/10 hover:text-white'
-          }`}
-        >
-          <Shield className="w-5 h-5" />
-          Subscrições
-        </Link>
-
-        <Link 
-          href="/admin/backup" 
-          onClick={() => setIsOpen(false)}
-          className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${
-            pathname === '/admin/backup'
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-purple-500/10 hover:text-white'
-          }`}
-        >
-          <Database className="w-5 h-5" />
-          Backup
-        </Link>
+      {/* Navigation Links */}
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <NavLink href="/admin/dashboard" icon={LayoutDashboard} label="Dashboard" />
+        <NavLink href="/admin/companies" icon={Building2} label="Empresas" />
+        <NavLink href="/admin/audit" icon={FileText} label="Auditoria" />
+        <NavLink href="/admin/system" icon={Server} label="Sistema" />
+        <NavLink href="/admin/settings" icon={Settings} label="Configurações" />
+        <NavLink href="/admin/subscriptions" icon={Shield} label="Subscrições" />
+        <NavLink href="/admin/backup" icon={Database} label="Backup" />
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-purple-200 dark:border-purple-500/20">
-        <div className="mb-3 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
+      {/* User Profile */}
+      <div className="p-4 border-t border-[var(--neu-border)]">
+        {/* User Info Card */}
+        <div className="mb-3 p-3 rounded-xl neu-convex-sm">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--neu-accent)] text-white font-bold text-sm neu-convex-sm">
               {contextUser.full_name.charAt(0).toUpperCase()}
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-bold text-white">{contextUser.full_name}</p>
-              <p className="text-xs text-purple-400">Super Admin</p>
+            <div className="flex-1 min-w-0">
+              <p className="neu-text-body font-bold text-[var(--neu-text-primary)] truncate">
+                {contextUser.full_name}
+              </p>
+              <p className="neu-text-caption text-[var(--neu-accent)] truncate">Super Admin</p>
             </div>
           </div>
         </div>
 
-        <div className="mb-3 flex items-center justify-between px-2 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20">
-          <span className="text-xs font-bold text-purple-400 uppercase tracking-wide">
+        {/* Theme Toggle */}
+        <div className="mb-3 flex items-center justify-between px-2 py-2 rounded-xl neu-convex-sm">
+          <span className="neu-text-label font-bold text-[var(--neu-text-muted)] uppercase tracking-wide">
             Tema
           </span>
           <ThemeToggleSimple />
         </div>
 
-        <button
+        {/* Logout Button */}
+        <motion.button
+          whileHover={{ scale: 1.02, y: -1 }}
+          whileTap={{ scale: 0.98 }}
           onClick={async () => {
             await logout();
             setIsOpen(false);
           }}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition-all"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl neu-surface neu-convex-sm hover:neu-convex-md transition-all duration-200 font-bold text-[var(--neu-error)]"
         >
           <LogOut className="w-4 h-4" />
-          Sair
-        </button>
+          <span>Sair</span>
+        </motion.button>
       </div>
-    </>
+    </div>
   );
 
   // Layout completo com sidebar
   return (
-    <div className="flex h-screen bg-white dark:bg-black overflow-hidden">
+    <div className="flex h-screen bg-[var(--neu-base)] overflow-hidden">
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-[#050505]/90 backdrop-blur-xl border-b border-purple-200 dark:border-purple-500/20 px-4 h-16 flex items-center justify-between">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[var(--neu-base)]/90 backdrop-blur-xl border-b border-[var(--neu-border)] px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-            <span className="text-white font-black text-xs">A</span>
+          <div className="w-8 h-8 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+            <span className="text-[var(--neu-accent)] font-black text-xs">A</span>
           </div>
-          <span className="text-sm font-bold text-slate-900 dark:text-white">
-            Admin<span className="text-purple-500">360</span>
+          <span className="neu-text-body font-bold">
+            Admin<span className="text-[var(--neu-accent)]">360</span>
           </span>
         </div>
-        <button
+        <motion.button
+          whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 transition-all"
+          className="p-2 rounded-xl neu-surface neu-convex-sm text-[var(--neu-accent)] hover:neu-convex-md transition-all"
         >
-          {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+          <AnimatePresence mode="wait">
+            {isOpen ? (
+              <motion.div
+                key="close"
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <X className="w-5 h-5" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="menu"
+                initial={{ rotate: 90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: -90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Menu className="w-5 h-5" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.button>
       </div>
 
       {/* Mobile Sidebar Overlay */}
-      {isOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
-      )}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)}
+              className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+            />
 
-      {/* Mobile Sidebar */}
-      <div className={`lg:hidden fixed top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-white dark:bg-[#0a0a0a] border-r border-purple-200 dark:border-purple-500/20 z-50 flex flex-col transition-transform duration-300 ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
-        <SidebarContent />
-      </div>
+            {/* Sidebar */}
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="lg:hidden fixed top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-[var(--neu-base)] border-r border-[var(--neu-border)] z-50 flex flex-col"
+            >
+              <SidebarContent />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-72 h-screen bg-white dark:bg-[#0a0a0a] border-r border-purple-200 dark:border-purple-500/20 fixed left-0 top-0 z-40 shadow-xl dark:shadow-none">
+      <aside className="hidden lg:flex flex-col w-72 h-screen bg-[var(--neu-base)] border-r border-[var(--neu-border)] fixed left-0 top-0 z-40">
         <SidebarContent />
       </aside>
 
       {/* Main Content Area */}
-      <main 
-        id="main-content" 
+      <main
+        id="main-content"
         role="main"
         className="flex-1 flex flex-col lg:ml-72 overflow-hidden pt-16 lg:pt-0"
       >
         {/* Content with independent scroll */}
-        <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-black">
-          <div className="w-full max-w-none p-4 lg:p-6 pt-20 lg:pt-6">
-            {children}
-          </div>
+        <div className="flex-1 overflow-y-auto bg-[var(--neu-base)]">
+          <div className="w-full max-w-none p-4 lg:p-6 pt-20 lg:pt-6">{children}</div>
         </div>
       </main>
     </div>

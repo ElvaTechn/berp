@@ -75,6 +75,7 @@ export async function POST(req: Request) {
           full_name: user.full_name,
           role: 'GESTOR',
           user_id: session.userId,
+          is_active: true,  // Explicitly set as active
         }
       });
 

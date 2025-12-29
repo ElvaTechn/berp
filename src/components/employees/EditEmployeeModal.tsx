@@ -107,7 +107,6 @@ export function EditEmployeeModal({ employee, open, onOpenChange, onSuccess }: E
               checked={formData.is_active}
               onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
               variant="success"
-              size="md"
             />
             <label htmlFor="is_active_edit" className="neu-text-body cursor-pointer">
               Funcionário ativo
@@ -119,7 +118,6 @@ export function EditEmployeeModal({ employee, open, onOpenChange, onSuccess }: E
             <NeuButton
               type="button"
               variant="convex"
-              size="md"
               onClick={handleClose}
               className="flex-1"
             >
@@ -129,7 +127,6 @@ export function EditEmployeeModal({ employee, open, onOpenChange, onSuccess }: E
             <NeuButton
               type="submit"
               variant="accent"
-              size="md"
               loading={loading}
               disabled={loading}
               className="flex-1"

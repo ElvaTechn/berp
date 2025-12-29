@@ -111,37 +111,69 @@ export async function POST(request: NextRequest) {
   // ============================================================
   // 5. AUTORIZAÇÃO (Verificar employee e company)
   // ============================================================
-  const employee = await prisma.employee.findFirst({
-    where: { 
+  let employee = await prisma.employee.findFirst({
+    where: {
       user_id: session.userId,
       is_active: true  // Apenas funcionários ativos
     },
-    select: { 
-      id: true, 
-      company_id: true, 
+    select: {
+      id: true,
+      company_id: true,
       role: true,
       full_name: true
     }
   });
 
+  // Se não encontrou employee, verifica se é dono de alguma empresa
+  let companyId: string | null = null;
   if (!employee) {
-    logger.warn('Employee not found', { 
+    const company = await prisma.company.findFirst({
+      where: { owner_id: session.userId },
+      select: { id: true }
+    });
+
+    if (company) {
+      companyId = company.id;
+      // Para donos sem employee, criar um employee temporário no formato
+      const user = await prisma.user.findUnique({
+        where: { id: session.userId },
+        select: { full_name: true, email: true }
+      });
+
+      if (user) {
+        employee = {
+          id: 'owner-' + session.userId,
+          company_id: company.id,
+          role: 'GESTOR' as any,
+          full_name: user.full_name
+        };
+      }
+    }
+  }
+
+  if (!employee) {
+    logger.warn('Employee not found', {
       user_id: session.userId,
-      ip 
+      ip
     });
 
     return NextResponse.json(
-      { success: false, error: 'Funcionário não encontrado ou desativado' },
+      {
+        success: false,
+        error: 'Configuração incompleta',
+        requiresSetup: true,
+        message: 'Sua conta não está configurada como funcionário. Vá para a configuração da empresa.'
+      },
       { status: 404 }
     );
   }
 
   // Verificar permissão (apenas GESTOR e VENDEDOR podem vender)
-  if (!['GESTOR', 'VENDEDOR'].includes(employee.role)) {
-    logger.warn('Insufficient permissions', { 
+  if (!['GESTOR', 'VENDEDOR'].includes(employee.role.toString())) {
+    logger.warn('Insufficient permissions', {
       user_id: session.userId,
       role: employee.role,
-      ip 
+      ip
     });
 
     return NextResponse.json(
@@ -355,15 +387,31 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 2. Buscar employee
+    // 2. Buscar employee - primeiro como funcionário
+    let companyId: string | null = null;
+
     const employee = await prisma.employee.findFirst({
-      where: { user_id: session.userId },
-      select: { company_id: true, role: true }
+      where: { user_id: session.userId, is_active: true },
+      select: { company_id: true }
     });
 
-    if (!employee) {
+    if (employee) {
+      companyId = employee.company_id;
+    } else {
+      // Se não encontrou como funcionário, verifica se é dono de alguma empresa
+      const company = await prisma.company.findFirst({
+        where: { owner_id: session.userId },
+        select: { id: true }
+      });
+
+      if (company) {
+        companyId = company.id;
+      }
+    }
+
+    if (!companyId) {
       return NextResponse.json(
-        { success: false, error: 'Funcionário não encontrado' },
+        { success: false, error: 'Nenhuma empresa configurada', requiresSetup: true },
         { status: 404 }
       );
     }
@@ -373,7 +421,7 @@ export async function GET(request: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20')));
     const skip = (page - 1) * limit;
-    
+
     const startDate = searchParams.get('start_date');
     const endDate = searchParams.get('end_date');
     const employeeId = searchParams.get('employee_id');
@@ -385,7 +433,7 @@ export async function GET(request: NextRequest) {
     } : undefined;
 
     const whereClause: any = {
-      company_id: employee.company_id,
+      company_id: companyId,
       ...(dateFilter && { created_at: dateFilter }),
       ...(employeeId && { employee_id: employeeId })
     };
@@ -446,8 +494,8 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    logger.error('Failed to fetch sales', { 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    logger.error('Failed to fetch sales', {
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
 
     return NextResponse.json(

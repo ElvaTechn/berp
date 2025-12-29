@@ -12,9 +12,13 @@ import {
   MoreVertical,
   Eye,
   Edit,
-  Trash2
+  Trash2,
+  Package
 } from "lucide-react";
 import Link from "next/link";
+import { NeuButton } from "@/components/ui/neu-button";
+import { NeuCard, NeuCardContent } from "@/components/ui/neu-card";
+import { NeuInput } from "@/components/ui/neu-input";
 
 interface Company {
   id: string;
@@ -68,229 +72,224 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-1">
+          <h1 className="neu-text-h1">
             Administração do Sistema
           </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
             Gestão de empresas, auditoria e configurações
           </p>
         </div>
         
-        <button
+        <NeuButton
           onClick={() => window.location.href = '/admin/companies'}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-rose-400 hover:bg-rose-500 text-white font-bold rounded-xl transition-colors"
+          variant="accent"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-5 h-5" />
           <span>Ver Empresas</span>
-        </button>
+        </NeuButton>
       </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Empresas</p>
-              <p className="text-2xl font-black text-gray-900 dark:text-white">
-                {stats.total_companies}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      >
+        <NeuCard variant="convex" size="sm">
+          <NeuCardContent className="p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-[var(--neu-accent)]" />
+              </div>
+              <p className="neu-text-label text-[var(--neu-text-muted)]">
+                Empresas
               </p>
             </div>
-          </div>
-        </motion.div>
+            <p className="neu-text-h2">
+              {stats.total_companies}
+            </p>
+          </NeuCardContent>
+        </NeuCard>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-              <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Usuários</p>
-              <p className="text-2xl font-black text-gray-900 dark:text-white">
-                {stats.total_users}
+        <NeuCard variant="convex" size="sm">
+          <NeuCardContent className="p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                <Users className="w-5 h-5 text-[var(--neu-accent)]" />
+              </div>
+              <p className="neu-text-label text-[var(--neu-text-muted)]">
+                Usuários
               </p>
             </div>
-          </div>
-        </motion.div>
+            <p className="neu-text-h2">
+              {stats.total_users}
+            </p>
+          </NeuCardContent>
+        </NeuCard>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Vendas</p>
-              <p className="text-2xl font-black text-gray-900 dark:text-white">
-                {stats.total_sales}
+        <NeuCard variant="convex" size="sm">
+          <NeuCardContent className="p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-[var(--neu-success)]" />
+              </div>
+              <p className="neu-text-label text-[var(--neu-text-muted)]">
+                Vendas
               </p>
             </div>
-          </div>
-        </motion.div>
+            <p className="neu-text-h2">
+              {stats.total_sales}
+            </p>
+          </NeuCardContent>
+        </NeuCard>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Produtos</p>
-              <p className="text-2xl font-black text-gray-900 dark:text-white">
-                {stats.total_products}
+        <NeuCard variant="convex" size="sm">
+          <NeuCardContent className="p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                <Package className="w-5 h-5 text-[var(--neu-accent)]" />
+              </div>
+              <p className="neu-text-label text-[var(--neu-text-muted)]">
+                Produtos
               </p>
             </div>
-          </div>
-        </motion.div>
-      </div>
+            <p className="neu-text-h2">
+              {stats.total_products}
+            </p>
+          </NeuCardContent>
+        </NeuCard>
+      </motion.div>
 
       {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Buscar empresa por nome, NUIT ou email..."
-          className="w-full h-12 pl-11 pr-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-rose-400"
-        />
-      </div>
+      <NeuInput
+        type="text"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        placeholder="Buscar empresa por nome, NUIT ou email..."
+        icon={<Search className="w-5 h-5" />}
+      />
 
       {/* Companies Table */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin w-8 h-8 border-4 border-rose-400 border-t-transparent rounded-full"></div>
-          </div>
-        ) : filteredCompanies.length === 0 ? (
-          <div className="text-center py-12">
-            <Building2 className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-600 dark:text-gray-400 font-medium">
-              {searchQuery ? 'Nenhuma empresa encontrada' : 'Nenhuma empresa cadastrada'}
-            </p>
-            {!searchQuery && (
-              <button
-                onClick={() => window.location.href = '/admin/companies'}
-                className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-rose-400 hover:bg-rose-500 text-white font-bold rounded-xl transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Ver Todas as Empresas</span>
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 dark:text-gray-400 uppercase">
-                    Empresa
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 dark:text-gray-400 uppercase">
-                    NUIT
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 dark:text-gray-400 uppercase">
-                    Contato
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 dark:text-gray-400 uppercase">
-                    Usuários
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 dark:text-gray-400 uppercase">
-                    Vendas
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-bold text-gray-600 dark:text-gray-400 uppercase">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                {filteredCompanies.map((company, index) => (
-                  <motion.tr
-                    key={company.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                  >
-                    <td className="px-4 py-3">
-                      <div>
-                        <p className="font-bold text-gray-900 dark:text-white">
-                          {company.name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Desde {new Date(company.created_at).toLocaleDateString('pt-MZ')}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="font-mono text-sm text-gray-700 dark:text-gray-300">
-                        {company.nuit}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="text-sm">
-                        <p className="text-gray-700 dark:text-gray-300">{company.email}</p>
-                        <p className="text-gray-500">{company.phone}</p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 font-bold text-sm">
-                        {company._count.employees}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-sm">
-                        {company._count.sales}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors">
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-colors">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      <NeuCard variant="concave" size="md">
+        <NeuCardContent className="p-0">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin w-8 h-8 border-4 border-[var(--neu-accent)] border-t-transparent rounded-full"></div>
+            </div>
+          ) : filteredCompanies.length === 0 ? (
+            <div className="text-center py-12 px-4">
+              <div className="w-20 h-20 rounded-full neu-surface neu-convex-md flex items-center justify-center mx-auto mb-4">
+                <Building2 className="w-10 h-10 text-[var(--neu-accent)]" />
+              </div>
+              <h3 className="neu-text-h2 mb-2">
+                {searchQuery ? 'Nenhuma empresa encontrada' : 'Nenhuma empresa cadastrada'}
+              </h3>
+              {!searchQuery && (
+                <NeuButton
+                  onClick={() => window.location.href = '/admin/companies'}
+                  variant="accent"
+                  className="mt-4"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Ver Todas as Empresas</span>
+                </NeuButton>
+              )}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-[var(--neu-base)] border-b border-[var(--neu-border)]">
+                  <tr>
+                    <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
+                      Empresa
+                    </th>
+                    <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
+                      NUIT
+                    </th>
+                    <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
+                      Contato
+                    </th>
+                    <th className="px-6 py-4 text-center neu-text-label text-[var(--neu-text-muted)]">
+                      Usuários
+                    </th>
+                    <th className="px-6 py-4 text-center neu-text-label text-[var(--neu-text-muted)]">
+                      Vendas
+                    </th>
+                    <th className="px-6 py-4 text-right neu-text-label text-[var(--neu-text-muted)]">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCompanies.map((company, index) => (
+                    <motion.tr
+                      key={company.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="border-b border-[var(--neu-border)] hover:bg-[var(--neu-surface-hover)] transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <div>
+                          <p className="neu-text-body font-semibold">
+                            {company.name}
+                          </p>
+                          <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                            Desde {new Date(company.created_at).toLocaleDateString('pt-MZ')}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="neu-text-body font-mono">
+                          {company.nuit}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div>
+                          <p className="neu-text-body">{company.email}</p>
+                          <p className="neu-text-caption text-[var(--neu-text-muted)]">{company.phone}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full neu-surface neu-convex-xs text-[var(--neu-accent)] font-bold text-sm">
+                          {company._count.employees}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full neu-surface neu-convex-xs text-[var(--neu-success)] font-bold text-sm">
+                          {company._count.sales}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <NeuButton variant="convex" size="icon">
+                            <Eye className="w-4 h-4" />
+                          </NeuButton>
+                          <NeuButton variant="convex" size="icon">
+                            <Edit className="w-4 h-4" />
+                          </NeuButton>
+                          <NeuButton variant="ghost" size="icon">
+                            <Trash2 className="w-4 h-4 text-[var(--neu-error)]" />
+                          </NeuButton>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </NeuCardContent>
+      </NeuCard>
     </div>
   );
 }

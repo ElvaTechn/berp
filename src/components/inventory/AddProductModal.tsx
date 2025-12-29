@@ -68,16 +68,26 @@ export default function AddProductModal({ open, onOpenChange, onSuccess }: AddPr
     setLoadingCategories(true);
     try {
       const response = await fetch('/api/categories');
-      if (!response.ok) throw new Error('Erro ao carregar categorias');
-      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Erro ao conectar ao servidor' }));
+
+        if (errorData.requiresSetup) {
+          toast.info('É necessário configurar sua empresa primeiro.');
+          return;
+        }
+
+        throw new Error(errorData.error || 'Erro ao carregar categorias');
+      }
+
       const data = await response.json();
       setCategories(data.categories || []);
-      
+
       if (data.categories && data.categories.length > 0) {
         setForm(prev => ({ ...prev, category_id: data.categories[0].id }));
       }
     } catch (error) {
-      toast.error('Erro ao carregar categorias');
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao carregar categorias';
+      toast.error(errorMessage);
       console.error(error);
     } finally {
       setLoadingCategories(false);
@@ -304,8 +314,6 @@ export default function AddProductModal({ open, onOpenChange, onSuccess }: AddPr
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder="Descrição detalhada..."
-                variant="concave"
-                size="md"
                 rows={3}
               />
 
@@ -443,7 +451,6 @@ export default function AddProductModal({ open, onOpenChange, onSuccess }: AddPr
                 <NeuButton
                   type="button"
                   variant="convex"
-                  size="lg"
                   onClick={handleClose}
                   className="flex-1"
                 >
@@ -452,7 +459,6 @@ export default function AddProductModal({ open, onOpenChange, onSuccess }: AddPr
                 <NeuButton
                   type="submit"
                   variant="accent"
-                  size="lg"
                   loading={isLoading}
                   disabled={isLoading}
                   className="flex-1"

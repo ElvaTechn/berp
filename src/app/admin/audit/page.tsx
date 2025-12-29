@@ -1,25 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { motion } from 'framer-motion';
+import { NeuButton } from '@/components/ui/neu-button';
+import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
+import { NeuInput } from '@/components/ui/neu-input';
+import { NeuSelect, NeuSelectContent, NeuSelectItem, NeuSelectTrigger, NeuSelectValue } from '@/components/ui/neu-select';
 import {
   Activity,
   AlertTriangle,
@@ -146,17 +132,17 @@ export default function AuditLogsPage() {
     });
   };
 
-  const getActionBadgeVariant = (action: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
+  const getActionBadgeColor = (action: string): string => {
     if (action.includes('DELETE') || action.includes('ERROR') || action.includes('VIOLATION')) {
-      return 'destructive';
+      return 'text-[var(--neu-error)]';
     }
     if (action.includes('CREATE')) {
-      return 'default';
+      return 'text-[var(--neu-success)]';
     }
     if (action.includes('UPDATE') || action.includes('CHANGE')) {
-      return 'secondary';
+      return 'text-[var(--neu-accent)]';
     }
-    return 'outline';
+    return 'text-[var(--neu-text-muted)]';
   };
 
   const getResourceIcon = (resource: string) => {
@@ -183,312 +169,434 @@ export default function AuditLogsPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto py-6 px-4">
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-5 w-5" />
-              <span>{error}</span>
+      <div className="space-y-6">
+        <NeuCard variant="concave" size="md">
+          <NeuCardContent className="p-6">
+            <div className="flex items-center gap-3 text-[var(--neu-error)] mb-4">
+              <AlertTriangle className="h-6 w-6" />
+              <span className="neu-text-body font-semibold">{error}</span>
             </div>
-            <Button onClick={fetchLogs} variant="outline" className="mt-4">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Tentar novamente
-            </Button>
-          </CardContent>
-        </Card>
+            <NeuButton onClick={fetchLogs} variant="convex" size="md">
+              <RefreshCw className="h-4 w-4" />
+              <span>Tentar novamente</span>
+            </NeuButton>
+          </NeuCardContent>
+        </NeuCard>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-6 px-4 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+      >
         <div>
-          <h1 className="text-2xl font-bold">Logs de Auditoria</h1>
-          <p className="text-muted-foreground">
+          <h1 className="neu-text-h1">Logs de Auditoria</h1>
+          <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
             Monitore todas as ações do sistema
           </p>
         </div>
-        <Button onClick={fetchLogs} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Atualizar
-        </Button>
-      </div>
+        
+        <NeuButton
+          onClick={fetchLogs}
+          disabled={loading}
+          variant="accent"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <span>Atualizar</span>
+        </NeuButton>
+      </motion.div>
 
+      {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Ações</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalActions.toLocaleString('pt-BR')}</div>
-              <p className="text-xs text-muted-foreground">Ações registradas</p>
-            </CardContent>
-          </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        >
+          {/* Total Ações */}
+          <NeuCard variant="convex" size="sm">
+            <NeuCardContent className="p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                  <Activity className="w-5 h-5 text-[var(--neu-accent)]" />
+                </div>
+                <p className="neu-text-label text-[var(--neu-text-muted)]">
+                  Total de Ações
+                </p>
+              </div>
+              <p className="neu-text-h2">{stats.totalActions.toLocaleString('pt-BR')}</p>
+              <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+                Ações registradas
+              </p>
+            </NeuCardContent>
+          </NeuCard>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Erros</CardTitle>
-              <XCircle className="h-4 w-4 text-destructive" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-destructive">
+          {/* Erros */}
+          <NeuCard variant="convex" size="sm">
+            <NeuCardContent className="p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                  <XCircle className="w-5 h-5 text-[var(--neu-error)]" />
+                </div>
+                <p className="neu-text-label text-[var(--neu-text-muted)]">
+                  Erros
+                </p>
+              </div>
+              <p className="neu-text-h2 text-[var(--neu-error)]">
                 {stats.totalErrors.toLocaleString('pt-BR')}
+              </p>
+              <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+                Falhas detectadas
+              </p>
+            </NeuCardContent>
+          </NeuCard>
+
+          {/* Taxa de Sucesso */}
+          <NeuCard variant="convex" size="sm">
+            <NeuCardContent className="p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-[var(--neu-success)]" />
+                </div>
+                <p className="neu-text-label text-[var(--neu-text-muted)]">
+                  Taxa de Sucesso
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">Falhas detectadas</p>
-            </CardContent>
-          </Card>
+              <p className="neu-text-h2 text-[var(--neu-success)]">{stats.successRate}%</p>
+              <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+                Operações bem-sucedidas
+              </p>
+            </NeuCardContent>
+          </NeuCard>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Taxa de Sucesso</CardTitle>
-              <TrendingUp className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-500">{stats.successRate}%</div>
-              <p className="text-xs text-muted-foreground">Operações bem-sucedidas</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Registros</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+          {/* Registros */}
+          <NeuCard variant="convex" size="sm">
+            <NeuCardContent className="p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-[var(--neu-accent)]" />
+                </div>
+                <p className="neu-text-label text-[var(--neu-text-muted)]">
+                  Registros
+                </p>
+              </div>
+              <p className="neu-text-h2">
                 {pagination?.total.toLocaleString('pt-BR') || 0}
-              </div>
-              <p className="text-xs text-muted-foreground">Logs encontrados</p>
-            </CardContent>
-          </Card>
-        </div>
+              </p>
+              <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+                Logs encontrados
+              </p>
+            </NeuCardContent>
+          </NeuCard>
+        </motion.div>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filtros
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Ação</label>
-              <Select value={selectedAction || 'all'} onValueChange={(v) => { setSelectedAction(v === 'all' ? '' : v); setCurrentPage(1); }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  {filters?.availableActions.map((action) => (
-                    <SelectItem key={action} value={action}>
-                      {action}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+      {/* Filtros */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <NeuCard variant="convex" size="md">
+          <NeuCardContent className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Filter className="h-5 w-5 text-[var(--neu-accent)]" />
+              <h3 className="neu-text-h3">Filtros</h3>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Recurso</label>
-              <Select value={selectedResource || 'all'} onValueChange={(v) => { setSelectedResource(v === 'all' ? '' : v); setCurrentPage(1); }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {filters?.availableResources.map((resource) => (
-                    <SelectItem key={resource} value={resource}>
-                      {resource}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {/* Ação */}
+              <div className="space-y-2">
+                <label className="neu-text-label">Ação</label>
+                <NeuSelect 
+                  value={selectedAction || 'all'} 
+                  onValueChange={(v) => { 
+                    setSelectedAction(v === 'all' ? '' : v); 
+                    setCurrentPage(1); 
+                  }}
+                >
+                  <NeuSelectTrigger variant="concave" size="sm">
+                    <NeuSelectValue placeholder="Todas" />
+                  </NeuSelectTrigger>
+                  <NeuSelectContent>
+                    <NeuSelectItem value="all">Todas</NeuSelectItem>
+                    {filters?.availableActions.map((action) => (
+                      <NeuSelectItem key={action} value={action}>
+                        {action}
+                      </NeuSelectItem>
+                    ))}
+                  </NeuSelectContent>
+                </NeuSelect>
+              </div>
+
+              {/* Recurso */}
+              <div className="space-y-2">
+                <label className="neu-text-label">Recurso</label>
+                <NeuSelect 
+                  value={selectedResource || 'all'} 
+                  onValueChange={(v) => { 
+                    setSelectedResource(v === 'all' ? '' : v); 
+                    setCurrentPage(1); 
+                  }}
+                >
+                  <NeuSelectTrigger variant="concave" size="sm">
+                    <NeuSelectValue placeholder="Todos" />
+                  </NeuSelectTrigger>
+                  <NeuSelectContent>
+                    <NeuSelectItem value="all">Todos</NeuSelectItem>
+                    {filters?.availableResources.map((resource) => (
+                      <NeuSelectItem key={resource} value={resource}>
+                        {resource}
+                      </NeuSelectItem>
+                    ))}
+                  </NeuSelectContent>
+                </NeuSelect>
+              </div>
+
+              {/* Status */}
+              <div className="space-y-2">
+                <label className="neu-text-label">Status</label>
+                <NeuSelect 
+                  value={selectedSuccess || 'all'} 
+                  onValueChange={(v) => { 
+                    setSelectedSuccess(v === 'all' ? '' : v); 
+                    setCurrentPage(1); 
+                  }}
+                >
+                  <NeuSelectTrigger variant="concave" size="sm">
+                    <NeuSelectValue placeholder="Todos" />
+                  </NeuSelectTrigger>
+                  <NeuSelectContent>
+                    <NeuSelectItem value="all">Todos</NeuSelectItem>
+                    <NeuSelectItem value="true">Sucesso</NeuSelectItem>
+                    <NeuSelectItem value="false">Falha</NeuSelectItem>
+                  </NeuSelectContent>
+                </NeuSelect>
+              </div>
+
+              {/* Data Inicial */}
+              <div className="space-y-2">
+                <label className="neu-text-label">Data Inicial</label>
+                <NeuInput
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => { 
+                    setStartDate(e.target.value); 
+                    setCurrentPage(1); 
+                  }}
+                />
+              </div>
+
+              {/* Data Final */}
+              <div className="space-y-2">
+                <label className="neu-text-label">Data Final</label>
+                <NeuInput
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => { 
+                    setEndDate(e.target.value); 
+                    setCurrentPage(1); 
+                  }}
+                />
+              </div>
+
+              {/* Limpar Filtros */}
+              <div className="flex items-end">
+                <NeuButton 
+                  variant="convex" 
+                  size="sm" 
+                  onClick={handleClearFilters}
+                  className="w-full"
+                >
+                  Limpar Filtros
+                </NeuButton>
+              </div>
+            </div>
+          </NeuCardContent>
+        </NeuCard>
+      </motion.div>
+
+      {/* Tabela de Logs */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <NeuCard variant="concave" size="md">
+          <NeuCardContent className="p-0">
+            <div className="p-6 border-b border-[var(--neu-border)]">
+              <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-[var(--neu-accent)]" />
+                <h3 className="neu-text-h3">Histórico de Logs</h3>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Status</label>
-              <Select value={selectedSuccess || 'all'} onValueChange={(v) => { setSelectedSuccess(v === 'all' ? '' : v); setCurrentPage(1); }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="true">Sucesso</SelectItem>
-                  <SelectItem value="false">Falha</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Data Inicial</label>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => { setStartDate(e.target.value); setCurrentPage(1); }}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Data Final</label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => { setEndDate(e.target.value); setCurrentPage(1); }}
-              />
-            </div>
-
-            <div className="flex items-end">
-              <Button variant="outline" onClick={handleClearFilters} className="w-full">
-                Limpar Filtros
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Histórico de Logs
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : logs.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Nenhum log encontrado</p>
-            </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Data/Hora</TableHead>
-                    <TableHead>Ação</TableHead>
-                    <TableHead>Recurso</TableHead>
-                    <TableHead>Usuário</TableHead>
-                    <TableHead>IP</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Detalhes</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {logs.map((log) => (
-                    <TableRow key={log.id}>
-                      <TableCell className="whitespace-nowrap">
-                        {formatDate(log.timestamp)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getActionBadgeVariant(log.action)}>
-                          {log.action}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {getResourceIcon(log.resource)}
-                          <span>{log.resource}</span>
-                          {log.resource_id && (
-                            <span className="text-xs text-muted-foreground">
-                              ({log.resource_id.slice(0, 8)}...)
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <p className="text-sm font-medium">
-                            {log.user?.full_name || log.employee?.full_name || 'Sistema'}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {log.user?.email || log.employee?.email || '-'}
-                          </p>
-                          {log.company && (
-                            <p className="text-xs text-muted-foreground">
-                              {log.company.name}
-                            </p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {log.ip_address}
-                      </TableCell>
-                      <TableCell>
-                        {log.success ? (
-                          <div className="flex items-center gap-1 text-green-600">
-                            <CheckCircle className="h-4 w-4" />
-                            <span className="text-sm">Sucesso</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1 text-destructive">
-                            <XCircle className="h-4 w-4" />
-                            <span className="text-sm">Falha</span>
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="max-w-xs">
-                        {log.error ? (
-                          <span className="text-sm text-destructive truncate block">
-                            {log.error}
-                          </span>
-                        ) : log.details ? (
-                          <span className="text-sm text-muted-foreground truncate block" title={log.details}>
-                            {JSON.stringify(parseDetails(log.details)).slice(0, 50)}...
-                          </span>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-
-              {pagination && pagination.totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                  <div className="text-sm text-muted-foreground">
-                    Mostrando {((pagination.page - 1) * pagination.limit) + 1} a{' '}
-                    {Math.min(pagination.page * pagination.limit, pagination.total)} de{' '}
-                    {pagination.total} registros
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={!pagination.hasPrev}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                      Anterior
-                    </Button>
-                    <span className="text-sm px-2">
-                      Página {pagination.page} de {pagination.totalPages}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage((p) => p + 1)}
-                      disabled={!pagination.hasNext}
-                    >
-                      Próxima
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <RefreshCw className="h-8 w-8 animate-spin text-[var(--neu-accent)]" />
+              </div>
+            ) : logs.length === 0 ? (
+              <div className="text-center py-12 px-4">
+                <div className="w-20 h-20 rounded-full neu-surface neu-convex-md flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-10 h-10 text-[var(--neu-accent)]" />
                 </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+                <h3 className="neu-text-h2 mb-2">Nenhum log encontrado</h3>
+                <p className="neu-text-body text-[var(--neu-text-muted)]">
+                  Ajuste os filtros para ver mais resultados
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-[var(--neu-base)] border-b border-[var(--neu-border)]">
+                      <tr>
+                        <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
+                          Data/Hora
+                        </th>
+                        <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
+                          Ação
+                        </th>
+                        <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
+                          Recurso
+                        </th>
+                        <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
+                          Usuário
+                        </th>
+                        <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
+                          IP
+                        </th>
+                        <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
+                          Status
+                        </th>
+                        <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
+                          Detalhes
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {logs.map((log, index) => (
+                        <motion.tr
+                          key={log.id}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: index * 0.03 }}
+                          className="border-b border-[var(--neu-border)] hover:bg-[var(--neu-surface-hover)] transition-colors"
+                        >
+                          <td className="px-6 py-4 neu-text-caption font-mono whitespace-nowrap">
+                            {formatDate(log.timestamp)}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-3 py-1 rounded-lg neu-convex-xs text-xs font-bold ${getActionBadgeColor(log.action)}`}>
+                              {log.action}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              {getResourceIcon(log.resource)}
+                              <span className="neu-text-body">{log.resource}</span>
+                              {log.resource_id && (
+                                <span className="neu-text-caption text-[var(--neu-text-muted)]">
+                                  ({log.resource_id.slice(0, 8)}...)
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="space-y-1">
+                              <p className="neu-text-body font-medium">
+                                {log.user?.full_name || log.employee?.full_name || 'Sistema'}
+                              </p>
+                              <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                                {log.user?.email || log.employee?.email || '-'}
+                              </p>
+                              {log.company && (
+                                <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                                  {log.company.name}
+                                </p>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 neu-text-caption font-mono">
+                            {log.ip_address}
+                          </td>
+                          <td className="px-6 py-4">
+                            {log.success ? (
+                              <div className="flex items-center gap-2 text-[var(--neu-success)]">
+                                <CheckCircle className="h-4 w-4" />
+                                <span className="neu-text-caption font-semibold">Sucesso</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 text-[var(--neu-error)]">
+                                <XCircle className="h-4 w-4" />
+                                <span className="neu-text-caption font-semibold">Falha</span>
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 max-w-xs">
+                            {log.error ? (
+                              <span className="neu-text-caption text-[var(--neu-error)] truncate block">
+                                {log.error}
+                              </span>
+                            ) : log.details ? (
+                              <span 
+                                className="neu-text-caption text-[var(--neu-text-muted)] truncate block" 
+                                title={log.details}
+                              >
+                                {JSON.stringify(parseDetails(log.details)).slice(0, 50)}...
+                              </span>
+                            ) : (
+                              <span className="neu-text-caption text-[var(--neu-text-muted)]">-</span>
+                            )}
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Paginação */}
+                {pagination && pagination.totalPages > 1 && (
+                  <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--neu-border)]">
+                    <div className="neu-text-caption text-[var(--neu-text-muted)]">
+                      Mostrando {((pagination.page - 1) * pagination.limit) + 1} a{' '}
+                      {Math.min(pagination.page * pagination.limit, pagination.total)} de{' '}
+                      {pagination.total} registros
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <NeuButton
+                        variant="convex"
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={!pagination.hasPrev}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        <span>Anterior</span>
+                      </NeuButton>
+                      <span className="neu-text-caption px-3">
+                        Página {pagination.page} de {pagination.totalPages}
+                      </span>
+                      <NeuButton
+                        variant="convex"
+                        onClick={() => setCurrentPage((p) => p + 1)}
+                        disabled={!pagination.hasNext}
+                      >
+                        <span>Próxima</span>
+                        <ChevronRight className="h-4 w-4" />
+                      </NeuButton>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </NeuCardContent>
+        </NeuCard>
+      </motion.div>
     </div>
   );
 }

@@ -136,7 +136,6 @@ export default function FuncionariosPage() {
             <NeuButton
               onClick={() => setShowAddModal(true)}
               variant="accent"
-              size="md"
             >
               <Plus className="w-5 h-5" />
               <span>Adicionar Funcionário</span>
@@ -156,8 +155,6 @@ export default function FuncionariosPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={<Search className="w-5 h-5" />}
-            variant="concave"
-            size="md"
           />
         </motion.div>
 

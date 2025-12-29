@@ -5,8 +5,8 @@ import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import { Prisma } from '@prisma/client';
 
-// PATCH - Atualizar produto
-export async function PATCH(
+// Função compartilhada para atualizar produto
+async function updateProduct(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -33,21 +33,40 @@ export async function PATCH(
       );
     }
 
-    // Buscar empresa do usuário
+    // Buscar empresa do usuário - primeiro como funcionário
+    let companyId: string | null = null;
+    let userRole: string = 'VENDEDOR'; // Default role
+
     const employee = await prisma.employee.findFirst({
-      where: { user_id: payload.userId },
+      where: { user_id: payload.userId, is_active: true },
       select: { company_id: true, role: true },
     });
 
-    if (!employee) {
+    if (employee) {
+      companyId = employee.company_id;
+      userRole = employee.role.toString();
+    } else {
+      // Se não encontrou como funcionário, verifica se é dono de alguma empresa
+      const company = await prisma.company.findFirst({
+        where: { owner_id: payload.userId },
+        select: { id: true },
+      });
+
+      if (company) {
+        companyId = company.id;
+        userRole = 'GESTOR'; // Dono tem permissão de GESTOR
+      }
+    }
+
+    if (!companyId) {
       return NextResponse.json(
-        { error: 'Funcionário não encontrado' },
+        { error: 'Nenhuma empresa configurada', requiresSetup: true },
         { status: 404 }
       );
     }
 
     // Verificar permissão
-    if (employee.role !== 'GESTOR' && employee.role !== 'ADMIN') {
+    if (userRole !== 'GESTOR' && userRole !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Sem permissão para editar produtos' },
         { status: 403 }
@@ -66,7 +85,7 @@ export async function PATCH(
       );
     }
 
-    if (existingProduct.company_id !== employee.company_id) {
+    if (existingProduct.company_id !== companyId) {
       return NextResponse.json(
         { error: 'Produto não pertence à sua empresa' },
         { status: 403 }
@@ -86,7 +105,7 @@ export async function PATCH(
         const duplicate = await prisma.product.findFirst({
           where: {
             barcode: body.barcode,
-            company_id: employee.company_id,
+            company_id: companyId,
             id: { not: productId },
           },
         });
@@ -101,7 +120,7 @@ export async function PATCH(
       updateData.barcode = body.barcode;
     }
     if (body.sku !== undefined) updateData.sku = body.sku;
-    
+
     // Preços (converter para Decimal)
     if (body.price !== undefined) {
       if (body.price <= 0) {
@@ -112,7 +131,7 @@ export async function PATCH(
       }
       updateData.price = new Prisma.Decimal(body.price);
     }
-    
+
     if (body.cost_price !== undefined) {
       if (body.cost_price !== null && body.cost_price < 0) {
         return NextResponse.json(
@@ -175,7 +194,7 @@ export async function PATCH(
     logger.info('Product updated', {
       productId: product.id,
       productName: product.name,
-      companyId: employee.company_id,
+      companyId: companyId,
       userId: payload.userId,
     });
 
@@ -193,6 +212,22 @@ export async function PATCH(
       { status: 500 }
     );
   }
+}
+
+// PATCH - Atualizar produto
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return updateProduct(request, { params });
+}
+
+// PUT - Atualizar produto (alias para PATCH)
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return updateProduct(request, { params });
 }
 
 // DELETE - Deletar produto
@@ -223,21 +258,40 @@ export async function DELETE(
       );
     }
 
-    // Buscar empresa do usuário
+    // Buscar empresa do usuário - primeiro como funcionário
+    let companyId: string | null = null;
+    let userRole: string = 'VENDEDOR'; // Default role
+
     const employee = await prisma.employee.findFirst({
-      where: { user_id: payload.userId },
+      where: { user_id: payload.userId, is_active: true },
       select: { company_id: true, role: true },
     });
 
-    if (!employee) {
+    if (employee) {
+      companyId = employee.company_id;
+      userRole = employee.role.toString();
+    } else {
+      // Se não encontrou como funcionário, verifica se é dono de alguma empresa
+      const company = await prisma.company.findFirst({
+        where: { owner_id: payload.userId },
+        select: { id: true },
+      });
+
+      if (company) {
+        companyId = company.id;
+        userRole = 'GESTOR'; // Dono tem permissão de GESTOR
+      }
+    }
+
+    if (!companyId) {
       return NextResponse.json(
-        { error: 'Funcionário não encontrado' },
+        { error: 'Nenhuma empresa configurada', requiresSetup: true },
         { status: 404 }
       );
     }
 
     // Verificar permissão
-    if (employee.role !== 'GESTOR' && employee.role !== 'ADMIN') {
+    if (userRole !== 'GESTOR' && userRole !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Sem permissão para deletar produtos' },
         { status: 403 }
@@ -256,7 +310,7 @@ export async function DELETE(
       );
     }
 
-    if (existingProduct.company_id !== employee.company_id) {
+    if (existingProduct.company_id !== companyId) {
       return NextResponse.json(
         { error: 'Produto não pertence à sua empresa' },
         { status: 403 }
@@ -278,7 +332,7 @@ export async function DELETE(
       logger.info('Product soft deleted (has sales)', {
         productId: product.id,
         productName: product.name,
-        companyId: employee.company_id,
+        companyId: companyId,
         userId: payload.userId,
       });
 
@@ -298,7 +352,7 @@ export async function DELETE(
     logger.info('Product permanently deleted', {
       productId: productId,
       productName: existingProduct.name,
-      companyId: employee.company_id,
+      companyId: companyId,
       userId: payload.userId,
     });
 

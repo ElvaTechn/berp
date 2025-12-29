@@ -19,6 +19,11 @@ import {
   DollarSign,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { NeuButton } from '@/components/ui/neu-button';
+import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
+import { NeuInput } from '@/components/ui/neu-input';
+import { NeuDialog, NeuDialogContent, NeuDialogHeader, NeuDialogTitle, NeuDialogDescription } from '@/components/ui/neu-dialog';
+import { cn } from '@/lib/utils';
 
 interface Product {
   id: string;
@@ -53,25 +58,7 @@ export default function POSPage() {
 
   useEffect(() => {
     fetchProducts();
-    
-    // Atalhos de teclado
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'F2') {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-      }
-      if (e.key === 'F9' && cart.length > 0) {
-        e.preventDefault();
-        handleCheckout();
-      }
-      if (e.key === 'Escape') {
-        setShowSuccessModal(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [cart]);
+  }, []);
 
   const fetchProducts = async () => {
     setIsLoading(true);
@@ -191,7 +178,7 @@ export default function POSPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           payment_method: 'DINHEIRO', // Pode ser configurável depois
-          sale_items: saleItems,
+          items: saleItems, // Corrigido: era 'sale_items'
         }),
       });
 
@@ -201,7 +188,9 @@ export default function POSPage() {
       }
 
       const data = await response.json();
-      setLastSaleId(data.sale.id);
+      if (data.sale?.id) {
+        setLastSaleId(data.sale.id);
+      }
       setShowSuccessModal(true);
       clearCart();
       fetchProducts(); // Atualizar stock
@@ -219,37 +208,24 @@ export default function POSPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black p-4 lg:p-8">
+    <div className="min-h-screen bg-[var(--neu-base)] p-4 lg:p-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="mb-6"
       >
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/30">
-            <ShoppingCart className="w-6 h-6 text-black dark:text-white" />
-          </div>
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-4xl font-black text-black dark:text-white italic tracking-tight">
-              Ponto de <span className="text-orange-500">Venda</span>
+            <h1 className="neu-text-h1">
+              Ponto de Venda
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 font-medium">Sistema de alta performance</p>
+            <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+              Sistema de alta performance
+            </p>
           </div>
         </div>
 
-        {/* Atalhos */}
-        <div className="flex gap-2 mt-4">
-          <div className="px-3 py-1 rounded-lg bg-blue-600/10 border border-blue-600/30 text-xs text-blue-400 font-bold">
-            F2 - Buscar
-          </div>
-          <div className="px-3 py-1 rounded-lg bg-green-600/10 border border-green-600/30 text-xs text-green-400 font-bold">
-            F9 - Finalizar
-          </div>
-          <div className="px-3 py-1 rounded-lg bg-slate-600/10 border border-slate-600/30 text-xs text-gray-600 dark:text-gray-400 font-bold">
-            ESC - Fechar
-          </div>
-        </div>
       </motion.div>
 
       {/* Layout Split */}
@@ -262,98 +238,110 @@ export default function POSPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-green-400" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar produto... (F2)"
-                className="w-full h-16 pl-14 pr-4 bg-white/5 border-2 border-green-600/30 rounded-2xl text-black dark:text-white text-lg placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
-              />
-            </div>
+            <NeuInput
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar produto..."
+              icon={<Search className="w-6 h-6" />}
+              className="text-lg"
+            />
           </motion.div>
 
           {/* Products Grid */}
-          <div className="flex-1 overflow-y-auto rounded-2xl bg-white/5 border border-slate-200 dark:border-white/10 p-4">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-full">
-                <Loader2 className="w-12 h-12 text-green-500 animate-spin" />
-              </div>
-            ) : filteredProducts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full">
-                <Package className="w-16 h-16 text-slate-600 mb-4" />
-                <p className="text-gray-600 dark:text-gray-400 font-medium">Nenhum produto encontrado</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {filteredProducts.map((product, index) => (
-                  <motion.button
-                    key={product.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.02 }}
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => addToCart(product)}
-                    disabled={product.quantity === 0}
-                    className={`relative p-4 rounded-2xl border-2 transition-all ${
-                      product.quantity === 0
-                        ? 'bg-red-600/10 border-red-600/30 opacity-50 cursor-not-allowed'
-                        : isLowStock(product)
-                        ? 'bg-yellow-600/10 border-yellow-600/30 hover:bg-yellow-600/20'
-                        : 'bg-white/5 border-slate-200 dark:border-white/10 hover:bg-white/10 hover:border-green-500/50'
-                    }`}
-                  >
-                    {/* Category Badge */}
-                    <div
-                      className="absolute top-2 right-2 w-8 h-8 rounded-lg flex items-center justify-center text-black dark:text-white text-xs font-black shadow-lg"
-                      style={{ backgroundColor: product.category.color }}
+          <NeuCard variant="flat" className="flex-1 overflow-hidden">
+            <NeuCardContent className="h-full overflow-y-auto p-4">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin" />
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <div className="w-20 h-20 rounded-full neu-surface neu-convex-md flex items-center justify-center mb-4">
+                    <Package className="w-10 h-10 text-[var(--neu-accent)]" />
+                  </div>
+                  <h3 className="neu-text-h2 mb-2">Nenhum produto encontrado</h3>
+                  <p className="neu-text-body text-[var(--neu-text-muted)]">Ajuste sua busca</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {filteredProducts.map((product, index) => (
+                    <motion.div
+                      key={product.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.02 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      {product.category.name.charAt(0)}
-                    </div>
+                      <NeuCard
+                        variant="convex"
+                        className={cn(
+                          "cursor-pointer transition-all h-full",
+                          product.quantity === 0 && "opacity-50 cursor-not-allowed"
+                        )}
+                        onClick={() => product.quantity > 0 && addToCart(product)}
+                      >
+                        <NeuCardContent className="p-3 relative"
+                      >
+                          {/* Product Image/Avatar */}
+                          <div className="w-full aspect-square rounded-xl neu-surface neu-convex-md flex items-center justify-center mb-3 overflow-hidden relative">
+                            <Package className="w-12 h-12 text-[var(--neu-text-muted)]" />
+                            
+                            {/* Category Badge */}
+                            <div
+                              className="absolute top-2 right-2 w-8 h-8 rounded-lg neu-convex-xs flex items-center justify-center text-white text-xs font-black"
+                              style={{ backgroundColor: product.category.color }}
+                            >
+                              {product.category.name.charAt(0)}
+                            </div>
+                            
+                            {/* Stock Alert */}
+                            {product.quantity === 0 ? (
+                              <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--neu-error)] text-white text-[10px] font-bold">
+                                <AlertTriangle className="w-3 h-3" />
+                                ESGOTADO
+                              </div>
+                            ) : isLowStock(product) ? (
+                              <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--neu-warning)] text-white text-[10px] font-bold">
+                                <AlertTriangle className="w-3 h-3" />
+                                BAIXO
+                              </div>
+                            ) : null}
+                          </div>
 
-                    {/* Stock Alert */}
-                    {product.quantity === 0 ? (
-                      <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full bg-red-600 text-black dark:text-white text-[10px] font-black">
-                        <AlertTriangle className="w-3 h-3" />
-                        ESGOTADO
-                      </div>
-                    ) : isLowStock(product) ? (
-                      <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full bg-yellow-600 text-black dark:text-white text-[10px] font-black">
-                        <AlertTriangle className="w-3 h-3" />
-                        BAIXO
-                      </div>
-                    ) : null}
-
-                    {/* Product Info */}
-                    <div className="mt-8 text-left">
-                      <p className="text-black dark:text-white font-bold text-sm mb-1 line-clamp-2">
-                        {product.name}
-                      </p>
-                      <p className="text-2xl font-black text-green-400 mb-1">
-                        {product.price.toLocaleString('pt-MZ', {
-                          minimumFractionDigits: 2,
-                        })}
-                        <span className="text-sm ml-1">MT</span>
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Stock: {product.quantity}
-                      </p>
-                    </div>
-
-                    {/* Add Icon */}
-                    {product.quantity > 0 && (
-                      <div className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-green-600 flex items-center justify-center">
-                        <Plus className="w-4 h-4 text-black dark:text-white" />
-                      </div>
-                    )}
-                  </motion.button>
-                ))}
-              </div>
-            )}
-          </div>
+                          {/* Product Info */}
+                          <div className="space-y-1">
+                            <p className="neu-text-body font-medium line-clamp-2" title={product.name}>
+                              {product.name}
+                            </p>
+                            <p className="neu-text-h3 font-bold text-[var(--neu-accent)]">
+                              {product.price.toLocaleString('pt-MZ', {
+                                minimumFractionDigits: 2,
+                              })} MT
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={cn(
+                                  "px-2 py-1 rounded-lg text-xs font-bold neu-convex-xs",
+                                  product.quantity > product.min_stock 
+                                    ? "text-[var(--neu-success)]"
+                                    : "text-[var(--neu-warning)]"
+                                )}
+                              >
+                                Stock: {product.quantity}
+                              </span>
+                            </div>
+                          </div>
+                        </NeuCardContent>
+                      </NeuCard>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </NeuCardContent>
+          </NeuCard>
         </div>
 
         {/* RIGHT: Cart */}
@@ -361,256 +349,233 @@ export default function POSPage() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className="flex flex-col gap-4 bg-gradient-to-br from-slate-900/50 to-slate-800/50 rounded-3xl border-2 border-green-600/20 p-6 backdrop-blur-sm"
         >
-          {/* Cart Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center">
-                <ShoppingCart className="w-5 h-5 text-black dark:text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-black text-black dark:text-white italic">Carrinho</h2>
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  {cart.length} {cart.length === 1 ? 'item' : 'itens'}
-                </p>
-              </div>
-            </div>
-            {cart.length > 0 && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={clearCart}
-                className="p-2 rounded-xl bg-red-600/20 text-red-400 hover:bg-red-600/30 transition-all"
-              >
-                <Trash2 className="w-5 h-5" />
-              </motion.button>
-            )}
-          </div>
-
-          {/* Cart Items */}
-          <div className="flex-1 overflow-y-auto space-y-3">
-            <AnimatePresence>
-              {cart.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex flex-col items-center justify-center h-full"
-                >
-                  <ShoppingCart className="w-16 h-16 text-slate-600 mb-4" />
-                  <p className="text-gray-600 dark:text-gray-400 font-medium">Carrinho vazio</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Adicione produtos para começar
-                  </p>
-                </motion.div>
-              ) : (
-                cart.map((item) => (
-                  <motion.div
-                    key={item.product.id}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="p-4 rounded-2xl bg-white/5 border border-slate-200 dark:border-white/10"
+          <NeuCard variant="concave" className="h-full flex flex-col">
+            <NeuCardContent className="flex flex-col gap-4 p-6 h-full">
+              {/* Cart Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-[var(--neu-border)]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                    <ShoppingCart className="w-5 h-5 text-[var(--neu-accent)]" />
+                  </div>
+                  <div>
+                    <h2 className="neu-text-h2">Carrinho</h2>
+                    <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                      {cart.length} {cart.length === 1 ? 'item' : 'itens'}
+                    </p>
+                  </div>
+                </div>
+                {cart.length > 0 && (
+                  <NeuButton
+                    variant="ghost"
+                    size="icon"
+                    onClick={clearCart}
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <p className="text-sm font-bold text-black dark:text-white mb-1">
-                          {item.product.name}
-                        </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">
-                          {item.product.price.toLocaleString('pt-MZ', {
-                            minimumFractionDigits: 2,
-                          })}{' '}
-                          MT
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => removeFromCart(item.product.id)}
-                        className="p-1 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600/30 transition-all"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <motion.button
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() =>
-                            updateQuantity(item.product.id, item.quantity - 1)
-                          }
-                          className="w-8 h-8 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600/30 transition-all flex items-center justify-center"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </motion.button>
-                        <span className="w-12 text-center text-lg font-black text-black dark:text-white">
-                          {item.quantity}
-                        </span>
-                        <motion.button
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() =>
-                            updateQuantity(item.product.id, item.quantity + 1)
-                          }
-                          disabled={item.quantity >= item.product.quantity}
-                          className="w-8 h-8 rounded-lg bg-green-600/20 text-green-400 hover:bg-green-600/30 transition-all flex items-center justify-center disabled:opacity-50"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </motion.button>
-                      </div>
-
-                      <div className="text-right">
-                        <p className="text-lg font-black text-black dark:text-white">
-                          {(item.product.price * item.quantity).toLocaleString(
-                            'pt-MZ',
-                            { minimumFractionDigits: 2 }
-                          )}
-                        </p>
-                        <p className="text-xs text-gray-500">MT</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Totals */}
-          {cart.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-3 pt-4 border-t-2 border-green-600/30"
-            >
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                  Subtotal
-                </span>
-                <span className="text-lg font-bold text-black dark:text-white">
-                  {calculateSubtotal().toLocaleString('pt-MZ', {
-                    minimumFractionDigits: 2,
-                  })}{' '}
-                  MT
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600 dark:text-gray-400 font-medium flex items-center gap-1">
-                  <Percent className="w-4 h-4" />
-                  IVA (17%)
-                </span>
-                <span className="text-lg font-bold text-yellow-400">
-                  {calculateIVA().toLocaleString('pt-MZ', {
-                    minimumFractionDigits: 2,
-                  })}{' '}
-                  MT
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center p-4 rounded-2xl bg-green-600/20 border-2 border-green-600/50">
-                <span className="text-lg font-black text-black dark:text-white uppercase flex items-center gap-2">
-                  <DollarSign className="w-6 h-6" />
-                  Total
-                </span>
-                <span className="text-3xl font-black text-green-400 italic">
-                  {calculateTotal().toLocaleString('pt-MZ', {
-                    minimumFractionDigits: 2,
-                  })}{' '}
-                  <span className="text-xl">MT</span>
-                </span>
-              </div>
-
-              {/* Checkout Button */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleCheckout}
-                disabled={isCheckingOut}
-                className="w-full h-16 rounded-2xl bg-rose-400 text-white font-black text-lg flex items-center justify-center gap-3 shadow-2xl shadow-rose-400/50 hover:shadow-rose-400/70 disabled:opacity-50 transition-all"
-              >
-                {isCheckingOut ? (
-                  <>
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                    Processando...
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="w-6 h-6" />
-                    Finalizar Venda (F9)
-                  </>
+                    <Trash2 className="w-5 h-5 text-[var(--neu-error)]" />
+                  </NeuButton>
                 )}
-              </motion.button>
-            </motion.div>
-          )}
+              </div>
+
+              {/* Cart Items */}
+              <div className="flex-1 overflow-y-auto space-y-3">
+                <AnimatePresence>
+                  {cart.length === 0 ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex flex-col items-center justify-center h-full py-12"
+                    >
+                      <div className="w-16 h-16 rounded-full neu-surface neu-convex-md flex items-center justify-center mb-4">
+                        <ShoppingCart className="w-8 h-8 text-[var(--neu-accent)]" />
+                      </div>
+                      <p className="neu-text-body font-medium mb-1">Carrinho vazio</p>
+                      <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                        Adicione produtos para começar
+                      </p>
+                    </motion.div>
+                  ) : (
+                    cart.map((item) => (
+                      <motion.div
+                        key={item.product.id}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                      >
+                        <NeuCard variant="convex" size="sm">
+                          <NeuCardContent className="p-3">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1 min-w-0">
+                                <p className="neu-text-body font-medium mb-1 truncate">
+                                  {item.product.name}
+                                </p>
+                                <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                                  {item.product.price.toLocaleString('pt-MZ', {
+                                    minimumFractionDigits: 2,
+                                  })} MT
+                                </p>
+                              </div>
+                              <NeuButton
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeFromCart(item.product.id)}
+                              >
+                                <X className="w-4 h-4 text-[var(--neu-error)]" />
+                              </NeuButton>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-3 border-t border-[var(--neu-border)]">
+                              <div className="flex items-center gap-2">
+                                <NeuButton
+                                  variant="convex"
+                                  size="icon"
+                                  onClick={() =>
+                                    updateQuantity(item.product.id, item.quantity - 1)
+                                  }
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </NeuButton>
+                                <span className="w-12 text-center neu-text-body font-bold">
+                                  {item.quantity}
+                                </span>
+                                <NeuButton
+                                  variant="convex"
+                                  size="icon"
+                                  onClick={() =>
+                                    updateQuantity(item.product.id, item.quantity + 1)
+                                  }
+                                  disabled={item.quantity >= item.product.quantity}
+                                >
+                                  <Plus className="w-4 h-4" />
+                                </NeuButton>
+                              </div>
+
+                              <div className="text-right">
+                                <p className="neu-text-body font-bold">
+                                  {(item.product.price * item.quantity).toLocaleString(
+                                    'pt-MZ',
+                                    { minimumFractionDigits: 2 }
+                                  )} MT
+                                </p>
+                              </div>
+                            </div>
+                          </NeuCardContent>
+                        </NeuCard>
+                      </motion.div>
+                    ))
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Totals */}
+              {cart.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-3 pt-4 border-t border-[var(--neu-border)]"
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="neu-text-body">Subtotal</span>
+                    <span className="neu-text-body font-bold">
+                      {calculateSubtotal().toLocaleString('pt-MZ', {
+                        minimumFractionDigits: 2,
+                      })} MT
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="neu-text-body flex items-center gap-1">
+                      <Percent className="w-4 h-4" />
+                      IVA (17%)
+                    </span>
+                    <span className="neu-text-body font-bold text-[var(--neu-warning)]">
+                      {calculateIVA().toLocaleString('pt-MZ', {
+                        minimumFractionDigits: 2,
+                      })} MT
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center p-4 rounded-xl neu-surface neu-concave-sm">
+                    <span className="neu-text-h3 flex items-center gap-2">
+                      <DollarSign className="w-6 h-6" />
+                      Total
+                    </span>
+                    <span className="neu-text-h2 text-[var(--neu-success)]">
+                      {calculateTotal().toLocaleString('pt-MZ', {
+                        minimumFractionDigits: 2,
+                      })} MT
+                    </span>
+                  </div>
+
+                  {/* Checkout Button */}
+                  <NeuButton
+                    variant="accent"
+                    onClick={handleCheckout}
+                    disabled={isCheckingOut}
+                    loading={isCheckingOut}
+                    className="w-full mt-4"
+                  >
+                    <CreditCard className="w-6 h-6" />
+                    <span>Finalizar Venda</span>
+                  </NeuButton>
+                </motion.div>
+              )}
+            </NeuCardContent>
+          </NeuCard>
         </motion.div>
       </div>
 
       {/* Success Modal */}
-      <AnimatePresence>
-        {showSuccessModal && (
-          <>
+      <NeuDialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <NeuDialogContent size="md">
+          <NeuDialogHeader>
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
-              onClick={() => setShowSuccessModal(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-gradient-to-br from-[#0f0f0f] to-[#1a1a1a] rounded-3xl border-2 border-green-600/50 p-8 z-50"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.1, type: 'spring' }}
+              className="w-20 h-20 rounded-full neu-surface neu-convex-lg flex items-center justify-center mx-auto mb-6 bg-[var(--neu-success)]"
             >
-              <div className="text-center">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2, type: 'spring' }}
-                  className="w-20 h-20 rounded-full bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-green-500/50"
-                >
-                  <CheckCircle className="w-10 h-10 text-black dark:text-white" />
-                </motion.div>
-
-                <h2 className="text-3xl font-black text-black dark:text-white italic mb-2">
-                  Venda <span className="text-green-500">Finalizada!</span>
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Transação processada com sucesso
-                </p>
-
-                {lastSaleId && (
-                  <div className="p-4 rounded-2xl bg-green-600/10 border border-green-600/30 mb-6">
-                    <p className="text-xs text-green-400 mb-1">ID da Venda</p>
-                    <p className="text-sm font-mono text-black dark:text-white">{lastSaleId}</p>
-                  </div>
-                )}
-
-                <div className="flex gap-3">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowSuccessModal(false)}
-                    className="flex-1 h-14 rounded-2xl border-2 border-slate-200 dark:border-white/10 text-black dark:text-white font-bold hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
-                  >
-                    Fechar
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      window.open(`/api/sales/${lastSaleId}/receipt`, '_blank');
-                    }}
-                    className="flex-1 h-14 rounded-2xl bg-rose-400 text-white font-bold hover:shadow-2xl hover:shadow-rose-400/50 transition-all"
-                  >
-                    🖨️ Imprimir Recibo
-                  </motion.button>
-                </div>
-              </div>
+              <CheckCircle className="w-10 h-10 text-white" />
             </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            
+            <NeuDialogTitle className="text-center">
+              Venda Finalizada!
+            </NeuDialogTitle>
+            <NeuDialogDescription className="text-center">
+              Transação processada com sucesso
+            </NeuDialogDescription>
+          </NeuDialogHeader>
+
+          <div className="space-y-4">
+            {lastSaleId && (
+              <div className="p-4 rounded-xl neu-surface neu-concave-sm">
+                <p className="neu-text-label text-[var(--neu-success)] mb-2">ID da Venda</p>
+                <p className="neu-text-body font-mono">{lastSaleId.slice(0, 8)}...</p>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <NeuButton
+                variant="convex"
+                onClick={() => setShowSuccessModal(false)}
+                className="flex-1"
+              >
+                Fechar
+              </NeuButton>
+              <NeuButton
+                variant="accent"
+                onClick={() => {
+                  window.open(`/api/sales/${lastSaleId}/receipt`, '_blank');
+                  setShowSuccessModal(false);
+                }}
+                className="flex-1"
+              >
+                Imprimir Recibo
+              </NeuButton>
+            </div>
+          </div>
+        </NeuDialogContent>
+      </NeuDialog>
     </div>
   );
 }

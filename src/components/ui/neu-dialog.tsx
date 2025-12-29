@@ -208,5 +208,4 @@ export {
   NeuDialogTitle,
   NeuDialogDescription,
   dialogContentVariants,
-  type NeuDialogContentProps,
 };

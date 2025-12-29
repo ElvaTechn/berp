@@ -72,6 +72,13 @@ export default function DashboardPage() {
       if (!res.ok) {
         // Erro real (401, 403, 500, etc.)
         const errorData = await res.json().catch(() => ({ error: 'Erro ao conectar ao servidor' }));
+
+        // Se o erro é sobre configuração incompleta, mostra info amigável
+        if (errorData.requiresSetup) {
+          toast.info(errorData.message || "É necessário configurar sua empresa primeiro.");
+          return;
+        }
+
         throw new Error(errorData.error || `Erro ${res.status}: Falha ao carregar dashboard`);
       }
 
@@ -170,7 +177,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="w-full space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -218,7 +225,13 @@ export default function DashboardPage() {
       )}
 
       {/* KPI Grid - Mobile: 1 col, Tablet: 2 cols, Desktop: 4 cols */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div 
+        className="w-full gap-4 lg:gap-6"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))'
+        }}
+      >
         <NeuKPICard
           title="Faturação Hoje"
           value={data.kpis.today.revenue_formatted}
@@ -289,7 +302,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Main Chart */}
-      <NeuCard variant="convex" size="md">
+      <NeuCard variant="convex" size="md" className="w-full">
         <NeuCardHeader>
           <NeuCardTitle>Tendência de Vendas (7 dias)</NeuCardTitle>
         </NeuCardHeader>
@@ -299,7 +312,7 @@ export default function DashboardPage() {
       </NeuCard>
 
       {/* Bottom Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         {/* Left: Top Products */}
         <NeuCard variant="convex" size="md">
           <NeuCardHeader>

@@ -27,15 +27,31 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Buscar empresa do usuário
+    // Buscar empresa do usuário - primeiro como funcionário
+    let companyId: string | null = null;
+
     const employee = await prisma.employee.findFirst({
-      where: { user_id: payload.userId },
+      where: { user_id: payload.userId, is_active: true },
       select: { company_id: true },
     });
 
-    if (!employee) {
+    if (employee) {
+      companyId = employee.company_id;
+    } else {
+      // Se não encontrou como funcionário, verifica se é dono de alguma empresa
+      const company = await prisma.company.findFirst({
+        where: { owner_id: payload.userId },
+        select: { id: true },
+      });
+
+      if (company) {
+        companyId = company.id;
+      }
+    }
+
+    if (!companyId) {
       return NextResponse.json(
-        { error: 'Funcionário não encontrado' },
+        { error: 'Nenhuma empresa configurada', requiresSetup: true },
         { status: 404 }
       );
     }
@@ -48,7 +64,7 @@ export async function GET(request: NextRequest) {
 
     // Construir query
     const where: any = {
-      company_id: employee.company_id,
+      company_id: companyId,
     };
 
     if (categoryId) {
@@ -124,21 +140,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Buscar empresa do usuário
+    // Buscar empresa do usuário - primeiro como funcionário
+    let companyId: string | null = null;
+    let userRole: string = 'VENDEDOR'; // Default role
+
     const employee = await prisma.employee.findFirst({
-      where: { user_id: payload.userId },
+      where: { user_id: payload.userId, is_active: true },
       select: { company_id: true, role: true },
     });
 
-    if (!employee) {
+    if (employee) {
+      companyId = employee.company_id;
+      userRole = employee.role.toString();
+    } else {
+      // Se não encontrou como funcionário, verifica se é dono de alguma empresa
+      const company = await prisma.company.findFirst({
+        where: { owner_id: payload.userId },
+        select: { id: true },
+      });
+
+      if (company) {
+        companyId = company.id;
+        userRole = 'GESTOR'; // Dono tem permissão de GESTOR
+      }
+    }
+
+    if (!companyId) {
       return NextResponse.json(
-        { error: 'Funcionário não encontrado' },
+        { error: 'Nenhuma empresa configurada', requiresSetup: true },
         { status: 404 }
       );
     }
 
     // Verificar permissão (apenas GESTOR e ADMIN)
-    if (employee.role !== 'GESTOR' && employee.role !== 'ADMIN') {
+    if (userRole !== 'GESTOR' && userRole !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Sem permissão para criar produtos' },
         { status: 403 }
@@ -190,7 +225,7 @@ export async function POST(request: NextRequest) {
       const existing = await prisma.product.findFirst({
         where: {
           barcode: body.barcode,
-          company_id: employee.company_id,
+          company_id: companyId,
         },
       });
 
@@ -215,7 +250,7 @@ export async function POST(request: NextRequest) {
         min_stock: parseInt(body.min_stock),
         max_stock: body.max_stock ? parseInt(body.max_stock) : null,
         category_id: body.category_id,
-        company_id: employee.company_id,
+        company_id: companyId,
         expiry_date: body.expiry_date ? new Date(body.expiry_date) : null,
         is_active: true,
       },
@@ -233,7 +268,7 @@ export async function POST(request: NextRequest) {
     logger.info('Product created', {
       productId: product.id,
       productName: product.name,
-      companyId: employee.company_id,
+      companyId: companyId,
       userId: payload.userId,
     });
 

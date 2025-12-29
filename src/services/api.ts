@@ -81,7 +81,10 @@ export const apiClient = {
         list: async (filters?: Record<string, string>): Promise<Employee[]> => {
             const params = new URLSearchParams(filters);
             const res = await fetch(`/api/employees?${params}`);
-            if (!res.ok) throw new Error('Failed to fetch employees');
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ error: 'Erro ao conectar ao servidor' }));
+                throw new Error(errorData.error || errorData.message || `Erro ${res.status}: Falha ao carregar funcionários`);
+            }
             return res.json();
         },
         create: async (data: Partial<Employee>): Promise<Employee> => {
@@ -90,7 +93,10 @@ export const apiClient = {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
             });
-            if (!res.ok) throw new Error('Failed to create employee');
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ error: 'Erro ao conectar ao servidor' }));
+                throw new Error(errorData.error || `Erro ${res.status}: Falha ao criar funcionário`);
+            }
             return res.json();
         },
         update: async (id: string, data: Partial<Employee>): Promise<Employee> => {
@@ -99,12 +105,18 @@ export const apiClient = {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
             });
-            if (!res.ok) throw new Error('Failed to update employee');
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ error: 'Erro ao conectar ao servidor' }));
+                throw new Error(errorData.error || `Erro ${res.status}: Falha ao atualizar funcionário`);
+            }
             return res.json();
         },
         delete: async (id: string): Promise<void> => {
             const res = await fetch(`/api/employees/${id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Failed to delete employee');
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ error: 'Erro ao conectar ao servidor' }));
+                throw new Error(errorData.error || `Erro ${res.status}: Falha ao deletar funcionário`);
+            }
         }
     },
 

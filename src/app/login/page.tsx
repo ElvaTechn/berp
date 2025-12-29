@@ -1,11 +1,10 @@
 // src/app/login/page.tsx
 "use client";
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, Store, ArrowRight, Loader2, ShieldCheck, Eye, EyeOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Mail, Lock, Store, ArrowRight, Loader2, Shield, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -37,9 +36,6 @@ export default function LoginPage() {
       toast.success('Acesso concedido! Bem-vindo ao ecossistema.');
       
       // Redirecionamento baseado na Role do utilizador
-      // ADMIN → Área administrativa (gestão de empresas, auditoria, sistema)
-      // GESTOR → Dashboard da Empresa (gestão da loja)
-      // VENDEDOR → Ponto de Venda (apenas vendas)
       const role = data.user?.role?.toUpperCase();
       let redirectTo = '/dashboard';
       
@@ -59,61 +55,189 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 overflow-hidden relative">
-      {/* Background Decorativo - Efeito de Aurora/Glow */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-rose-500/15 rounded-full blur-[120px]" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-orange-500/15 rounded-full blur-[120px]" />
+    <div className="min-h-screen flex items-center justify-center p-4 overflow-hidden relative bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Background Decorative Shapes */}
+      <div 
+        className="fixed top-[-100px] left-[-100px] w-[400px] h-[400px] rounded-full -z-10"
+        style={{
+          background: 'radial-gradient(circle, rgba(249, 115, 22, 0.15) 0%, transparent 70%)',
+          filter: 'blur(80px)',
+        }}
+      />
+      <div 
+        className="fixed bottom-[-150px] right-[-100px] w-[500px] h-[500px] rounded-full -z-10"
+        style={{
+          background: 'radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%)',
+          filter: 'blur(100px)',
+        }}
+      />
+      <div 
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] -z-10"
+        style={{
+          background: 'radial-gradient(ellipse, rgba(15, 23, 42, 0.8) 0%, transparent 70%)',
+        }}
+      />
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-lg z-10"
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="w-full max-w-[420px] z-10"
       >
-        <div className="text-center mb-10">
+        {/* Header - Brand Identity */}
+        <div className="text-center mb-8">
+          {/* Icon with Glass Effect */}
           <motion.div 
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
             whileHover={{ scale: 1.05 }}
-            className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-rose-400 shadow-[0_0_40px_rgba(251,113,133,0.4)] mb-6"
+            className="inline-flex items-center justify-center w-[72px] h-[72px] rounded-2xl mb-6 relative"
+            style={{
+              background: 'rgba(249, 115, 22, 0.1)',
+              border: '1px solid rgba(249, 115, 22, 0.2)',
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 0 40px rgba(249, 115, 22, 0.2)',
+            }}
           >
-            <Store className="w-10 h-10 text-white" />
+            <Store className="w-9 h-9 text-orange-500" />
           </motion.div>
-          <h1 className="text-6xl font-black tracking-tighter text-white mb-2 italic">
-            BIZ<span className="text-orange-500">360</span>
-          </h1>
-          <p className="text-slate-400 font-medium tracking-wide uppercase text-xs">A inteligência por trás do seu ERP</p>
+
+          {/* Logo */}
+          <motion.h1 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-6xl font-semibold tracking-tight mb-3 italic"
+            style={{ letterSpacing: '-0.02em' }}
+          >
+            <span className="text-white">BIZ</span>
+            <span 
+              className="text-[1.2em] font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent"
+            >
+              360
+            </span>
+          </motion.h1>
+
+          {/* Slogan */}
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-slate-400 text-sm uppercase tracking-[0.15em] font-medium"
+          >
+            A Inteligência Por Trás do Seu ERP
+          </motion.p>
         </div>
 
-        <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] p-8 rounded-[2.5rem] shadow-2xl">
+        {/* Glass Card - Main Container */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="rounded-[32px] p-[48px_40px] relative overflow-hidden"
+          style={{
+            background: 'rgba(30, 30, 35, 0.8)',
+            backdropFilter: 'blur(30px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+          }}
+        >
           <form onSubmit={handleLogin} className="space-y-6">
+            {/* Email Input */}
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-300 ml-1">IDENTIFICAÇÃO</label>
+              <label 
+                htmlFor="email"
+                className="block text-xs font-semibold uppercase tracking-[0.1em] text-white/60 mb-2"
+              >
+                Identificação
+              </label>
               <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-orange-400 transition-colors" />
-                <Input
-                  type="email"
-                  required
-                  placeholder="admin@empresa.com"
-                  className="h-14 pl-12 bg-black/40 border-white/10 text-white rounded-2xl focus:ring-2 focus:ring-orange-500/50 transition-all placeholder:text-slate-600"
-                  onChange={(e) => setForm({...form, email: e.target.value})}
+                <Mail 
+                  className="absolute left-[14px] top-1/2 -translate-y-1/2 w-5 h-5 text-white/40 group-focus-within:text-orange-500/80 transition-colors duration-300 pointer-events-none z-10" 
                 />
+                <div
+                  className="rounded-2xl p-1 transition-all duration-300"
+                  style={{
+                    background: 'rgba(20, 20, 25, 0.6)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.3)',
+                  }}
+                >
+                  <input
+                    id="email"
+                    type="email"
+                    required
+                    value={form.email}
+                    onChange={(e) => setForm({...form, email: e.target.value})}
+                    placeholder="exemplo@empresa.com"
+                    className="w-full bg-transparent border-none text-white text-[15px] px-12 py-[14px] outline-none placeholder:text-white/40 focus:outline-none"
+                    style={{
+                      caretColor: '#F97316',
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.parentElement!.style.borderColor = 'rgba(249, 115, 22, 0.5)';
+                      e.currentTarget.parentElement!.style.boxShadow = 'inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(249, 115, 22, 0.1)';
+                      e.currentTarget.parentElement!.style.background = 'rgba(30, 30, 35, 0.8)';
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.parentElement!.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                      e.currentTarget.parentElement!.style.boxShadow = 'inset 0 2px 4px rgba(0, 0, 0, 0.3)';
+                      e.currentTarget.parentElement!.style.background = 'rgba(20, 20, 25, 0.6)';
+                    }}
+                  />
+                </div>
               </div>
             </div>
 
+            {/* Password Input */}
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-300 ml-1">CHAVE DE ACESSO</label>
+              <label 
+                htmlFor="password"
+                className="block text-xs font-semibold uppercase tracking-[0.1em] text-white/60 mb-2"
+              >
+                Chave de Acesso
+              </label>
               <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-orange-400 transition-colors" />
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  placeholder="••••••••••••"
-                  className="h-14 pl-12 pr-12 bg-black/40 border-white/10 text-white rounded-2xl focus:ring-2 focus:ring-orange-500/50 transition-all placeholder:text-slate-600"
-                  onChange={(e) => setForm({...form, password: e.target.value})}
+                <Lock 
+                  className="absolute left-[14px] top-1/2 -translate-y-1/2 w-5 h-5 text-white/40 group-focus-within:text-orange-500/80 transition-colors duration-300 pointer-events-none z-10" 
                 />
+                <div
+                  className="rounded-2xl p-1 transition-all duration-300"
+                  style={{
+                    background: 'rgba(20, 20, 25, 0.6)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.3)',
+                  }}
+                >
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={form.password}
+                    onChange={(e) => setForm({...form, password: e.target.value})}
+                    placeholder="••••••••••••"
+                    className="w-full bg-transparent border-none text-white text-[15px] px-12 py-[14px] pr-12 outline-none placeholder:text-white/40 focus:outline-none"
+                    style={{
+                      caretColor: '#F97316',
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.parentElement!.style.borderColor = 'rgba(249, 115, 22, 0.5)';
+                      e.currentTarget.parentElement!.style.boxShadow = 'inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(249, 115, 22, 0.1)';
+                      e.currentTarget.parentElement!.style.background = 'rgba(30, 30, 35, 0.8)';
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.parentElement!.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                      e.currentTarget.parentElement!.style.boxShadow = 'inset 0 2px 4px rgba(0, 0, 0, 0.3)';
+                      e.currentTarget.parentElement!.style.background = 'rgba(20, 20, 25, 0.6)';
+                    }}
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-orange-400 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-orange-500 transition-colors duration-200 z-10"
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -124,24 +248,74 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <Button 
+            {/* Submit Button - Glass with Gradient */}
+            <motion.button
+              type="submit"
               disabled={isLoading}
-              className="w-full h-14 bg-orange-500 hover:bg-orange-400 text-white font-bold rounded-2xl text-lg transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-orange-500/20"
+              whileHover={{ y: -2 }}
+              whileTap={{ y: 0 }}
+              className="relative w-full rounded-2xl p-4 font-bold text-[15px] uppercase tracking-[0.08em] text-white overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+              style={{
+                background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)',
+                boxShadow: '0 4px 20px rgba(249, 115, 22, 0.3)',
+              }}
+              onMouseEnter={(e) => {
+                if (!isLoading) {
+                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(249, 115, 22, 0.4)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 4px 20px rgba(249, 115, 22, 0.3)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
             >
-              {isLoading ? <Loader2 className="animate-spin" /> : (
-                <span className="flex items-center gap-2">
-                  AUTENTICAR SISTEMA <ArrowRight className="w-5 h-5" />
-                </span>
-              )}
-            </Button>
+              {/* Shine Effect */}
+              <div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500"
+                style={{
+                  transform: 'skewX(-20deg)',
+                }}
+              />
+              
+              {/* Button Content */}
+              <div className="relative flex items-center justify-center gap-2">
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <span>Autenticar Sistema</span>
+                    <ArrowRight className="w-5 h-5" />
+                  </>
+                )}
+              </div>
+            </motion.button>
           </form>
-        </div>
 
-        <div className="mt-8 flex justify-center gap-6 text-slate-500 text-xs font-bold uppercase tracking-widest">
-            <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-green-500" /> AES-256 Encrypted</span>
-            <span>v2.0.4 - Local Node</span>
-        </div>
+          {/* Footer - Technical Info */}
+          <div className="mt-10 pt-6 border-t border-white/6">
+            <div className="flex items-center justify-center gap-3 text-xs text-slate-500">
+              <div className="flex items-center gap-2">
+                <Shield className="w-3.5 h-3.5" />
+                <span className="font-mono uppercase">AES-256 Encrypted</span>
+              </div>
+              <span className="text-slate-600">•</span>
+              <span className="font-mono text-slate-600">V2.0.4</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Bottom Spacing */}
+        <div className="h-8" />
       </motion.div>
+
+      {/* Accessibility: Skip to main content */}
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-orange-500 focus:text-white focus:rounded-lg"
+      >
+        Ir para conteúdo principal
+      </a>
     </div>
   );
 }

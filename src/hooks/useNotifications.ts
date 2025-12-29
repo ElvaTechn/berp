@@ -12,7 +12,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { ERPNotifications, Notification, NotificationManager } from '@/lib/notifications/notificationService';
+import { ERPNotifications, type Notification } from '@/lib/notifications/notificationService';
 
 export interface UseNotificationsReturn {
   notifications: Notification[];
@@ -162,7 +162,7 @@ export function useNotifications(): UseNotificationsReturn {
 // NOTIFICATION CONTEXT HOOK
 // ================================================================
 
-export function useNotificationManager(): NotificationManager {
+export function useNotificationManager() {
   return ERPNotifications.global;
 }
 
@@ -174,7 +174,7 @@ export interface UseDesktopNotificationsReturn {
   supported: boolean;
   permission: NotificationPermission;
   requestPermission: () => Promise<NotificationPermission>;
-  show: (title: string, options?: NotificationOptions) => Notification | null;
+  show: (title: string, options?: globalThis.NotificationOptions) => globalThis.Notification | null;
 }
 
 export function useDesktopNotifications(): UseDesktopNotificationsReturn {
@@ -202,12 +202,12 @@ export function useDesktopNotifications(): UseDesktopNotificationsReturn {
 
   const show = useCallback((
     title: string,
-    options?: NotificationOptions
-  ) => {
+    options?: globalThis.NotificationOptions
+  ): globalThis.Notification | null => {
     if (!supported || permission !== 'granted') return null;
 
     try {
-      return new Notification(title, {
+      return new globalThis.Notification(title, {
         icon: '/favicon.ico',
         badge: '/favicon.ico',
         ...options,

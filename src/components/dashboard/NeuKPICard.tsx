@@ -69,27 +69,31 @@ export function NeuKPICard({
         y: -2,
         transition: { duration: 0.2 }
       }}
-      className="
-        neu-surface
-        neu-convex-md
-        hover:neu-convex-lg
-        rounded-2xl
-        p-6
-        transition-all duration-200
-        cursor-default
-      "
+      className="neu-surface neu-convex-md hover:neu-convex-lg rounded-2xl p-5 lg:p-6 transition-all duration-200 cursor-default"
+      style={{
+        width: '100%',
+        minWidth: '220px',
+        flex: '1 1 0%'
+      }}
     >
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-3">
         {/* Left Side - Text Content */}
-        <div className="flex flex-col flex-1 min-w-0">
+        <div className="flex flex-col flex-1" style={{ minWidth: 0 }}>
           <span className="neu-text-label font-semibold uppercase tracking-wide text-[var(--neu-text-muted)] mb-2">
             {title}
           </span>
-          <span className="neu-text-h1 font-bold tracking-tight text-[var(--neu-text-primary)] mb-1 truncate">
+          <span 
+            className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-[var(--neu-text-primary)] mb-1"
+            style={{ 
+              whiteSpace: 'nowrap',
+              overflow: 'visible',
+              width: '100%'
+            }}
+          >
             {value}
           </span>
           {subtitle && (
-            <span className="neu-text-caption text-[var(--neu-text-muted)]">
+            <span className="neu-text-caption text-[var(--neu-text-muted)]" style={{ whiteSpace: 'nowrap' }}>
               {subtitle}
             </span>
           )}

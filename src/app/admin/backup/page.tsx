@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { motion } from 'framer-motion';
+import { NeuButton } from '@/components/ui/neu-button';
+import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
+import { NeuSwitch } from '@/components/ui/neu-switch';
 import {
   Download,
   Database,
@@ -13,13 +14,12 @@ import {
   Loader2,
   HardDrive,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Trash2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import PageHeader from '@/components/Common/PageHeader';
-import LoadingSpinner from '@/components/Common/LoadingSpinner';
-import { toast } from '@/components/ui/toast';
+import { toast } from 'sonner';
 
 interface BackupRecord {
   id: string;
@@ -34,6 +34,7 @@ export default function BackupPage() {
   const [creating, setCreating] = useState(false);
   const [backups, setBackups] = useState<BackupRecord[]>([]);
   const [lastBackup, setLastBackup] = useState<BackupRecord | null>(null);
+  const [autoBackupEnabled, setAutoBackupEnabled] = useState(false);
 
   useEffect(() => {
     loadBackups();
@@ -46,8 +47,9 @@ export default function BackupPage() {
       const data = await res.json();
       setBackups(data.backups || []);
       setLastBackup(data.lastBackup);
+      setAutoBackupEnabled(data.autoBackupEnabled || false);
     } catch {
-      toast.error('Erro', 'Não foi possível carregar o histórico de backups');
+      toast.error('Erro ao carregar histórico de backups');
     } finally {
       setLoading(false);
     }
@@ -57,7 +59,7 @@ export default function BackupPage() {
     setCreating(true);
     try {
       const res = await fetch('/api/admin/backup', { method: 'POST' });
-      
+
       if (!res.ok) throw new Error('Backup failed');
 
       // Get backup data for download
@@ -71,212 +73,331 @@ export default function BackupPage() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success('Backup criado', 'O download começou automaticamente');
+      toast.success('Backup criado com sucesso!', {
+        description: 'O download começou automaticamente',
+      });
       loadBackups();
     } catch {
-      toast.error('Erro', 'Não foi possível criar o backup');
+      toast.error('Não foi possível criar o backup');
     } finally {
       setCreating(false);
     }
   };
 
+  const handleAutoBackupToggle = async (enabled: boolean) => {
+    try {
+      const res = await fetch('/api/admin/backup/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ autoBackupEnabled: enabled }),
+      });
+
+      if (res.ok) {
+        setAutoBackupEnabled(enabled);
+        toast.success(`Backup automático ${enabled ? 'ativado' : 'desativado'}`);
+      }
+    } catch {
+      toast.error('Erro ao atualizar configuração');
+    }
+  };
+
   if (loading) {
-    return <LoadingSpinner text="A carregar..." />;
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin" />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Backup e Recuperação"
-        description="Faça backup dos dados do sistema"
-      />
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <h1 className="neu-text-h1">Backup e Recuperação</h1>
+        <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+          Faça backup dos dados do sistema
+        </p>
+      </motion.div>
 
-      {/* Last Backup Info */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="border-0 shadow-lg lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              Criar Novo Backup
-            </CardTitle>
-            <CardDescription>
-              Exporte todos os dados do sistema em formato JSON
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-                <h4 className="font-medium text-blue-900 mb-2">O backup inclui:</h4>
-                <ul className="grid grid-cols-2 gap-2 text-sm text-blue-700">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4" />
-                    Empresas e proprietários
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4" />
-                    Funcionários
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4" />
-                    Produtos e categorias
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4" />
-                    Vendas e itens
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4" />
-                    Reservas
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4" />
-                    Metadados do sistema
-                  </li>
-                </ul>
-              </div>
-
-              <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="font-medium text-amber-900">Atenção</h4>
-                    <p className="text-sm text-amber-700 mt-1">
-                      O backup pode conter dados sensíveis. Guarde o ficheiro em local seguro.
-                    </p>
-                  </div>
+        {/* Manual Backup */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="lg:col-span-2"
+        >
+          <NeuCard variant="convex" size="lg">
+            <NeuCardContent className="p-6 space-y-6">
+              {/* Header */}
+              <div className="text-center">
+                <div className="w-20 h-20 rounded-full neu-surface neu-convex-lg flex items-center justify-center mx-auto mb-4">
+                  <Database className="w-10 h-10 text-[var(--neu-accent)]" />
                 </div>
+                <h2 className="neu-text-h2 mb-2">Criar Novo Backup</h2>
+                <p className="neu-text-body text-[var(--neu-text-muted)]">
+                  Exporte todos os dados do sistema em formato JSON
+                </p>
               </div>
 
-              <Button
+              {/* Info Card */}
+              <NeuCard variant="concave" size="sm">
+                <NeuCardContent className="p-4">
+                  <h4 className="neu-text-body font-semibold text-[var(--neu-accent)] mb-3">
+                    O backup inclui:
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      'Empresas e proprietários',
+                      'Funcionários',
+                      'Produtos e categorias',
+                      'Vendas e itens',
+                      'Reservas',
+                      'Metadados do sistema',
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-[var(--neu-success)]" />
+                        <span className="neu-text-caption">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </NeuCardContent>
+              </NeuCard>
+
+              {/* Warning */}
+              <NeuCard variant="concave" size="sm">
+                <NeuCardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-[var(--neu-warning)] flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="neu-text-body font-semibold text-[var(--neu-warning)]">Atenção</h4>
+                      <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+                        O backup pode conter dados sensíveis. Guarde o ficheiro em local seguro.
+                      </p>
+                    </div>
+                  </div>
+                </NeuCardContent>
+              </NeuCard>
+
+              {/* Create Button */}
+              <NeuButton
                 onClick={createBackup}
                 disabled={creating}
-                className="w-full h-12 text-base bg-blue-600 hover:bg-blue-700"
+                variant="accent"
+                size="lg"
+                className="w-full"
               >
                 {creating ? (
                   <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    A criar backup...
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>A criar backup...</span>
                   </>
                 ) : (
                   <>
-                    <Download className="h-5 w-5 mr-2" />
-                    Criar e Descarregar Backup
+                    <Download className="w-5 h-5" />
+                    <span>Criar e Descarregar Backup</span>
                   </>
                 )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              </NeuButton>
+            </NeuCardContent>
+          </NeuCard>
+        </motion.div>
 
-        <Card className="border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Último Backup
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {lastBackup ? (
-              <div className="space-y-4">
-                <div className="p-4 bg-slate-50 rounded-xl">
-                  <div className="flex items-center justify-between mb-3">
-                    <Badge className={
-                      lastBackup.status === 'completed'
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-red-100 text-red-700'
-                    }>
-                      {lastBackup.status === 'completed' ? 'Completo' : 'Falhou'}
-                    </Badge>
-                    {lastBackup.status === 'completed' ? (
-                      <CheckCircle className="h-5 w-5 text-emerald-600" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-red-600" />
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Data:</span>
-                      <span className="font-medium">
-                        {format(new Date(lastBackup.createdAt), "dd MMM yyyy, HH:mm", { locale: pt })}
+        {/* Last Backup Info */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <NeuCard variant="convex" size="md">
+            <NeuCardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Clock className="w-5 h-5 text-[var(--neu-accent)]" />
+                <h3 className="neu-text-h3">Último Backup</h3>
+              </div>
+
+              {lastBackup ? (
+                <NeuCard variant="concave" size="sm">
+                  <NeuCardContent className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`px-3 py-1 rounded-lg neu-convex-xs text-xs font-bold ${
+                          lastBackup.status === 'completed'
+                            ? 'text-[var(--neu-success)]'
+                            : 'text-[var(--neu-error)]'
+                        }`}
+                      >
+                        {lastBackup.status === 'completed' ? (
+                          <div className="flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" />
+                            <span>Completo</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            <XCircle className="w-3 h-3" />
+                            <span>Falhou</span>
+                          </div>
+                        )}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Tamanho:</span>
-                      <span className="font-medium">{lastBackup.size}</span>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="neu-text-caption text-[var(--neu-text-muted)]">Data:</span>
+                        <span className="neu-text-caption font-medium">
+                          {format(new Date(lastBackup.createdAt), "dd MMM yyyy, HH:mm", { locale: pt })}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="neu-text-caption text-[var(--neu-text-muted)]">Tamanho:</span>
+                        <span className="neu-text-caption font-medium">{lastBackup.size}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="neu-text-caption text-[var(--neu-text-muted)]">Registros:</span>
+                        <span className="neu-text-caption font-medium">{lastBackup.records.toLocaleString()}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Registros:</span>
-                      <span className="font-medium">{lastBackup.records.toLocaleString()}</span>
-                    </div>
+                  </NeuCardContent>
+                </NeuCard>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 rounded-full neu-surface neu-convex-md flex items-center justify-center mx-auto mb-3">
+                    <HardDrive className="w-8 h-8 text-[var(--neu-text-muted)]" />
                   </div>
+                  <p className="neu-text-body text-[var(--neu-text-muted)]">Nenhum backup realizado</p>
+                  <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">Crie o primeiro backup agora</p>
                 </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-slate-500">
-                <HardDrive className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>Nenhum backup realizado</p>
-                <p className="text-xs mt-1">Crie o primeiro backup agora</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </NeuCardContent>
+          </NeuCard>
+
+          {/* Auto-backup Toggle */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+            className="mt-4"
+          >
+            <NeuCard variant="convex" size="sm">
+              <NeuCardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="neu-text-body font-medium">Backup Automático</p>
+                    <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">Backup diário às 02:00</p>
+                  </div>
+                  <NeuSwitch
+                    checked={autoBackupEnabled}
+                    onCheckedChange={handleAutoBackupToggle}
+                    variant="success"
+                    size="md"
+                  />
+                </div>
+              </NeuCardContent>
+            </NeuCard>
+          </motion.div>
+        </motion.div>
       </div>
 
       {/* Backup History */}
-      <Card className="border-0 shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Histórico de Backups</CardTitle>
-          <Button variant="outline" size="sm" onClick={loadBackups}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualizar
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {backups.length > 0 ? (
-            <div className="space-y-3">
-              {backups.map((backup) => (
-                <div
-                  key={backup.id}
-                  className="flex items-center justify-between p-4 bg-slate-50 rounded-xl"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`p-2 rounded-lg ${
-                      backup.status === 'completed' ? 'bg-emerald-100' : 'bg-red-100'
-                    }`}>
-                      {backup.status === 'completed' ? (
-                        <CheckCircle className="h-5 w-5 text-emerald-600" />
-                      ) : (
-                        <XCircle className="h-5 w-5 text-red-600" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-900">
-                        {format(new Date(backup.createdAt), "dd 'de' MMMM, yyyy 'às' HH:mm", { locale: pt })}
-                      </p>
-                      <p className="text-sm text-slate-500">
-                        {backup.records.toLocaleString()} registros • {backup.size}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge className={
-                    backup.status === 'completed'
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-red-100 text-red-700'
-                  }>
-                    {backup.status === 'completed' ? 'Completo' : 'Falhou'}
-                  </Badge>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <NeuCard variant="concave" size="md">
+          <NeuCardContent className="p-0">
+            <div className="p-6 border-b border-[var(--neu-border)] flex items-center justify-between">
+              <h3 className="neu-text-h3">Histórico de Backups</h3>
+              <NeuButton variant="convex" size="sm" onClick={loadBackups}>
+                <RefreshCw className="w-4 h-4" />
+                <span>Actualizar</span>
+              </NeuButton>
+            </div>
+
+            {backups.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-[var(--neu-base)] border-b border-[var(--neu-border)]">
+                    <tr>
+                      <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">Data/Hora</th>
+                      <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">Tamanho</th>
+                      <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">Registros</th>
+                      <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">Status</th>
+                      <th className="px-6 py-4 text-right neu-text-label text-[var(--neu-text-muted)]">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {backups.map((backup, index) => (
+                      <motion.tr
+                        key={backup.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: index * 0.03 }}
+                        className="border-b border-[var(--neu-border)] hover:bg-[var(--neu-surface-hover)] transition-colors"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            {backup.status === 'completed' ? (
+                              <CheckCircle className="w-4 h-4 text-[var(--neu-success)]" />
+                            ) : (
+                              <XCircle className="w-4 h-4 text-[var(--neu-error)]" />
+                            )}
+                            <span className="neu-text-body">
+                              {format(new Date(backup.createdAt), "dd 'de' MMMM, yyyy 'às' HH:mm", { locale: pt })}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="neu-text-body">{backup.size}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="neu-text-body">{backup.records.toLocaleString()}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`px-3 py-1 rounded-lg neu-convex-xs text-xs font-bold ${
+                              backup.status === 'completed'
+                                ? 'text-[var(--neu-success)]'
+                                : 'text-[var(--neu-error)]'
+                            }`}
+                          >
+                            {backup.status === 'completed' ? 'Completo' : 'Falhou'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-end gap-2">
+                            {backup.status === 'completed' && (
+                              <NeuButton variant="convex" size="icon" title="Download">
+                                <Download className="w-4 h-4" />
+                              </NeuButton>
+                            )}
+                            <NeuButton variant="ghost" size="icon" title="Eliminar">
+                              <Trash2 className="w-4 h-4 text-[var(--neu-error)]" />
+                            </NeuButton>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-12 px-4">
+                <div className="w-20 h-20 rounded-full neu-surface neu-convex-md flex items-center justify-center mx-auto mb-4">
+                  <Database className="w-10 h-10 text-[var(--neu-accent)]" />
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 text-slate-500">
-              <Database className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Nenhum backup no histórico</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                <h3 className="neu-text-h2 mb-2">Nenhum backup no histórico</h3>
+                <p className="neu-text-body text-[var(--neu-text-muted)]">
+                  Crie o primeiro backup usando o botão acima
+                </p>
+              </div>
+            )}
+          </NeuCardContent>
+        </NeuCard>
+      </motion.div>
     </div>
   );
 }

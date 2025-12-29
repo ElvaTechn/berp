@@ -2,7 +2,27 @@ const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
+  // Habilitar PWA em dev com variável de ambiente
+  disable: process.env.NODE_ENV === 'development' && !process.env.ENABLE_PWA_DEV,
+  // Usar service worker otimizado
+  sw: 'sw-optimized.js',
+  // Configurações de Workbox
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: true,
+  // Habilitar features modernas
+  navigationPreload: true,
+  
+  // Runtime caching configurações (Workbox gerencia automaticamente)
+  workboxOptions: {
+    disableDevLogs: true,
+    navigateFallback: '/',
+    cleanupOutdatedCaches: true,
+    skipWaiting: true,
+    clientsClaim: true,
+    maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10MB
+  },
+  
   runtimeCaching: [
     {
       urlPattern: /^https?:\/\/.*\/api\/.*/,
@@ -12,7 +32,7 @@ const withPWA = require('next-pwa')({
         networkTimeoutSeconds: 10,
         expiration: {
           maxEntries: 50,
-          maxAgeSeconds: 86400
+          maxAgeSeconds: 86400 // 24 horas
         },
         cacheableResponse: {
           statuses: [0, 200]
@@ -26,7 +46,7 @@ const withPWA = require('next-pwa')({
         cacheName: 'static-cache',
         expiration: {
           maxEntries: 100,
-          maxAgeSeconds: 604800
+          maxAgeSeconds: 604800 // 7 dias
         }
       }
     },
@@ -38,7 +58,7 @@ const withPWA = require('next-pwa')({
         networkTimeoutSeconds: 5,
         expiration: {
           maxEntries: 100,
-          maxAgeSeconds: 3600
+          maxAgeSeconds: 3600 // 1 hora
         }
       }
     }
@@ -58,12 +78,57 @@ const nextConfig = {
   },
   reactCompiler: true,
 
-  // Security headers
+  // ================================================================
+  // SECURITY & CACHE HEADERS - COMPLETE CONFIGURATION
+  // ================================================================
   async headers() {
+    const securityHeaders = [
+      {
+        key: 'X-DNS-Prefetch-Control',
+        value: 'on'
+      },
+      {
+        key: 'Strict-Transport-Security',
+        value: 'max-age=63072000; includeSubDomains; preload'
+      },
+      {
+        key: 'X-XSS-Protection',
+        value: '1; mode=block'
+      },
+      {
+        key: 'X-Frame-Options',
+        value: 'SAMEORIGIN'
+      },
+      {
+        key: 'X-Content-Type-Options',
+        value: 'nosniff'
+      },
+      {
+        key: 'Referrer-Policy',
+        value: 'strict-origin-when-cross-origin'
+      },
+      {
+        key: 'Permissions-Policy',
+        value: 'camera=(), microphone=(), geolocation=(self), payment=(self)'
+      }
+    ];
+
     return [
+      // ============================================================
+      // GLOBAL SECURITY HEADERS (All routes)
+      // ============================================================
+      {
+        source: '/:path*',
+        headers: securityHeaders,
+      },
+      
+      // ============================================================
+      // API ROUTES - CORS & Security
+      // ============================================================
       {
         source: '/api/:path*',
         headers: [
+          ...securityHeaders,
           {
             key: 'Access-Control-Allow-Origin',
             value: process.env.NODE_ENV === 'production'
@@ -84,27 +149,165 @@ const nextConfig = {
           },
           {
             key: 'Access-Control-Max-Age',
-            value: '86400', // 24 hours
+            value: '86400',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, private'
+          },
+        ],
+      },
+
+      // ============================================================
+      // SERVICE WORKER - Critical for PWA
+      // ============================================================
+      {
+        source: '/sw.js',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/javascript; charset=utf-8',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+          {
+            key: 'Service-Worker-Allowed',
+            value: '/',
           },
           {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
           },
+        ],
+      },
+
+      // ============================================================
+      // MANIFEST.JSON - PWA Configuration
+      // ============================================================
+      {
+        source: '/manifest.json',
+        headers: [
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: 'Content-Type',
+            value: 'application/manifest+json',
           },
           {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, must-revalidate', // 24 hours
           },
           {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+        ],
+      },
+
+      // ============================================================
+      // NEXT.JS STATIC ASSETS - Long-term caching
+      // ============================================================
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable', // 1 year
+          },
+        ],
+      },
+
+      // ============================================================
+      // PUBLIC IMAGES & ICONS - Medium-term caching
+      // ============================================================
+      {
+        source: '/icons/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=2592000, immutable', // 30 days
           },
           {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+        ],
+      },
+
+      // ============================================================
+      // FAVICON & APPLE TOUCH ICONS
+      // ============================================================
+      {
+        source: '/favicon.ico',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=2592000', // 30 days
+          },
+          {
+            key: 'Content-Type',
+            value: 'image/x-icon',
+          },
+        ],
+      },
+      {
+        source: '/favicon.svg',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=2592000', // 30 days
+          },
+          {
+            key: 'Content-Type',
+            value: 'image/svg+xml',
+          },
+        ],
+      },
+      {
+        source: '/apple-touch-icon:size*.png',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=2592000', // 30 days
+          },
+        ],
+      },
+
+      // ============================================================
+      // OFFLINE PAGE - Must be cached
+      // ============================================================
+      {
+        source: '/offline.html',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=604800, must-revalidate', // 7 days
+          },
+        ],
+      },
+
+      // ============================================================
+      // STATIC IMAGES - Medium-term caching
+      // ============================================================
+      {
+        source: '/:path*.{jpg,jpeg,png,gif,webp,avif,svg}',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=604800, immutable', // 7 days
+          },
+        ],
+      },
+
+      // ============================================================
+      // FONTS - Long-term caching
+      // ============================================================
+      {
+        source: '/:path*.{woff,woff2,eot,ttf,otf}',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable', // 1 year
           },
         ],
       },
@@ -138,7 +341,7 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', 'recharts'],
   },
 
-  // Webpack configuration for security
+  // Webpack configuration (CONSOLIDADO)
   webpack: (config, { dev, isServer }) => {
     if (!dev && !isServer) {
       config.resolve.alias = {
@@ -160,37 +363,6 @@ const nextConfig = {
   onDemandEntries: {
     maxInactiveAge: 1000 * 60 * 60, // 1 hour
     pagesBufferLength: 5,
-  },
-
-  // Webpack configuration for security
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'fs': false,
-        'path': false,
-      };
-    }
-
-    return config;
-  },
-
-  // Disable Turbopack temporarily to fix build hanging
-  webpack: (config, { dev, isServer }) => {
-    // First save the existing webpack config
-    const originalWebpack = config;
-
-    // Then apply the security modifications
-    const modifiedConfig = originalWebpack;
-    if (!dev && !isServer) {
-      modifiedConfig.resolve.alias = {
-        ...originalWebpack.resolve?.alias,
-        'fs': false,
-        'path': false,
-      };
-    }
-
-    return modifiedConfig;
   },
 };
 

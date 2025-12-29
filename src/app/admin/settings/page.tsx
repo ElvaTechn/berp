@@ -1,106 +1,88 @@
 "use client";
 
 import { motion } from 'framer-motion';
+import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
 import { Settings, Shield, Database, Bell, Globe, Palette } from 'lucide-react';
 
 export default function AdminSettingsPage() {
+    const settingsCards = [
+        {
+            icon: Shield,
+            title: 'Segurança',
+            description: 'Políticas de password, 2FA, sessões activas',
+            delay: 0.1,
+        },
+        {
+            icon: Database,
+            title: 'Base de Dados',
+            description: 'Backup, restauro, limpeza de dados',
+            delay: 0.2,
+        },
+        {
+            icon: Bell,
+            title: 'Notificações',
+            description: 'Email, SMS, alertas do sistema',
+            delay: 0.3,
+        },
+        {
+            icon: Globe,
+            title: 'Localização',
+            description: 'Idioma, fuso horário, moeda padrão',
+            delay: 0.4,
+        },
+        {
+            icon: Palette,
+            title: 'Aparência',
+            description: 'Logo, cores, branding da plataforma',
+            delay: 0.5,
+        },
+    ];
+
     return (
-        <div className="space-y-8">
+        <div className="space-y-6">
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
-                <h1 className="text-4xl font-black text-white italic tracking-tight flex items-center gap-3">
-                    <Settings className="w-10 h-10 text-purple-500" />
-                    Configurações do <span className="text-purple-400">Sistema</span>
+                <h1 className="neu-text-h1 flex items-center gap-3">
+                    <Settings className="w-10 h-10 text-[var(--neu-accent)]" />
+                    Configurações do Sistema
                 </h1>
-                <p className="text-slate-400 font-medium mt-1">
+                <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
                     Gerir configurações globais da plataforma BIZ360
                 </p>
             </motion.div>
 
             {/* Settings Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Security */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.1 }}
-                    className="p-6 rounded-2xl bg-gradient-to-br from-orange-600/10 to-orange-600/5 border border-orange-500/20 hover:border-orange-500/40 transition-all cursor-pointer"
-                >
-                    <div className="w-12 h-12 rounded-xl bg-orange-600/20 flex items-center justify-center mb-4">
-                        <Shield className="w-6 h-6 text-orange-400" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2">Segurança</h3>
-                    <p className="text-sm text-slate-400">
-                        Políticas de password, 2FA, sessões activas
-                    </p>
-                </motion.div>
-
-                {/* Database */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="p-6 rounded-2xl bg-gradient-to-br from-orange-600/10 to-orange-600/5 border border-orange-500/20 hover:border-orange-500/40 transition-all cursor-pointer"
-                >
-                    <div className="w-12 h-12 rounded-xl bg-orange-600/20 flex items-center justify-center mb-4">
-                        <Database className="w-6 h-6 text-orange-400" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2">Base de Dados</h3>
-                    <p className="text-sm text-slate-400">
-                        Backup, restauro, limpeza de dados
-                    </p>
-                </motion.div>
-
-                {/* Notifications */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="p-6 rounded-2xl bg-gradient-to-br from-orange-600/10 to-orange-600/5 border border-orange-500/20 hover:border-orange-500/40 transition-all cursor-pointer"
-                >
-                    <div className="w-12 h-12 rounded-xl bg-orange-600/20 flex items-center justify-center mb-4">
-                        <Bell className="w-6 h-6 text-orange-400" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2">Notificações</h3>
-                    <p className="text-sm text-slate-400">
-                        Email, SMS, alertas do sistema
-                    </p>
-                </motion.div>
-
-                {/* Localization */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.4 }}
-                    className="p-6 rounded-2xl bg-gradient-to-br from-orange-600/10 to-orange-600/5 border border-orange-500/20 hover:border-orange-500/40 transition-all cursor-pointer"
-                >
-                    <div className="w-12 h-12 rounded-xl bg-orange-600/20 flex items-center justify-center mb-4">
-                        <Globe className="w-6 h-6 text-orange-400" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2">Localização</h3>
-                    <p className="text-sm text-slate-400">
-                        Idioma, fuso horário, moeda padrão
-                    </p>
-                </motion.div>
-
-                {/* Appearance */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="p-6 rounded-2xl bg-gradient-to-br from-orange-600/10 to-orange-600/5 border border-orange-500/20 hover:border-orange-500/40 transition-all cursor-pointer"
-                >
-                    <div className="w-12 h-12 rounded-xl bg-orange-600/20 flex items-center justify-center mb-4">
-                        <Palette className="w-6 h-6 text-orange-400" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2">Aparência</h3>
-                    <p className="text-sm text-slate-400">
-                        Logo, cores, branding da plataforma
-                    </p>
-                </motion.div>
+                {settingsCards.map((card, index) => {
+                    const Icon = card.icon;
+                    return (
+                        <motion.div
+                            key={card.title}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: card.delay }}
+                        >
+                            <NeuCard 
+                                variant="convex" 
+                                size="md"
+                                className="cursor-pointer hover:scale-[1.02] transition-transform"
+                            >
+                                <NeuCardContent className="p-6">
+                                    <div className="w-12 h-12 rounded-xl neu-surface neu-convex-md flex items-center justify-center mb-4">
+                                        <Icon className="w-6 h-6 text-[var(--neu-accent)]" />
+                                    </div>
+                                    <h3 className="neu-text-h3 mb-2">{card.title}</h3>
+                                    <p className="neu-text-body text-[var(--neu-text-muted)]">
+                                        {card.description}
+                                    </p>
+                                </NeuCardContent>
+                            </NeuCard>
+                        </motion.div>
+                    );
+                })}
             </div>
 
             {/* Info Box */}
@@ -108,12 +90,15 @@ export default function AdminSettingsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="p-6 rounded-2xl bg-purple-500/10 border border-purple-500/20"
             >
-                <p className="text-sm text-purple-300">
-                    <span className="font-bold">Nota:</span> Esta área está em desenvolvimento. 
-                    As configurações detalhadas serão adicionadas em breve.
-                </p>
+                <NeuCard variant="concave" size="sm">
+                    <NeuCardContent className="p-6">
+                        <p className="neu-text-body text-[var(--neu-accent)]">
+                            <span className="font-bold">Nota:</span> Esta área está em desenvolvimento.
+                            As configurações detalhadas serão adicionadas em breve.
+                        </p>
+                    </NeuCardContent>
+                </NeuCard>
             </motion.div>
         </div>
     );

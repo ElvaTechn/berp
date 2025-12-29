@@ -265,5 +265,4 @@ export {
   NeuSelectScrollUpButton,
   NeuSelectScrollDownButton,
   selectTriggerVariants,
-  type NeuSelectTriggerProps,
 };

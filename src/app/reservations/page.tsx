@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { NeuButton } from '@/components/ui/neu-button';
+import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
+import { NeuInput } from '@/components/ui/neu-input';
+import { NeuSelect, NeuSelectContent, NeuSelectItem, NeuSelectTrigger, NeuSelectValue } from '@/components/ui/neu-select';
 import {
     Calendar,
     Plus,
@@ -12,17 +16,9 @@ import {
     CheckCircle,
     XCircle,
     ShoppingCart,
-    User,
-    CreditCard,
-    Phone,
-    FileText,
-    Package,
-    Loader2,
-    X,
-    Timer,
     Ban,
-    Sparkles,
     TrendingUp,
+    Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -70,8 +66,8 @@ export default function ReservationsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [showCreateModal, setShowCreateModal] = useState(false);
     const [processingId, setProcessingId] = useState<string | null>(null);
+    const [showCreateModal, setShowCreateModal] = useState(false);
 
     // Fetch data
     const fetchData = useCallback(async () => {
@@ -127,7 +123,7 @@ export default function ReservationsPage() {
     // Cancel reservation
     const handleCancel = async (reservationId: string) => {
         const reason = prompt('Motivo do cancelamento (opcional):');
-        if (reason === null) return; // User clicked cancel
+        if (reason === null) return;
 
         setProcessingId(reservationId);
         try {
@@ -154,14 +150,14 @@ export default function ReservationsPage() {
 
     // Filter reservations
     const filteredReservations = reservations.filter(res => {
-        const matchesSearch = 
+        const matchesSearch =
             res.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             res.customer_bi?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             res.customer_phone?.includes(searchTerm) ||
             res.product?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-        
+
         const matchesStatus = statusFilter === 'all' || res.status === statusFilter;
-        
+
         return matchesSearch && matchesStatus;
     });
 
@@ -171,41 +167,73 @@ export default function ReservationsPage() {
         const expires = new Date(expiresAt);
         const diff = expires.getTime() - now.getTime();
 
-        if (diff <= 0) return { text: 'Expirado', color: 'text-red-400', urgent: true };
+        if (diff <= 0) return { text: 'Expirado', color: 'text-[var(--neu-error)]', urgent: true };
 
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-        if (hours < 6) return { text: `${hours}h ${minutes}m`, color: 'text-orange-400', urgent: true };
-        if (hours < 24) return { text: `${hours}h ${minutes}m`, color: 'text-yellow-400', urgent: false };
-        
+        if (hours < 6) return { text: `${hours}h ${minutes}m`, color: 'text-[var(--neu-warning)]', urgent: true };
+        if (hours < 24) return { text: `${hours}h ${minutes}m`, color: 'text-[var(--neu-accent)]', urgent: false };
+
         const days = Math.floor(hours / 24);
-        return { text: `${days}d ${hours % 24}h`, color: 'text-green-400', urgent: false };
+        return { text: `${days}d ${hours % 24}h`, color: 'text-[var(--neu-success)]', urgent: false };
     };
 
     // Status badge
     const getStatusBadge = (status: string) => {
         const badges: Record<string, { color: string; icon: React.ElementType; label: string }> = {
-            PENDING: { color: 'bg-orange-500/20 text-orange-400 border-orange-500/30', icon: Clock, label: 'Pendente' },
-            CONFIRMED: { color: 'bg-blue-500/20 text-blue-400 border-blue-500/30', icon: CheckCircle, label: 'Confirmada' },
-            COMPLETED: { color: 'bg-green-500/20 text-green-400 border-green-500/30', icon: ShoppingCart, label: 'Concluída' },
-            CANCELLED: { color: 'bg-red-500/20 text-red-400 border-red-500/30', icon: XCircle, label: 'Cancelada' },
-            EXPIRED: { color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', icon: Ban, label: 'Expirada' },
+            PENDING: { color: 'text-[var(--neu-warning)]', icon: Clock, label: 'Pendente' },
+            CONFIRMED: { color: 'text-[var(--neu-accent)]', icon: CheckCircle, label: 'Confirmada' },
+            COMPLETED: { color: 'text-[var(--neu-success)]', icon: ShoppingCart, label: 'Concluída' },
+            CANCELLED: { color: 'text-[var(--neu-error)]', icon: XCircle, label: 'Cancelada' },
+            EXPIRED: { color: 'text-[var(--neu-text-muted)]', icon: Ban, label: 'Expirada' },
         };
 
         const badge = badges[status] || badges.PENDING;
         const Icon = badge.icon;
 
         return (
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${badge.color}`}>
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg neu-convex-xs text-xs font-bold ${badge.color}`}>
                 <Icon className="w-3 h-3" />
                 {badge.label}
             </span>
         );
     };
 
+    // Create reservation
+    const handleCreateReservation = async (formData: any) => {
+        try {
+            const res = await fetch('/api/reservations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    productId: formData.product_id,
+                    customerName: formData.customer_name,
+                    customerBI: formData.customer_bi,
+                    customerPhone: formData.customer_phone,
+                    quantity: formData.quantity,
+                    depositAmount: formData.deposit_amount,
+                    notes: formData.notes,
+                    expiresInHours: formData.expires_in_hours,
+                }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                toast.success('Reserva criada com sucesso!');
+                setShowCreateModal(false);
+                fetchData();
+            } else {
+                toast.error(data.error || 'Erro ao criar reserva');
+            }
+        } catch (error) {
+            toast.error('Erro ao criar reserva');
+        }
+    };
+
     return (
-        <div className="space-y-6 sm:space-y-8">
+        <div className="space-y-6">
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -213,166 +241,130 @@ export default function ReservationsPage() {
                 className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
             >
                 <div>
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white italic tracking-tight flex items-center gap-2 sm:gap-3">
-                        <Calendar className="w-8 h-8 sm:w-10 sm:h-10 text-orange-500" />
-                        <span className="text-slate-900 dark:text-white">Reservas</span>
+                    <h1 className="neu-text-h1 flex items-center gap-3">
+                        <Calendar className="w-10 h-10 text-[var(--neu-accent)]" />
+                        Reservas
                     </h1>
-                    <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 font-medium mt-1">
+                    <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
                         Gerir reservas de produtos e conversão em vendas
                     </p>
                 </div>
 
-                <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                <NeuButton 
+                    variant="accent" 
+                    size="md"
                     onClick={() => setShowCreateModal(true)}
-                    className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 text-white font-bold text-sm sm:text-base shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 transition-all w-full sm:w-auto"
                 >
                     <Plus className="w-5 h-5" />
-                    Nova Reserva
-                </motion.button>
+                    <span>Nova Reserva</span>
+                </NeuButton>
             </motion.div>
 
-            {/* KPI Cards - Mobile: 1 col, Tablet: 2 cols, Desktop: 4 cols */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {/* KPI Cards */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+            >
                 {/* Pendentes */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.1 }}
-                    className="relative overflow-hidden rounded-2xl bg-white dark:bg-gradient-to-br dark:from-orange-600/10 dark:to-orange-600/5 border border-slate-200 dark:border-orange-500/20 p-6 shadow-lg shadow-orange-500/5 dark:shadow-none"
-                >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl" />
-                    <div className="relative z-10">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-600/20">
-                                <Clock className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                <NeuCard variant="convex" size="sm">
+                    <NeuCardContent className="p-4">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                                <Clock className="w-5 h-5 text-[var(--neu-warning)]" />
                             </div>
-                            <span className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-600/20 px-2 py-1 rounded-full">
-                                ATIVAS
-                            </span>
+                            <p className="neu-text-label text-[var(--neu-text-muted)]">Ativas</p>
                         </div>
-                        <p className="text-4xl font-black text-slate-900 dark:text-white mb-1">
-                            {stats?.pending || 0}
-                        </p>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Reservas pendentes</p>
-                    </div>
-                </motion.div>
+                        <p className="neu-text-h2">{stats?.pending || 0}</p>
+                        <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">Reservas pendentes</p>
+                    </NeuCardContent>
+                </NeuCard>
 
                 {/* A Expirar */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="relative overflow-hidden rounded-2xl bg-white dark:bg-gradient-to-br dark:from-red-600/10 dark:to-red-600/5 border border-slate-200 dark:border-red-500/20 p-6 shadow-lg shadow-red-500/5 dark:shadow-none"
-                >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-3xl" />
-                    <div className="relative z-10">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-red-100 dark:bg-red-600/20">
-                                <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                <NeuCard variant="convex" size="sm">
+                    <NeuCardContent className="p-4">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                                <AlertTriangle className="w-5 h-5 text-[var(--neu-error)]" />
                             </div>
-                            <span className="text-xs font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-600/20 px-2 py-1 rounded-full animate-pulse">
-                                URGENTE
-                            </span>
+                            <motion.p
+                                animate={{ opacity: [1, 0.5, 1] }}
+                                transition={{ repeat: Infinity, duration: 2 }}
+                                className="neu-text-label text-[var(--neu-error)]"
+                            >
+                                Urgente
+                            </motion.p>
                         </div>
-                        <p className="text-4xl font-black text-slate-900 dark:text-white mb-1">
-                            {stats?.expiringSoon || 0}
-                        </p>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Expiram em 24h</p>
-                    </div>
-                </motion.div>
+                        <p className="neu-text-h2 text-[var(--neu-error)]">{stats?.expiringSoon || 0}</p>
+                        <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">Expiram em 24h</p>
+                    </NeuCardContent>
+                </NeuCard>
 
                 {/* Concluídas Hoje */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="relative overflow-hidden rounded-2xl bg-white dark:bg-gradient-to-br dark:from-green-600/10 dark:to-green-600/5 border border-slate-200 dark:border-green-500/20 p-6 shadow-lg shadow-green-500/5 dark:shadow-none"
-                >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-3xl" />
-                    <div className="relative z-10">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-green-100 dark:bg-green-600/20">
-                                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                <NeuCard variant="convex" size="sm">
+                    <NeuCardContent className="p-4">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                                <CheckCircle className="w-5 h-5 text-[var(--neu-success)]" />
                             </div>
-                            <span className="text-xs font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-600/20 px-2 py-1 rounded-full">
-                                HOJE
-                            </span>
+                            <p className="neu-text-label text-[var(--neu-text-muted)]">Hoje</p>
                         </div>
-                        <p className="text-4xl font-black text-slate-900 dark:text-white mb-1">
-                            {stats?.completedToday || 0}
-                        </p>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Convertidas em venda</p>
-                    </div>
-                </motion.div>
+                        <p className="neu-text-h2 text-[var(--neu-success)]">{stats?.completedToday || 0}</p>
+                        <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">Convertidas em venda</p>
+                    </NeuCardContent>
+                </NeuCard>
 
                 {/* Valor Total Reservado */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.4 }}
-                    className="relative overflow-hidden rounded-2xl bg-white dark:bg-gradient-to-br dark:from-cyan-600/10 dark:to-cyan-600/5 border border-slate-200 dark:border-cyan-500/20 p-6 shadow-lg shadow-cyan-500/5 dark:shadow-none"
-                >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl" />
-                    <div className="relative z-10">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-cyan-100 dark:bg-cyan-600/20">
-                                <TrendingUp className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
+                <NeuCard variant="convex" size="sm">
+                    <NeuCardContent className="p-4">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                                <TrendingUp className="w-5 h-5 text-[var(--neu-accent)]" />
                             </div>
-                            <span className="text-xs font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-100 dark:bg-cyan-600/20 px-2 py-1 rounded-full">
-                                VALOR
-                            </span>
+                            <p className="neu-text-label text-[var(--neu-text-muted)]">Valor</p>
                         </div>
-                        <p className="text-4xl font-black text-slate-900 dark:text-white mb-1">
+                        <p className="neu-text-h2">
                             {(stats?.totalReservedValue || 0).toLocaleString('pt-MZ', { maximumFractionDigits: 0 })}
                         </p>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">MT em reservas</p>
-                    </div>
-                </motion.div>
-            </div>
+                        <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">MT em reservas</p>
+                    </NeuCardContent>
+                </NeuCard>
+            </motion.div>
 
             {/* Filters */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="flex flex-col gap-3 sm:gap-4"
+                transition={{ delay: 0.2 }}
+                className="flex flex-col gap-3"
             >
-                <div className="flex-1 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
-                    <input
-                        type="text"
-                        placeholder="Pesquisar por nome, BI, telefone ou produto..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full h-12 pl-12 pr-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-orange-500/20 rounded-xl text-slate-900 dark:text-white text-sm sm:text-base placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
-                    />
-                </div>
+                <NeuInput
+                    type="text"
+                    placeholder="Pesquisar por nome, BI, telefone ou produto..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    icon={<Search className="w-5 h-5" />}
+                />
 
                 <div className="flex gap-3">
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className="flex-1 sm:flex-initial h-12 px-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-orange-500/20 rounded-xl text-slate-900 dark:text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
-                    >
-                        <option value="all">Todos os status</option>
-                        <option value="PENDING">Pendentes</option>
-                        <option value="CONFIRMED">Confirmadas</option>
-                        <option value="COMPLETED">Concluídas</option>
-                        <option value="CANCELLED">Canceladas</option>
-                        <option value="EXPIRED">Expiradas</option>
-                    </select>
+                    <NeuSelect value={statusFilter} onValueChange={setStatusFilter}>
+                        <NeuSelectTrigger variant="concave" size="md" className="flex-1">
+                            <NeuSelectValue placeholder="Todos os status" />
+                        </NeuSelectTrigger>
+                        <NeuSelectContent>
+                            <NeuSelectItem value="all">Todos os status</NeuSelectItem>
+                            <NeuSelectItem value="PENDING">Pendentes</NeuSelectItem>
+                            <NeuSelectItem value="CONFIRMED">Confirmadas</NeuSelectItem>
+                            <NeuSelectItem value="COMPLETED">Concluídas</NeuSelectItem>
+                            <NeuSelectItem value="CANCELLED">Canceladas</NeuSelectItem>
+                            <NeuSelectItem value="EXPIRED">Expiradas</NeuSelectItem>
+                        </NeuSelectContent>
+                    </NeuSelect>
 
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={fetchData}
-                        className="h-12 px-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-orange-500/20 rounded-xl text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-orange-500/10 transition-all"
-                        title="Atualizar"
-                    >
+                    <NeuButton variant="convex" size="icon" onClick={fetchData} title="Atualizar">
                         <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
-                    </motion.button>
+                    </NeuButton>
                 </div>
             </motion.div>
 
@@ -380,488 +372,311 @@ export default function ReservationsPage() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="rounded-2xl border border-slate-200 dark:border-orange-500/20 bg-white dark:bg-white/5 backdrop-blur-sm overflow-hidden shadow-lg dark:shadow-none"
+                transition={{ delay: 0.3 }}
             >
-                {isLoading ? (
-                    <div className="flex items-center justify-center h-64">
-                        <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
-                    </div>
-                ) : filteredReservations.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-64 px-4 text-center">
-                        <Calendar className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 dark:text-slate-600 mb-4" />
-                        <p className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-2">Nenhuma reserva encontrada</p>
-                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Crie a primeira reserva clicando no botão acima</p>
-                    </div>
-                ) : (
-                    <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-orange-500/50 scrollbar-track-transparent">
-                        <table className="w-full min-w-[800px]">
-                            <thead>
-                                <tr className="border-b border-slate-200 dark:border-cyan-500/20 bg-slate-50 dark:bg-white/5">
-                                    <th className="px-6 py-4 text-left text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        Cliente
-                                    </th>
-                                    <th className="px-6 py-4 text-left text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        Produto
-                                    </th>
-                                    <th className="px-6 py-4 text-left text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        Valor
-                                    </th>
-                                    <th className="px-6 py-4 text-left text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        Tempo Restante
-                                    </th>
-                                    <th className="px-6 py-4 text-left text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                    <th className="px-6 py-4 text-right text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        Ações
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-cyan-500/10">
-                                {filteredReservations.map((reservation, index) => {
-                                    const timeRemaining = getTimeRemaining(reservation.expires_at);
-                                    const totalValue = (reservation.product?.price || 0) * reservation.quantity;
+                <NeuCard variant="concave" size="md">
+                    <NeuCardContent className="p-0">
+                        {isLoading ? (
+                            <div className="flex items-center justify-center h-64">
+                                <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin" />
+                            </div>
+                        ) : filteredReservations.length === 0 ? (
+                            <div className="text-center py-12 px-4">
+                                <div className="w-20 h-20 rounded-full neu-surface neu-convex-lg flex items-center justify-center mx-auto mb-4">
+                                    <Calendar className="w-10 h-10 text-[var(--neu-accent)]" />
+                                </div>
+                                <h3 className="neu-text-h2 mb-2">Nenhuma reserva encontrada</h3>
+                                <p className="neu-text-body text-[var(--neu-text-muted)]">
+                                    Crie a primeira reserva clicando no botão acima
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full min-w-[800px]">
+                                    <thead className="bg-[var(--neu-base)] border-b border-[var(--neu-border)]">
+                                        <tr>
+                                            <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">Cliente</th>
+                                            <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">Produto</th>
+                                            <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">Qtd</th>
+                                            <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">Total</th>
+                                            <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">Expira</th>
+                                            <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">Status</th>
+                                            <th className="px-6 py-4 text-right neu-text-label text-[var(--neu-text-muted)]">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredReservations.map((reservation, index) => {
+                                            const timeRemaining = getTimeRemaining(reservation.expires_at);
+                                            const total = (reservation.product?.price || 0) * reservation.quantity;
 
-                                    return (
-                                        <motion.tr
-                                            key={reservation.id}
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: index * 0.05 }}
-                                            className={`hover:bg-slate-50 dark:hover:bg-cyan-500/5 transition-colors ${
-                                                timeRemaining.urgent && reservation.status === 'PENDING'
-                                                    ? 'bg-orange-50 dark:bg-orange-500/5'
-                                                    : ''
-                                            }`}
-                                        >
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center">
-                                                        <User className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-bold text-slate-900 dark:text-white">
-                                                            {reservation.customer_name}
+                                            return (
+                                                <motion.tr
+                                                    key={reservation.id}
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    transition={{ delay: index * 0.03 }}
+                                                    className="border-b border-[var(--neu-border)] hover:bg-[var(--neu-surface-hover)] transition-colors"
+                                                >
+                                                    <td className="px-6 py-4">
+                                                        <p className="neu-text-body font-medium">{reservation.customer_name}</p>
+                                                        <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                                                            {reservation.customer_phone || reservation.customer_bi || '-'}
                                                         </p>
-                                                        {reservation.customer_bi && (
-                                                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                                                                BI: {reservation.customer_bi}
-                                                            </p>
-                                                        )}
-                                                        {reservation.customer_phone && (
-                                                            <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                                                                <Phone className="w-3 h-3" />
-                                                                {reservation.customer_phone}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <Package className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-                                                    <div>
-                                                        <p className="text-sm text-slate-900 dark:text-white font-medium">
-                                                            {reservation.product?.name || '—'}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <p className="neu-text-body">{reservation.product?.name || '-'}</p>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <p className="neu-text-body">{reservation.quantity}</p>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <p className="neu-text-body font-bold">
+                                                            {total.toLocaleString('pt-MZ')} MT
                                                         </p>
-                                                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                                                            Qtd: {reservation.quantity}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <p className={`neu-text-caption font-bold ${timeRemaining.color}`}>
+                                                            {timeRemaining.text}
                                                         </p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <p className="text-sm font-bold text-slate-900 dark:text-white">
-                                                    {totalValue.toLocaleString('pt-MZ')} MT
-                                                </p>
-                                                {reservation.deposit_amount && (
-                                                    <p className="text-xs text-green-600 dark:text-green-400">
-                                                        Sinal: {Number(reservation.deposit_amount).toLocaleString('pt-MZ')} MT
-                                                    </p>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                {reservation.status === 'PENDING' || reservation.status === 'CONFIRMED' ? (
-                                                    <div className={`flex items-center gap-2 ${timeRemaining.color}`}>
-                                                        <Timer className={`w-4 h-4 ${timeRemaining.urgent ? 'animate-pulse' : ''}`} />
-                                                        <span className="text-sm font-bold">{timeRemaining.text}</span>
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-sm text-slate-500 dark:text-slate-400">—</span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                {getStatusBadge(reservation.status)}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    {(reservation.status === 'PENDING' || reservation.status === 'CONFIRMED') && (
-                                                        <>
-                                                            {/* Complete (Convert to Sale) */}
-                                                            <motion.button
-                                                                whileHover={{ scale: 1.1 }}
-                                                                whileTap={{ scale: 0.9 }}
-                                                                onClick={() => handleComplete(reservation.id)}
-                                                                disabled={processingId === reservation.id}
-                                                                className="p-2 rounded-lg bg-green-100 dark:bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-500/20 transition-all disabled:opacity-50"
-                                                                title="Converter em Venda"
-                                                            >
-                                                                {processingId === reservation.id ? (
-                                                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                                                ) : (
-                                                                    <Sparkles className="w-4 h-4" />
-                                                                )}
-                                                            </motion.button>
-
-                                                            {/* Cancel */}
-                                                            <motion.button
-                                                                whileHover={{ scale: 1.1 }}
-                                                                whileTap={{ scale: 0.9 }}
-                                                                onClick={() => handleCancel(reservation.id)}
-                                                                disabled={processingId === reservation.id}
-                                                                className="p-2 rounded-lg bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-500/20 transition-all disabled:opacity-50"
-                                                                title="Cancelar Reserva"
-                                                            >
-                                                                <XCircle className="w-4 h-4" />
-                                                            </motion.button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </motion.tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
+                                                    </td>
+                                                    <td className="px-6 py-4">{getStatusBadge(reservation.status)}</td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            {reservation.status === 'PENDING' && (
+                                                                <>
+                                                                    <NeuButton
+                                                                        variant="accent"
+                                                                        onClick={() => handleComplete(reservation.id)}
+                                                                        disabled={processingId === reservation.id}
+                                                                    >
+                                                                        {processingId === reservation.id ? (
+                                                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                                                        ) : (
+                                                                            <CheckCircle className="w-4 h-4" />
+                                                                        )}
+                                                                        <span>Completar</span>
+                                                                    </NeuButton>
+                                                                    <NeuButton
+                                                                        variant="ghost"
+                                                                        onClick={() => handleCancel(reservation.id)}
+                                                                        disabled={processingId === reservation.id}
+                                                                    >
+                                                                        <XCircle className="w-4 h-4 text-[var(--neu-error)]" />
+                                                                        <span>Cancelar</span>
+                                                                    </NeuButton>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </motion.tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </NeuCardContent>
+                </NeuCard>
             </motion.div>
 
             {/* Create Reservation Modal */}
-            <AnimatePresence>
-                {showCreateModal && (
-                    <CreateReservationModal
-                        products={products}
-                        onClose={() => setShowCreateModal(false)}
-                        onSuccess={() => {
-                            setShowCreateModal(false);
-                            fetchData();
-                        }}
-                    />
-                )}
-            </AnimatePresence>
+            {showCreateModal && (
+                <CreateReservationModal
+                    products={products}
+                    onClose={() => setShowCreateModal(false)}
+                    onSubmit={handleCreateReservation}
+                />
+            )}
         </div>
     );
 }
 
-// ================================================================
-// CREATE RESERVATION MODAL
-// ================================================================
-
-interface CreateReservationModalProps {
+// Create Reservation Modal Component
+function CreateReservationModal({ products, onClose, onSubmit }: {
     products: Product[];
     onClose: () => void;
-    onSuccess: () => void;
-}
-
-function CreateReservationModal({ products, onClose, onSuccess }: CreateReservationModalProps) {
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [errors, setErrors] = useState<Record<string, string>>({});
+    onSubmit: (data: any) => void;
+}) {
     const [form, setForm] = useState({
-        productId: '',
+        customer_name: '',
+        customer_bi: '',
+        customer_phone: '',
+        product_id: '',
         quantity: '1',
-        customerName: '',
-        customerBI: '',
-        customerPhone: '',
-        depositAmount: '',
+        deposit_amount: '',
         notes: '',
-        expiresInHours: '48',
+        expires_in_hours: '48',
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const selectedProduct = products.find(p => p.id === form.productId);
-    const totalValue = selectedProduct ? selectedProduct.price * parseInt(form.quantity || '0') : 0;
-
-    const validateForm = () => {
-        const newErrors: Record<string, string> = {};
-
-        if (!form.productId) {
-            newErrors.productId = 'Selecione um produto';
-        }
-
-        if (!form.customerName.trim() || form.customerName.length < 2) {
-            newErrors.customerName = 'Nome do cliente é obrigatório';
-        }
-
-        const qty = parseInt(form.quantity);
-        if (!qty || qty < 1) {
-            newErrors.quantity = 'Quantidade deve ser pelo menos 1';
-        }
-
-        if (selectedProduct && qty > selectedProduct.quantity) {
-            newErrors.quantity = `Stock insuficiente. Disponível: ${selectedProduct.quantity}`;
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
+    const selectedProduct = products.find(p => p.id === form.product_id);
+    const total = selectedProduct ? selectedProduct.price * parseInt(form.quantity || '0') : 0;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!validateForm()) return;
+        
+        if (!form.product_id) {
+            toast.error('Selecione um produto');
+            return;
+        }
 
         setIsSubmitting(true);
-        try {
-            const res = await fetch('/api/reservations', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    productId: form.productId,
-                    quantity: parseInt(form.quantity),
-                    customerName: form.customerName.trim(),
-                    customerBI: form.customerBI.trim() || undefined,
-                    customerPhone: form.customerPhone.trim() || undefined,
-                    depositAmount: form.depositAmount ? parseFloat(form.depositAmount) : undefined,
-                    notes: form.notes.trim() || undefined,
-                    expiresInHours: parseInt(form.expiresInHours),
-                }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                toast.error(data.error || 'Erro ao criar reserva');
-                return;
-            }
-
-            toast.success(`Reserva criada para ${data.reservation?.customerName}! Stock atualizado.`);
-            onSuccess();
-        } catch (error) {
-            toast.error('Erro ao criar reserva');
-        } finally {
-            setIsSubmitting(false);
-        }
+        await onSubmit({
+            customer_name: form.customer_name,
+            customer_bi: form.customer_bi || null,
+            customer_phone: form.customer_phone || null,
+            product_id: form.product_id,
+            quantity: parseInt(form.quantity),
+            deposit_amount: form.deposit_amount ? parseFloat(form.deposit_amount) : null,
+            notes: form.notes || null,
+            expires_in_hours: parseInt(form.expires_in_hours),
+        });
+        setIsSubmitting(false);
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={onClose}
-        >
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
             <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-lg bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-cyan-500/20 rounded-3xl shadow-2xl overflow-hidden"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-lg my-8"
             >
-                {/* Header */}
-                <div className="bg-gradient-to-r from-cyan-600 to-blue-600 p-6 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
-                            <Calendar className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                            <h2 className="text-xl font-black text-white italic">Nova Reserva</h2>
-                            <p className="text-sm text-white/80">Stock será subtraído automaticamente</p>
-                        </div>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-                    >
-                        <X className="w-5 h-5 text-white" />
-                    </button>
-                </div>
-
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                    {/* Product */}
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                            <Package className="w-4 h-4 inline mr-1" />
-                            Produto *
-                        </label>
-                        <select
-                            value={form.productId}
-                            onChange={(e) => setForm({ ...form, productId: e.target.value })}
-                            className={`w-full h-12 px-4 bg-slate-50 dark:bg-white/5 border ${errors.productId ? 'border-red-500' : 'border-slate-200 dark:border-cyan-500/20'} rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50`}
-                        >
-                            <option value="">Selecione um produto</option>
-                            {products.filter(p => p.quantity > 0).map((product) => (
-                                <option key={product.id} value={product.id}>
-                                    {product.name} - {product.price.toLocaleString('pt-MZ')} MT (Stock: {product.quantity})
-                                </option>
-                            ))}
-                        </select>
-                        {errors.productId && (
-                            <p className="mt-1 text-xs text-red-500">{errors.productId}</p>
-                        )}
-                    </div>
-
-                    {/* Quantity */}
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                            Quantidade *
-                        </label>
-                        <input
-                            type="number"
-                            min="1"
-                            max={selectedProduct?.quantity || 999}
-                            value={form.quantity}
-                            onChange={(e) => setForm({ ...form, quantity: e.target.value })}
-                            className={`w-full h-12 px-4 bg-slate-50 dark:bg-white/5 border ${errors.quantity ? 'border-red-500' : 'border-slate-200 dark:border-cyan-500/20'} rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50`}
-                        />
-                        {errors.quantity && (
-                            <p className="mt-1 text-xs text-red-500">{errors.quantity}</p>
-                        )}
-                    </div>
-
-                    {/* Customer Name */}
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                            <User className="w-4 h-4 inline mr-1" />
-                            Nome do Cliente *
-                        </label>
-                        <input
-                            type="text"
-                            value={form.customerName}
-                            onChange={(e) => setForm({ ...form, customerName: e.target.value })}
-                            placeholder="Ex: Manuel João"
-                            className={`w-full h-12 px-4 bg-slate-50 dark:bg-white/5 border ${errors.customerName ? 'border-red-500' : 'border-slate-200 dark:border-cyan-500/20'} rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50`}
-                        />
-                        {errors.customerName && (
-                            <p className="mt-1 text-xs text-red-500">{errors.customerName}</p>
-                        )}
-                    </div>
-
-                    {/* BI and Phone */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                                <CreditCard className="w-4 h-4 inline mr-1" />
-                                BI / Passaporte
-                            </label>
-                            <input
-                                type="text"
-                                value={form.customerBI}
-                                onChange={(e) => setForm({ ...form, customerBI: e.target.value })}
-                                placeholder="123456789A"
-                                className="w-full h-12 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-cyan-500/20 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                                <Phone className="w-4 h-4 inline mr-1" />
-                                Telefone
-                            </label>
-                            <input
-                                type="tel"
-                                value={form.customerPhone}
-                                onChange={(e) => setForm({ ...form, customerPhone: e.target.value })}
-                                placeholder="+258 84 XXX XXXX"
-                                className="w-full h-12 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-cyan-500/20 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Deposit and Expiry */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                                Sinal (MT)
-                            </label>
-                            <input
-                                type="number"
-                                min="0"
-                                value={form.depositAmount}
-                                onChange={(e) => setForm({ ...form, depositAmount: e.target.value })}
-                                placeholder="0"
-                                className="w-full h-12 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-cyan-500/20 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                                <Clock className="w-4 h-4 inline mr-1" />
-                                Validade
-                            </label>
-                            <select
-                                value={form.expiresInHours}
-                                onChange={(e) => setForm({ ...form, expiresInHours: e.target.value })}
-                                className="w-full h-12 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-cyan-500/20 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                <NeuCard variant="convex" size="md">
+                    <NeuCardContent className="p-4">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="neu-text-h3 flex items-center gap-2">
+                                <Calendar className="w-5 h-5 text-[var(--neu-accent)]" />
+                                Nova Reserva
+                            </h2>
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="p-1.5 rounded-lg hover:bg-[var(--neu-surface)] transition-colors"
                             >
-                                <option value="24">24 horas</option>
-                                <option value="48">48 horas</option>
-                                <option value="72">72 horas</option>
-                                <option value="168">7 dias</option>
-                            </select>
+                                <XCircle className="w-5 h-5" />
+                            </button>
                         </div>
-                    </div>
 
-                    {/* Notes */}
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                            <FileText className="w-4 h-4 inline mr-1" />
-                            Observações
-                        </label>
-                        <textarea
-                            value={form.notes}
-                            onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                            placeholder="Informações adicionais..."
-                            rows={2}
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-cyan-500/20 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 resize-none"
-                        />
-                    </div>
+                        <form onSubmit={handleSubmit} className="space-y-3">
+                            <NeuInput
+                                label="Nome do Cliente *"
+                                type="text"
+                                required
+                                value={form.customer_name}
+                                onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
+                                placeholder="João Silva"
+                            />
 
-                    {/* Total Preview */}
-                    {selectedProduct && (
-                        <div className="p-4 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/20">
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                                    Valor Total da Reserva:
-                                </span>
-                                <span className="text-2xl font-black text-cyan-600 dark:text-cyan-400">
-                                    {totalValue.toLocaleString('pt-MZ')} MT
-                                </span>
+                            <div className="grid grid-cols-2 gap-3">
+                                <NeuInput
+                                    label="BI"
+                                    type="text"
+                                    value={form.customer_bi}
+                                    onChange={(e) => setForm({ ...form, customer_bi: e.target.value })}
+                                    placeholder="12345678A"
+                                />
+                                <NeuInput
+                                    label="Telefone"
+                                    type="tel"
+                                    value={form.customer_phone}
+                                    onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
+                                    placeholder="84 123 4567"
+                                />
                             </div>
-                        </div>
-                    )}
 
-                    {/* Submit */}
-                    <div className="flex gap-4 pt-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 h-12 rounded-xl border border-slate-200 dark:border-cyan-500/20 text-slate-700 dark:text-white font-bold hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
-                        >
-                            Cancelar
-                        </button>
-                        <motion.button
-                            type="submit"
-                            disabled={isSubmitting}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="flex-1 h-12 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                    A criar...
-                                </>
-                            ) : (
-                                <>
-                                    <Plus className="w-5 h-5" />
-                                    Criar Reserva
-                                </>
+                            <div>
+                                <label className="neu-text-label mb-1.5 block text-xs">Produto *</label>
+                                <NeuSelect
+                                    value={form.product_id}
+                                    onValueChange={(value) => setForm({ ...form, product_id: value })}
+                                >
+                                    <NeuSelectTrigger variant="concave" size="sm">
+                                        <NeuSelectValue placeholder="Selecionar..." />
+                                    </NeuSelectTrigger>
+                                    <NeuSelectContent>
+                                        {products.map((product) => (
+                                            <NeuSelectItem key={product.id} value={product.id}>
+                                                {product.name} ({product.price.toLocaleString('pt-MZ')} MT)
+                                            </NeuSelectItem>
+                                        ))}
+                                    </NeuSelectContent>
+                                </NeuSelect>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <NeuInput
+                                    label="Quantidade *"
+                                    type="number"
+                                    required
+                                    min="1"
+                                    max={selectedProduct?.quantity || 999}
+                                    value={form.quantity}
+                                    onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+                                />
+                                <NeuInput
+                                    label="Adiantamento"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={form.deposit_amount}
+                                    onChange={(e) => setForm({ ...form, deposit_amount: e.target.value })}
+                                    placeholder="0"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="neu-text-label mb-1.5 block text-xs">Expira em</label>
+                                <NeuSelect
+                                    value={form.expires_in_hours}
+                                    onValueChange={(value) => setForm({ ...form, expires_in_hours: value })}
+                                >
+                                    <NeuSelectTrigger variant="concave" size="sm">
+                                        <NeuSelectValue />
+                                    </NeuSelectTrigger>
+                                    <NeuSelectContent>
+                                        <NeuSelectItem value="24">1 dia</NeuSelectItem>
+                                        <NeuSelectItem value="48">2 dias</NeuSelectItem>
+                                        <NeuSelectItem value="72">3 dias</NeuSelectItem>
+                                        <NeuSelectItem value="168">1 semana</NeuSelectItem>
+                                    </NeuSelectContent>
+                                </NeuSelect>
+                            </div>
+
+                            {total > 0 && (
+                                <div className="neu-surface neu-concave-sm rounded-lg p-3">
+                                    <p className="neu-text-caption text-[var(--neu-text-muted)] text-xs">Total</p>
+                                    <p className="neu-text-h3 text-[var(--neu-accent)]">
+                                        {total.toLocaleString('pt-MZ')} MT
+                                    </p>
+                                </div>
                             )}
-                        </motion.button>
-                    </div>
-                </form>
+
+                            <div className="flex gap-2 pt-2">
+                                <NeuButton
+                                    type="button"
+                                    variant="convex"
+                                    size="sm"
+                                    onClick={onClose}
+                                    className="flex-1"
+                                >
+                                    Cancelar
+                                </NeuButton>
+                                <NeuButton
+                                    type="submit"
+                                    variant="accent"
+                                    size="sm"
+                                    disabled={isSubmitting || !form.product_id}
+                                    loading={isSubmitting}
+                                    className="flex-1"
+                                >
+                                    Criar
+                                </NeuButton>
+                            </div>
+                        </form>
+                    </NeuCardContent>
+                </NeuCard>
             </motion.div>
-        </motion.div>
+        </div>
     );
 }

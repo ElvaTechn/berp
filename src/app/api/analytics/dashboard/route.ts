@@ -76,26 +76,66 @@ export async function GET(request: NextRequest) {
     // ============================================================
     // 3. AUTORIZAÇÃO (Buscar employee e company)
     // ============================================================
-    const employee = await prisma.employee.findFirst({
-      where: { 
+    
+    // Primeiro tenta encontrar employees ativos
+    let employee = await prisma.employee.findFirst({
+      where: {
         user_id: session.userId,
         is_active: true
       },
-      select: { 
-        id: true, 
-        company_id: true, 
+      select: {
+        id: true,
+        company_id: true,
         role: true,
         full_name: true
       }
     });
 
+    // Se não encontrou como employee, tenta se é dono de alguma empresa
     if (!employee) {
-      logger.warn('Employee not found for analytics', { 
-        user_id: session.userId 
+      const company = await prisma.company.findFirst({
+        where: {
+          owner_id: session.userId
+        },
+        select: {
+          id: true
+        }
+      });
+
+      if (company) {
+        // Criar employee temporário para o dono com role GESTOR
+        try {
+          const user = await prisma.user.findUnique({
+            where: { id: session.userId },
+            select: { full_name: true, email: true }
+          });
+
+          if (user) {
+            employee = {
+              id: 'owner-' + session.userId,
+              company_id: company.id,
+              role: 'GESTOR',
+              full_name: user.full_name
+            };
+          }
+        } catch (err) {
+          // Se falhar, continua sem employee
+        }
+      }
+    }
+
+    if (!employee) {
+      logger.warn('Employee not found for analytics', {
+        user_id: session.userId
       });
 
       return NextResponse.json(
-        { success: false, error: 'Funcionário não encontrado' },
+        {
+          success: false,
+          error: 'Configuração incompleta',
+          requiresSetup: true,
+          message: 'Sua conta ainda não está configurada como funcionário. Por favor, configure sua empresa primeiro.'
+        },
         { status: 404 }
       );
     }

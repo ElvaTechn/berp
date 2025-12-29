@@ -40,12 +40,8 @@ export function TrendChart({ data }: TrendChartProps) {
     const data = payload[0].payload;
 
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-300 dark:border-slate-700 rounded-xl p-4 shadow-2xl"
-      >
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-3">
+      <div className="neu-surface neu-convex-sm rounded-xl p-4 border border-[var(--neu-border)] shadow-xl">
+        <p className="neu-text-caption font-bold uppercase tracking-wider text-[var(--neu-text-muted)] mb-3">
           {new Date(data.date).toLocaleDateString('pt-MZ', { 
             weekday: 'long',
             day: 'numeric',
@@ -56,60 +52,39 @@ export function TrendChart({ data }: TrendChartProps) {
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-6">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-blue-500" />
-              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Faturação</span>
+              <div className="w-3 h-3 rounded-full bg-[var(--neu-accent)]" />
+              <span className="neu-text-caption text-[var(--neu-text-muted)]">Faturação</span>
             </div>
-            <span className="text-sm font-black text-slate-900 dark:text-white">
+            <span className="neu-text-body font-bold text-[var(--neu-text-primary)]">
               {data.revenue.toLocaleString('pt-MZ')} MT
             </span>
           </div>
 
           <div className="flex items-center justify-between gap-6">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-emerald-500" />
-              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Lucro</span>
+              <div className="w-3 h-3 rounded-full bg-[var(--neu-success)]" />
+              <span className="neu-text-caption text-[var(--neu-text-muted)]">Lucro</span>
             </div>
-            <span className="text-sm font-black text-emerald-400">
+            <span className="neu-text-body font-bold text-[var(--neu-success)]">
               {data.profit.toLocaleString('pt-MZ')} MT
             </span>
           </div>
 
-          <div className="flex items-center justify-between gap-6 pt-2 border-t border-slate-300 dark:border-slate-700">
-            <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Vendas</span>
-            <span className="text-sm font-bold text-slate-900 dark:text-white">
+          <div className="flex items-center justify-between gap-6 pt-2 border-t border-[var(--neu-border)]">
+            <span className="neu-text-caption text-[var(--neu-text-muted)]">Vendas</span>
+            <span className="neu-text-body font-bold text-[var(--neu-text-primary)]">
               {data.sales_count}
             </span>
           </div>
         </div>
-      </motion.div>
+      </div>
     );
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4, type: "spring", stiffness: 100 }}
-      className="
-        relative overflow-hidden rounded-2xl
-        bg-gradient-to-br from-white/80 to-white/20 dark:from-slate-900/50 dark:to-slate-900/20
-        border border-slate-300 dark:border-slate-800
-        backdrop-blur-xl
-        p-6
-      "
-    >
-      {/* Header */}
-      <div className="mb-6">
-        <h3 className="text-2xl font-black italic tracking-tighter text-slate-900 dark:text-white mb-1">
-          Tendência de Performance
-        </h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-          Últimos 7 dias • Faturação vs Lucro
-        </p>
-      </div>
-
+    <div>
       {/* Chart */}
-      <div className="h-[400px]">
+      <div className="h-[350px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={formattedData}
@@ -196,12 +171,6 @@ export function TrendChart({ data }: TrendChartProps) {
           </AreaChart>
         </ResponsiveContainer>
       </div>
-
-      {/* Background Effect */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(59,130,246,0.2),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(16,185,129,0.2),transparent_50%)]" />
-      </div>
-    </motion.div>
+    </div>
   );
 }
