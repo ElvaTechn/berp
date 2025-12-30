@@ -16,6 +16,7 @@ interface GlassCardProps {
   hover?: boolean;
   className?: string;
   animate?: boolean;
+  style?: React.CSSProperties;
 }
 
 export function GlassCard({ 
@@ -23,7 +24,8 @@ export function GlassCard({
   variant = 'medium', 
   hover = true,
   className,
-  animate = true 
+  animate = true,
+  style 
 }: GlassCardProps) {
   const sizes = {
     small: 'p-4 rounded-xl',
@@ -65,6 +67,7 @@ export function GlassCard({
         
         className
       )}
+      style={style}
     >
       {children}
     </div>

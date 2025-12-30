@@ -34,6 +34,7 @@ import {
     Hash,
     Briefcase,
     Loader2,
+    DollarSign,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -57,6 +58,7 @@ interface Company {
         products: number;
         sales: number;
     };
+    monthlyRevenue: number;
 }
 
 interface Stats {
@@ -430,6 +432,9 @@ export default function AdminCompaniesPage() {
                                                 Validade
                                             </th>
                                             <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
+                                                Faturamento Mensal
+                                            </th>
+                                            <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
                                                 Métricas
                                             </th>
                                             <th className="px-6 py-4 text-right neu-text-label text-[var(--neu-text-muted)]">
@@ -476,6 +481,17 @@ export default function AdminCompaniesPage() {
                                                                 ? new Date(company.subscription_end).toLocaleDateString('pt-MZ')
                                                                 : '—'}
                                                         </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <DollarSign className="w-4 h-4 text-[var(--neu-accent)]" />
+                                                        <span className="neu-text-body font-bold text-[var(--neu-accent)]">
+                                                            {company.monthlyRevenue > 0
+                                                                ? company.monthlyRevenue.toLocaleString('pt-MZ', { maximumFractionDigits: 0 })
+                                                                : '0'}
+                                                        </span>
+                                                        <span className="neu-text-caption text-[var(--neu-text-muted)]">MT</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
@@ -608,15 +624,10 @@ function CreateCompanyModal({ onClose, onSuccess, onSaveFormData, initialData }:
                form.ownerPassword.trim() !== '';
     };
 
-    // Salvar dados antes de fechar
+    // Salvar dados antes de fechar - sempre salva automaticamente
     const handleClose = () => {
+        // Sempre salvar dados preenchidos sem perguntar
         if (hasFormData()) {
-            const confirm = window.confirm(
-                'Tem dados não salvos. Deseja fechar mesmo assim?\n\nClique "Cancelar" para continuar editando ou "OK" para fechar (os dados serão preservados).'
-            );
-            if (!confirm) return;
-            
-            // Salvar dados para não perder
             onSaveFormData(form);
         }
         onClose();
@@ -1003,6 +1014,7 @@ function CreateCompanyModal({ onClose, onSuccess, onSaveFormData, initialData }:
                                     onBlur={() => handleBlur('ownerEmail')}
                                     placeholder="joao@empresa.co.mz"
                                     error={errors.ownerEmail}
+                                    autoComplete="off"
                                 />
                                 {errors.ownerEmail && (
                                     <p className="neu-text-caption text-[var(--neu-error)] mt-1">{errors.ownerEmail}</p>
@@ -1021,6 +1033,7 @@ function CreateCompanyModal({ onClose, onSuccess, onSaveFormData, initialData }:
                                         onChange={(e) => setForm({ ...form, ownerPassword: e.target.value })}
                                         onBlur={() => handleBlur('ownerPassword')}
                                         placeholder="Min. 8 caracteres"
+                                        autoComplete="new-password"
                                         className={`
                                             w-full neu-surface neu-concave-sm rounded-xl px-4 py-3 pr-12
                                             neu-text-body text-[var(--neu-text-primary)]
@@ -1060,6 +1073,7 @@ function CreateCompanyModal({ onClose, onSuccess, onSaveFormData, initialData }:
                                         onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
                                         onBlur={() => handleBlur('confirmPassword')}
                                         placeholder="Repetir senha"
+                                        autoComplete="new-password"
                                         className={`
                                             w-full neu-surface neu-concave-sm rounded-xl px-4 py-3 pr-12
                                             neu-text-body text-[var(--neu-text-primary)]

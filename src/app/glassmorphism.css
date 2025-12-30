@@ -1,0 +1,249 @@
+/**
+ * ================================================================
+ * GLASSMORPHISM STYLES - BIZ360 HOME PAGE
+ * ================================================================
+ * Estilos otimizados para performance mobile
+ * Com fallbacks para browsers antigos
+ * ================================================================
+ */
+
+/* ============================================
+   GLASS EFFECT BASE
+   ============================================ */
+
+/* Performance optimizations */
+.glass-element {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: paint layout style;
+}
+
+/* Fallback para browsers sem backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+  .glass-bg {
+    background: rgba(30, 30, 35, 0.95) !important;
+  }
+}
+
+/* ============================================
+   MOBILE OPTIMIZATIONS (CRÍTICO)
+   ============================================ */
+
+/* Reduzir efeitos em mobile para performance */
+@media (max-width: 768px) {
+  /* Reduzir blur em mobile */
+  .backdrop-blur-3xl {
+    backdrop-filter: blur(12px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+  }
+  
+  .backdrop-blur-2xl {
+    backdrop-filter: blur(10px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(150%) !important;
+  }
+  
+  .backdrop-blur-xl {
+    backdrop-filter: blur(8px) saturate(120%) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(120%) !important;
+  }
+  
+  .backdrop-blur-lg {
+    backdrop-filter: blur(6px) saturate(120%) !important;
+    -webkit-backdrop-filter: blur(6px) saturate(120%) !important;
+  }
+
+  /* Simplificar sombras */
+  .shadow-3xl {
+    box-shadow: 0 15px 35px -8px rgba(0, 0, 0, 0.3) !important;
+  }
+  
+  .shadow-2xl {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  /* Reduzir border-radius */
+  .rounded-\[48px\] {
+    border-radius: 32px !important;
+  }
+  
+  .rounded-\[32px\] {
+    border-radius: 24px !important;
+  }
+}
+
+/* Smartphones pequenos */
+@media (max-width: 480px) {
+  .backdrop-blur-3xl {
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+  }
+  
+  .backdrop-blur-2xl {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+  
+  .backdrop-blur-xl {
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes subtle-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: subtle-float 6s ease-in-out infinite;
+}
+
+/* Desabilitar animações se usuário preferir */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-pulse,
+  .animate-bounce,
+  .animate-float {
+    animation: none !important;
+  }
+}
+
+/* ============================================
+   GRADIENT UTILITIES
+   ============================================ */
+
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}
+
+/* ============================================
+   GLASS CARD HOVER EFFECTS (Desktop only)
+   ============================================ */
+
+@media (min-width: 768px) {
+  .glass-card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .glass-card-hover:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ============================================
+   FOCUS STATES (Accessibility)
+   ============================================ */
+
+.glass-button:focus,
+.glass-card:focus-within {
+  outline: 2px solid #f97316;
+  outline-offset: 2px;
+}
+
+/* ============================================
+   PERFORMANCE: Hardware Acceleration
+   ============================================ */
+
+.glass-bg,
+.glass-card,
+.glass-button {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+}
+
+/* ============================================
+   CUSTOM SCROLLBAR (Optional)
+   ============================================ */
+
+.glass-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.glass-container::-webkit-scrollbar-track {
+  background: rgba(30, 30, 35, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.glass-container::-webkit-scrollbar-thumb {
+  background: rgba(249, 115, 22, 0.5);
+  border-radius: 4px;
+}
+
+.glass-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(249, 115, 22, 0.7);
+}
+
+/* ============================================
+   LOADING SKELETON
+   ============================================ */
+
+@keyframes glass-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.glass-skeleton {
+  animation: glass-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.transform-gpu {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Text shadow for better readability on glass */
+.text-on-glass {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .glass-bg,
+  .glass-card {
+    background: white !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: 1px solid #E5E7EB !important;
+  }
+  
+  .animate-pulse,
+  .animate-bounce,
+  .animate-float {
+    animation: none !important;
+  }
+}

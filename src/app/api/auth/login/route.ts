@@ -34,7 +34,8 @@ export async function POST(request: NextRequest) {
             );
         }
         
-        const { email, password } = parseResult.data;
+        const { email: rawEmail, password } = parseResult.data;
+        const email = rawEmail.toLowerCase();
 
         // 2. Verificação de conta bloqueada (Redis)
         const lockStatus = await isAccountLocked(email);

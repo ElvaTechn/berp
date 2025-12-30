@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import { Prisma } from '@prisma/client';
 import { getSession } from '@/lib/auth-server';
+import bcrypt from 'bcryptjs';
 
 // Helper to get user info from headers (set by middleware)
 function getUserFromRequest(request: NextRequest) {
@@ -112,7 +113,13 @@ export async function GET(request: NextRequest) {
         const employees = await prisma.employee.findMany({
             where,
             include: {
-                company: true
+                company: true,
+                user: {
+                    select: {
+                        id: true,
+                        email: true
+                    }
+                }
             }
         });
         return NextResponse.json(employees);
@@ -196,28 +203,73 @@ export async function POST(request: NextRequest) {
 
         const data = await request.json();
 
-        // Check duplicate
-        const existing = await prisma.employee.findFirst({
-            where: {
-                email: data.email,
-                company_id: companyId
-            }
-        });
-        if (existing) {
-            return NextResponse.json({ error: 'Email já existe' }, { status: 400 });
+        // Validações
+        if (!data.full_name || !data.email || !data.password) {
+            return NextResponse.json({ error: 'Nome, email e senha são obrigatórios' }, { status: 400 });
         }
 
-        // Create employee
-        const newEmployee = await prisma.employee.create({
-            data: {
-                full_name: data.full_name,
-                email: data.user_email || data.email,
-                role: data.role.toUpperCase(),
+        const email = data.email.toLowerCase();
+
+        // Check if email already exists in User (any company) or Employee (current company)
+        const existingUser = await prisma.user.findFirst({
+            where: { email }
+        });
+
+        const existingEmployee = await prisma.employee.findFirst({
+            where: {
+                email,
                 company_id: companyId
             }
         });
 
-        return NextResponse.json(newEmployee, { status: 201 });
+        if (existingUser || existingEmployee) {
+            return NextResponse.json({ error: 'Email já cadastrado' }, { status: 400 });
+        }
+
+        // Create User and Employee in a transaction
+        const hashedPassword = await bcrypt.hash(data.password, 12);
+
+        const result = await prisma.$transaction(async (tx) => {
+            // 1. Create User account
+            const user = await tx.user.create({
+                data: {
+                    full_name: data.full_name,
+                    email: email,
+                    password: hashedPassword,
+                    role: data.role.toUpperCase() || 'VENDEDOR',
+                    is_active: data.is_active !== false // Default true
+                }
+            });
+
+            // 2. Create Employee record linked to User
+            const employee = await tx.employee.create({
+                data: {
+                    full_name: data.full_name,
+                    email: email,
+                    role: data.role.toUpperCase() || 'VENDEDOR',
+                    is_active: data.is_active !== false,
+                    company_id: companyId,
+                    user_id: user.id // Link User to Employee
+                }
+            });
+
+            return { user, employee };
+        });
+
+        logger.info('Employee created with User login', {
+            employeeId: result.employee.id,
+            userId: result.user.id,
+            companyId,
+            requesterId: session.userId
+        });
+
+        return NextResponse.json({
+            ...result.employee,
+            user: {
+                id: result.user.id,
+                email: result.user.email
+            }
+        }, { status: 201 });
     } catch (error) {
         logger.error('Failed to create employee', { error });
         return NextResponse.json({ error: 'Failed to create employee' }, { status: 500 });

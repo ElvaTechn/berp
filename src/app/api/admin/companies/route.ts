@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
 
     // 3. Atualizar automaticamente status expirados
     const now = new Date();
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     await prisma.company.updateMany({
       where: {
         subscription_end: {
@@ -74,9 +75,26 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    // 5. Buscar faturamento mensal por empresa
+    const monthlyRevenueByCompany = await prisma.sale.groupBy({
+      by: ['company_id'],
+      where: {
+        created_at: { gte: thisMonthStart },
+      },
+      _sum: { total: true },
+    });
+
+    // 6. Criar mapa de ID -> faturamento
+    const revenueMap = new Map(
+      monthlyRevenueByCompany.map(r => [r.company_id, r._sum.total?.toNumber() || 0])
+    );
+
     return NextResponse.json({
       success: true,
-      companies,
+      companies: companies.map(company => ({
+        ...company,
+        monthlyRevenue: revenueMap.get(company.id) || 0,
+      })),
       total: companies.length
     });
 

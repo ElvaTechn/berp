@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 // Simplificando para sistema de fonts locale
 // Removendo fontes Google que estão falhando
 import './globals.css';
+import './glassmorphism.css';
 import { getSession } from '@/lib/auth-server';
 import { db } from '@/lib/server-api';
 import { AuthProvider } from '@/contexts/auth-context';

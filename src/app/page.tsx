@@ -1,320 +1,147 @@
 /**
  * ================================================================
- * LANDING PAGE MINIMALISTA - BIZCONTROL 360 v2.0.0
+ * HOME PAGE - BIZ360 ERP
  * ================================================================
- * Design system minimalista seguindo padrões agent-os
- * - Monochrome palette + single coral accent
- * - Clean typography hierarchy
- * - Performance optimized
- * ================================================================ */
+ * Landing page com design Glassmorphism Premium
+ * Otimizado para performance mobile
+ * ================================================================
+ */
 
-"use client";
+import { Suspense } from 'react';
+import { Metadata } from 'next';
+import { AnimatedBackground } from '@/components/home/AnimatedBackground';
+import { Hero } from '@/components/home/Hero';
+import { Features } from '@/components/home/Features';
+import { Stats } from '@/components/home/Stats';
+import { CTASection } from '@/components/home/CTASection';
 
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { 
-  Store, 
-  ShoppingCart, 
-  Package, 
-  TrendingUp, 
-  Shield, 
-  Zap,
-  ArrowRight,
-  Menu,
-  X,
-  Users
-} from 'lucide-react';
-import { ThemeToggleSimple } from '@/components/theme-toggle';
-import { useState } from 'react';
+export const metadata: Metadata = {
+  title: 'BIZ360 - Sistema ERP Completo para Gestão Empresarial',
+  description: 'Transforme sua gestão empresarial com o sistema ERP mais completo. Controle vendas, estoque, financeiro e RH em uma única plataforma.',
+  keywords: 'ERP, gestão empresarial, sistema de gestão, controle de vendas, controle de estoque, financeiro',
+  openGraph: {
+    title: 'BIZ360 - A Inteligência Por Trás do Seu ERP',
+    description: 'Sistema ERP completo para gestão de negócios em Moçambique',
+    type: 'website',
+  },
+};
+
+/**
+ * Loading skeleton for Suspense fallback
+ */
+function LoadingSkeleton() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-pulse">
+        <div className="h-12 w-48 bg-white/10 rounded-lg mb-4" />
+        <div className="h-6 w-64 bg-white/5 rounded-lg" />
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const features = [
-    {
-      icon: Package,
-      title: "Gestão de Stock",
-      description: "Controlo total do inventário com alertas automáticos de baixa stock"
-    },
-    {
-      icon: ShoppingCart,
-      title: "Ponto de Venda",
-      description: "PDV rápido e intuitivo com processamento instantâneo de vendas"
-    },
-    {
-      icon: TrendingUp,
-      title: "Análises e Relatórios",
-      description: "Dashboard em tempo real com métricas essenciais para o seu negócio"
-    },
-    {
-      icon: Users,
-      title: "Gestão de Funcionários",
-      description: "Controlo de acessos e performance da equipa por funcionalidades"
-    },
-    {
-      icon: Shield,
-      title: "Segurança Total",
-      description: "Dados encriptados e backup automático com sistema redundante"
-    },
-    {
-      icon: Zap,
-      title: "Ultra Rápido",
-      description: "Performance otimizada para funcionar offline e online sem limites"
-    }
-  ];
-
-  const benefits = [
-    "Redução de 50% no tempo de gestão de stock",
-    "Aumento de 35% na eficiência das vendas", 
-    "Controlo total em tempo real 24/7",
-    "Suporte local e formação incluída",
-    "Compatível com qualquer dispositivo",
-    "Actualizações automáticas e gratuitas"
-  ];
-
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
-      
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="#" className="flex items-center space-x-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-800">
-                <Store className="w-5 h-5" />
-              </div>
-              <span className="text-xl font-bold">BizControl<span className="text-accent">360</span></span>
-            </Link>
+    <main className="relative min-h-screen overflow-hidden">
+      {/* Animated background with gradients */}
+      <AnimatedBackground />
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center">
-              <div className="flex text-sm space-x-6">
-                <a href="#features" className="text-muted hover:text-foreground transition-colors">Funcionalidades</a>
-                <a href="#benefits" className="text-muted hover:text-foreground transition-colors">Benefícios</a>
-              </div>
-              <div className="ml-8">
-                <Link href="/login" className="btn-secondary">Entrar</Link>
-              </div>
-              <div className="ml-4">
-                <ThemeToggleSimple />
-              </div>
-            </div>
+      {/* Main content */}
+      <div className="relative z-10">
+        {/* Hero Section */}
+        <Suspense fallback={<LoadingSkeleton />}>
+          <Hero />
+        </Suspense>
 
-            {/* Mobile Menu Button */}
-            <div className="md:hidden flex items-center space-x-2">
-              <ThemeToggleSimple />
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
-              >
-                {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-            </div>
-          </div>
+        {/* Features Section */}
+        <Suspense fallback={null}>
+          <Features />
+        </Suspense>
 
-          {/* Mobile Menu */}
-          {isMenuOpen && (
-            <div className="md:hidden py-4 space-y-2 border-t border-gray-200 dark:border-gray-800 mt-4">
-              <a href="#features" className="block px-4 py-2 text-muted hover:text-foreground transition-colors">Funcionalidades</a>
-              <a href="#benefits" className="block px-4 py-2 text-muted hover:text-foreground transition-colors">Benefícios</a>
-              <Link href="/login" className="block px-4 py-2 font-bold text-foreground">Entrar</Link>
-            </div>
-          )}
-        </div>
-      </nav>
+        {/* Stats Section */}
+        <Suspense fallback={null}>
+          <Stats />
+        </Suspense>
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-4 pt-16">
-        {/* Subtle background */}
-        <div className="absolute inset-0 bg-gray-50/50 dark:bg-gray-950" />
-        
-        {/* Very subtle floating elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-16 h-16 bg-accent/5 rounded-full blur-2xl" />
-          <div className="absolute bottom-20 right-10 w-24 h-24 bg-accent/5 rounded-full blur-2xl" />
-        </div>
+        {/* CTA Section */}
+        <Suspense fallback={null}>
+          <CTASection />
+        </Suspense>
+      </div>
 
-        <div className="relative max-w-7xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="mb-8"
-          >
-            <h1 className="text-display mb-6">
-              Sistema Completo de
-              <span className="block">Gestão de Stock e Vendas</span>
-            </h1>
-            <p className="text-body text-lg max-w-3xl mx-auto mb-16">
-              Transforme o seu negócio com a plataforma mais completa e intuitiva do mercado. 
-              Controlo total, performance extrema e resultados garantidos.
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
-          >
-            <Link 
-              href="/login"
-              className="btn-primary group"
-            >
-              <span className="flex items-center">
-                Começar Agora
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </Link>
-            <Link 
-              href="#demo"
-              className="btn-secondary"
-            >
-              Ver Demonstração
-            </Link>
-          </motion.div>
-
-          {/* How it works - simplified */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.4 }}
-            className="card-minimal p-8 max-w-5xl mx-auto"
-          >
-            <div className="text-center mb-8">
-              <h3 className="heading-2 mb-4">Como Funciona</h3>
-              <p className="text-muted">Veja como é simples gerir o seu negócio</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-4">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-900 mx-auto mb-4">
-                  <Package className="w-6 h-6 text-accent" />
-                </div>
-                <h4 className="font-bold mb-2">1. Cadastrar Produtos</h4>
-                <p className="text-sm text-muted">Adicione seu estoque com código barra, preço e quantidade</p>
-              </div>
-              
-              <div className="text-center p-4">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-900 mx-auto mb-4">
-                  <ShoppingCart className="w-6 h-6 text-accent" />
-                </div>
-                <h4 className="font-bold mb-2">2. Vender Rápido</h4>
-                <p className="text-sm text-muted">PDV intuitivo com pesquisa por produto ou código</p>
-              </div>
-              
-              <div className="text-center p-4">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-900 mx-auto mb-4">
-                  <TrendingUp className="w-6 h-6 text-accent" />
-                </div>
-                <h4 className="font-bold mb-2">3. Analisar Resultados</h4>
-                <p className="text-sm text-muted">Relatórios em tempo real sobre vendas estoque e lucro</p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Features Section - Minimal */}
-      <section id="features" className="py-24 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="heading-1 mb-4">Funcionalidades Principais</h2>
-            <p className="text-muted text-lg">Tudo o que precisa para gerir o seu negócio</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="card-minimal p-8 text-center hover-lift"
-              >
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-900 mb-6">
-                  <feature.icon className="w-6 h-6 text-accent" />
-                </div>
-                <h3 className="heading-3 mb-4">{feature.title}</h3>
-                <p className="text-muted">{feature.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section - Simplified */}
-      <section className="py-24 px-4 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="heading-1 mb-8">Benefícios Comprovados</h2>
-          <div className="space-y-4">
-            {benefits.map((benefit, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="flex items-center justify-start gap-3 p-4 bg-white dark:bg-black rounded-lg card-minimal"
-              >
-                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
-                  <span className="text-white text-xs">✓</span>
-                </div>
-                <span className="text-left">{benefit}</span>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section - Clean */}
-      <section className="py-24 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="p-12 text-center border border-gray-200 dark:border-gray-800 rounded-2xl"
-          >
-            <h2 className="text-display mb-6">
-              Pronto para transformar
-              <span className="block">o seu negócio?</span>
-            </h2>
-            <p className="text-body text-lg mb-8 max-w-2xl mx-auto">
-              Junte-se a centenas de empresas que já revolucionaram a sua gestão com BizControl 360
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link 
-                href="/login"
-                className="btn-primary"
-              >
-                Começar Gratuitamente
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Footer - Minimal */}
-      <footer className="bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800 py-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-3 mb-6 md:mb-0">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-800">
-                <Store className="w-4 h-4" />
-              </div>
-              <span className="text-xl font-bold">BizControl<span className="text-accent">360</span></span>
-            </div>
-            <div className="text-center md:text-right">
-              <p className="text-label mb-2">
-                © 2024 BizControl 360. ERP Enterprise.
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-white/10 backdrop-blur-xl bg-[rgba(15,15,17,0.8)]">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Company */}
+            <div>
+              <h3 className="text-2xl font-bold mb-4">
+                <span className="text-white">BIZ</span>
+                <span className="text-orange-500">360</span>
+              </h3>
+              <p className="text-white/60 text-sm">
+                A inteligência por trás do seu ERP. Sistema completo de gestão empresarial.
               </p>
-              <p className="text-caption italic">
-                Corporate Management System
-              </p>
+            </div>
+
+            {/* Product */}
+            <div>
+              <h4 className="text-white font-semibold mb-4">Produto</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#features" className="text-white/60 hover:text-orange-500 transition-colors">Funcionalidades</a></li>
+                <li><a href="#pricing" className="text-white/60 hover:text-orange-500 transition-colors">Preços</a></li>
+                <li><a href="#docs" className="text-white/60 hover:text-orange-500 transition-colors">Documentação</a></li>
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h4 className="text-white font-semibold mb-4">Empresa</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#about" className="text-white/60 hover:text-orange-500 transition-colors">Sobre Nós</a></li>
+                <li><a href="#careers" className="text-white/60 hover:text-orange-500 transition-colors">Carreiras</a></li>
+                <li><a href="#blog" className="text-white/60 hover:text-orange-500 transition-colors">Blog</a></li>
+                <li><a href="#contact" className="text-white/60 hover:text-orange-500 transition-colors">Contato</a></li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="text-white font-semibold mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#privacy" className="text-white/60 hover:text-orange-500 transition-colors">Privacidade</a></li>
+                <li><a href="#terms" className="text-white/60 hover:text-orange-500 transition-colors">Termos de Uso</a></li>
+                <li><a href="#security" className="text-white/60 hover:text-orange-500 transition-colors">Segurança</a></li>
+                <li><a href="#compliance" className="text-white/60 hover:text-orange-500 transition-colors">Conformidade</a></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-white/50 text-sm">
+              © 2025 BIZ360. Todos os direitos reservados.
+            </p>
+            <div className="flex gap-6">
+              <a href="#" className="text-white/50 hover:text-orange-500 transition-colors">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+              </a>
+              <a href="#" className="text-white/50 hover:text-orange-500 transition-colors">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                </svg>
+              </a>
+              <a href="#" className="text-white/50 hover:text-orange-500 transition-colors">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+              </a>
             </div>
           </div>
         </div>
       </footer>
-    </div>
+    </main>
   );
 }

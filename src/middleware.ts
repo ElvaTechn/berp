@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 
-const PUBLIC_PATHS = ['/login', '/register', '/api/auth', '/_next', '/favicon.ico', '/offline'];
+const PUBLIC_PATHS = ['/', '/login', '/register', '/api/auth', '/_next', '/favicon.ico', '/offline'];
 
 // Rotas que requerem role ADMIN
 const ADMIN_PATHS = ['/admin'];

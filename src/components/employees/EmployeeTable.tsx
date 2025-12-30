@@ -1,10 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Edit2, Trash2, Users, ShieldCheck, Loader2 } from "lucide-react";
+import { Edit2, Trash2, Users, ShieldCheck, Loader2, Key, CheckCircle, XCircle } from "lucide-react";
 import { NeuCard, NeuCardHeader, NeuCardTitle, NeuCardContent } from "@/components/ui/neu-card";
 import { NeuBadge } from "@/components/ui/neu-badge";
 import { NeuButton } from "@/components/ui/neu-button";
+import { toast } from "sonner";
 
 interface Employee {
   id: string;
@@ -23,9 +24,10 @@ interface EmployeeTableProps {
   loading: boolean;
   onEdit: (employee: Employee) => void;
   onDelete: (id: string) => void;
+  onReload?: () => void;
 }
 
-export function EmployeeTable({ employees, loading, onEdit, onDelete }: EmployeeTableProps) {
+export function EmployeeTable({ employees, loading, onEdit, onDelete, onReload }: EmployeeTableProps) {
   const roleLabels: Record<string, string> = {
     GESTOR: "Gestor",
     VENDEDOR: "Vendedor",
@@ -36,6 +38,35 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
     GESTOR: { status: 'info' },
     VENDEDOR: { status: 'success' },
     ADMIN: { status: 'error' }
+  };
+
+  // Function to create login for employee
+  const handleCreateLogin = async (employeeId: string, employeeName: string) => {
+    const password = prompt(`Senha para ${employeeName} (mínimo 6 caracteres):`);
+    if (!password) return;
+
+    if (password.length < 6) {
+      toast.error('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/employees/${employeeId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Falha ao criar conta de login');
+      }
+
+      toast.success('Conta de login criada com sucesso!');
+      if (onReload) onReload();
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao criar conta de login');
+    }
   };
 
   if (loading) {
@@ -99,6 +130,9 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
                   </th>
                   <th className="px-6 py-4 text-left neu-text-label font-semibold">
                     Status
+                  </th>
+                  <th className="px-6 py-4 text-left neu-text-label font-semibold">
+                    Conta de Login
                   </th>
                   <th className="px-6 py-4 text-left neu-text-label font-semibold">
                     Data de Criação
@@ -166,6 +200,21 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
                       )}
                     </td>
 
+                    {/* Conta de Login */}
+                    <td className="px-6 py-4">
+                      {employee.user ? (
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-[var(--neu-success)]" />
+                          <span className="neu-text-body text-[var(--neu-text-secondary)]">Criada</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <XCircle className="w-4 h-4 text-[var(--neu-error)]" />
+                          <span className="neu-text-body text-[var(--neu-text-secondary)]">Pendente</span>
+                        </div>
+                      )}
+                    </td>
+
                     {/* Data */}
                     <td className="px-6 py-4">
                       <p className="neu-text-body text-[var(--neu-text-muted)]">
@@ -180,6 +229,18 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete }: Employee
                     {/* Ações */}
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
+                        {!employee.user && (
+                          <NeuButton
+                            variant="convex"
+                            size="icon"
+                            onClick={() => handleCreateLogin(employee.id, employee.full_name)}
+                            title="Criar Conta de Login"
+                            className="text-[var(--neu-warning)]"
+                          >
+                            <Key className="w-4 h-4" />
+                          </NeuButton>
+                        )}
+
                         <NeuButton
                           variant="convex"
                           size="icon"

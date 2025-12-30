@@ -264,7 +264,7 @@ const nextConfig = {
         ],
       },
       {
-        source: '/apple-touch-icon:size*.png',
+        source: '/apple-touch-icon:variant(.*).png',
         headers: [
           {
             key: 'Cache-Control',

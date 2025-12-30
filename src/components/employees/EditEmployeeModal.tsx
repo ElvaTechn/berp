@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { NeuInput } from "@/components/ui/neu-input";
 import { NeuButton } from "@/components/ui/neu-button";
@@ -14,6 +15,10 @@ interface Employee {
   email: string;
   role: string;
   is_active: boolean;
+  user?: {
+    id: string;
+    email: string;
+  };
 }
 
 interface EditEmployeeModalProps {
@@ -25,10 +30,13 @@ interface EditEmployeeModalProps {
 
 export function EditEmployeeModal({ employee, open, onOpenChange, onSuccess }: EditEmployeeModalProps) {
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     full_name: employee.full_name,
+    email: employee.email,
     role: employee.role,
-    is_active: employee.is_active
+    is_active: employee.is_active,
+    password: ""
   });
 
   const handleClose = () => {
@@ -40,18 +48,61 @@ export function EditEmployeeModal({ employee, open, onOpenChange, onSuccess }: E
     setLoading(true);
 
     try {
-      const res = await fetch(`/api/employees/${employee.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      });
-
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Falha ao atualizar funcionário");
+      // Se não tem login, precisa fornecer senha
+      if (!employee.user && !formData.password) {
+        toast.error("Senha obrigatória para criar conta de login");
+        setLoading(false);
+        return;
       }
 
-      toast.success("Funcionário atualizado com sucesso!");
+      if (!employee.user) {
+        // Criar login usando PATCH
+        const res = await fetch(`/api/employees/${employee.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            password: formData.password
+          })
+        });
+
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || "Falha ao criar conta de login");
+        }
+
+        toast.success("Conta de login criada com sucesso!");
+      } else {
+        // Atualizar funcionário usando PUT
+        const updateData: any = {
+          full_name: formData.full_name,
+          role: formData.role,
+          is_active: formData.is_active
+        };
+
+        // Atualizar senha se fornecida
+        if (formData.password) {
+          if (formData.password.length < 6) {
+            toast.error("A senha deve ter pelo menos 6 caracteres");
+            setLoading(false);
+            return;
+          }
+          updateData.password = formData.password;
+        }
+
+        const res = await fetch(`/api/employees/${employee.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updateData)
+        });
+
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || "Falha ao atualizar funcionário");
+        }
+
+        toast.success("Funcionário atualizado com sucesso!");
+      }
+
       onSuccess();
       handleClose();
     } catch (error: any) {
@@ -69,6 +120,11 @@ export function EditEmployeeModal({ employee, open, onOpenChange, onSuccess }: E
           <NeuDialogTitle>Editar Funcionário</NeuDialogTitle>
           <NeuDialogDescription>
             {employee.email}
+            {employee.user ? (
+              <span className="text-[var(--neu-success)] ml-2">✓ Conta de login ativa</span>
+            ) : (
+              <span className="text-[var(--neu-warning)] ml-2">⚠ Aguardando criação de conta de login</span>
+            )}
           </NeuDialogDescription>
         </NeuDialogHeader>
 
@@ -83,6 +139,42 @@ export function EditEmployeeModal({ employee, open, onOpenChange, onSuccess }: E
             onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
             placeholder="João Silva"
           />
+
+          {/* Senha */}
+          <div>
+            <label className="neu-text-label mb-1.5 block">
+              {employee.user ? 'Nova Senha (opcional)' : 'Senha *'}
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder={employee.user ? "Deixe em branco para manter a senha atual" : "Mínimo 6 caracteres"}
+                minLength={employee.user ? undefined : 6}
+                required={!employee.user}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="
+                  w-full
+                  neu-surface
+                  neu-concave-sm
+                  rounded-xl px-4 py-3 pr-12
+                  neu-text-body
+                  placeholder:text-[var(--neu-text-muted)]
+                  focus:outline-none
+                  focus:neu-concave-md
+                  focus:ring-2 focus:ring-[var(--neu-accent)] focus:ring-offset-2 focus:ring-offset-transparent
+                  transition-all duration-200
+                "
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--neu-text-muted)] hover:text-[var(--neu-text-primary)] transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
 
           {/* Função */}
           <div>
@@ -131,7 +223,7 @@ export function EditEmployeeModal({ employee, open, onOpenChange, onSuccess }: E
               disabled={loading}
               className="flex-1"
             >
-              Atualizar
+              {employee.user ? 'Atualizar' : 'Criar Login'}
             </NeuButton>
           </NeuDialogFooter>
         </form>

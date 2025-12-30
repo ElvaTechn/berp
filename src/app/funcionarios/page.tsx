@@ -18,6 +18,7 @@ interface Employee {
   role: string;
   is_active: boolean;
   user?: {
+    id: string;
     email: string;
   };
   created_at: string;
@@ -223,6 +224,7 @@ export default function FuncionariosPage() {
             setShowEditModal(true);
           }}
           onDelete={handleDelete}
+          onReload={fetchEmployees}
         />
       </div>
 
