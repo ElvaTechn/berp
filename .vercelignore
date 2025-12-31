@@ -1,0 +1,33 @@
+# Environment files
+.env.local
+.env.production
+.env*.local
+
+# Dependencies
+node_modules
+
+# Build files
+.next
+*.log
+
+# Git
+.git
+
+# Database files (SQLite)
+prisma/*.db
+prisma/*.db-journal
+
+# Editor files
+.vscode
+.idea
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+docs/
+specs/
+
+# Scripts
+scripts/

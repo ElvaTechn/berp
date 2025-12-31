@@ -9,6 +9,7 @@ import { NeuTextarea } from '@/components/ui/neu-textarea';
 import { NeuSelect, NeuSelectContent, NeuSelectItem, NeuSelectTrigger, NeuSelectValue } from '@/components/ui/neu-select';
 import { NeuDialog, NeuDialogContent, NeuDialogHeader, NeuDialogTitle, NeuDialogFooter } from '@/components/ui/neu-dialog';
 import { Plus, Pencil, Trash2, Package, Search, Loader2, AlertTriangle } from 'lucide-react';
+import { TouchActionButtons } from '@/components/ui/touch-button';
 import { toast } from 'sonner';
 import { useViewport } from '@/hooks/useViewport';
 
@@ -283,17 +284,13 @@ export default function ProductsPage() {
                           </span>
                         )}
                       </div>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <NeuButton variant="ghost" size="icon" onClick={() => openDialog(product)}>
-                          <Pencil className="h-4 w-4" />
-                        </NeuButton>
-                        <NeuButton
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(product.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-[var(--neu-error)]" />
-                        </NeuButton>
+                      {/* Touch-optimized action buttons (44x44px min) */}
+                      {/* Always visible on mobile (md:opacity-0), show on hover for desktop */}
+                      <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                        <TouchActionButtons
+                          onEdit={() => openDialog(product)}
+                          onDelete={() => handleDelete(product.id)}
+                        />
                       </div>
                     </div>
 

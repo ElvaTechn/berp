@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import Sidebar from '@/components/layout/Sidebar';
+import { BottomNav } from '@/components/layout/BottomNav';
 import { Loader2 } from 'lucide-react';
 
 interface CompanyData {
@@ -107,11 +108,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         {/* Content with independent scroll */}
         <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-black">
-          <div className="w-full max-w-none p-4 lg:p-6 pt-20 lg:pt-6">
+          <div className="w-full max-w-none p-4 lg:p-6 pt-20 lg:pt-6 pb-24 lg:pb-6">
             {children}
           </div>
         </div>
       </main>
+
+      {/* Bottom Navigation (Mobile only) */}
+      <BottomNav />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { apiClient } from '@/services/api';
 import { Product, Category, Employee } from '@/types';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
+import { FloatingCart } from '@/components/pos/FloatingCart';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -436,6 +437,17 @@ export default function PointOfSale() {
           </div>
         </div>
       )}
+
+      {/* Carrinho Flutuante Mobile */}
+      <FloatingCart
+        cart={cart}
+        total={getTotal()}
+        isProcessing={processing}
+        onCheckout={handleCheckout}
+        onUpdateQuantity={updateCartQuantity}
+        onRemoveItem={removeFromCart}
+        formatMT={formatMT}
+      />
     </div>
   );
 }
