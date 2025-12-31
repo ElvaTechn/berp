@@ -26,7 +26,6 @@ interface ReceiptData {
     id: string;
     subtotal: Prisma.Decimal;
     discount_amount: Prisma.Decimal | null;
-    tax_amount: Prisma.Decimal | null;
     total: Prisma.Decimal;
     payment_method: string;
     created_at: Date;
@@ -53,7 +52,6 @@ export async function generateReceiptHTML(data: ReceiptData): Promise<string> {
 
   const subtotal = fromDecimal(sale.subtotal);
   const discount = sale.discount_amount ? fromDecimal(sale.discount_amount) : 0;
-  const tax = sale.tax_amount ? fromDecimal(sale.tax_amount) : 0;
   const total = fromDecimal(sale.total);
 
   const dateStr = new Date(sale.created_at).toLocaleDateString('pt-MZ', {
@@ -262,13 +260,6 @@ export async function generateReceiptHTML(data: ReceiptData): Promise<string> {
         <div class="total-row">
           <span>Desconto:</span>
           <span>-${discount.toLocaleString('pt-MZ', { minimumFractionDigits: 2 })} MT</span>
-        </div>
-      ` : ''}
-      
-      ${tax > 0 ? `
-        <div class="total-row">
-          <span>IVA (17%):</span>
-          <span>${tax.toLocaleString('pt-MZ', { minimumFractionDigits: 2 })} MT</span>
         </div>
       ` : ''}
       

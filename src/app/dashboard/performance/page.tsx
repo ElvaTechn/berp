@@ -113,25 +113,25 @@ export default function PerformanceDashboard() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="container mx-auto p-4 md:p-6 space-y-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Performance Dashboard</h1>
-          <p className="text-gray-600">Monitoramento em tempo real do sistema</p>
+          <h1 className="text-2xl md:text-3xl font-bold">Performance Dashboard</h1>
+          <p className="text-sm md:text-base text-gray-600">Monitoramento em tempo real do sistema</p>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:space-x-2">
           <button
             onClick={() => setAutoRefresh(!autoRefresh)}
-            className={`px-4 py-2 rounded-lg transition-colors ${
+            className={`px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm md:text-base ${
               autoRefresh ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'
             }`}
           >
-            Auto Refresh: {autoRefresh ? 'ON' : 'OFF'}
+            <span className="hidden sm:inline">Auto Refresh: </span>{autoRefresh ? 'ON' : 'OFF'}
           </button>
           <button
             onClick={refreshData}
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm md:text-base"
           >
             {loading ? 'Atualizando...' : 'Atualizar'}
           </button>
@@ -139,7 +139,7 @@ export default function PerformanceDashboard() {
       </div>
 
       {/* Status Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Status do Sistema</CardTitle>
@@ -194,7 +194,7 @@ export default function PerformanceDashboard() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium">Throughput</CardTitle>
@@ -228,7 +228,7 @@ export default function PerformanceDashboard() {
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
                 <CardTitle>Database</CardTitle>
@@ -281,7 +281,7 @@ export default function PerformanceDashboard() {
         </TabsContent>
 
         <TabsContent value="health" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Card>
               <CardHeader>
                 <CardTitle>Memory</CardTitle>
@@ -369,7 +369,7 @@ export default function PerformanceDashboard() {
               <div className="text-3xl font-bold mb-4">{metrics.activeUsers}</div>
               <div className="text-sm text-gray-600 mb-4">Online agora</div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="text-center p-4 bg-blue-50 rounded-lg">
                   <div className="text-2xl font-bold text-blue-600">
                     {health.checks.database.records?.users || 0}
@@ -394,7 +394,7 @@ export default function PerformanceDashboard() {
           <CardTitle>Informações do Sistema</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <div className="text-sm text-gray-600">Versão</div>
               <div className="font-medium">{health.version}</div>

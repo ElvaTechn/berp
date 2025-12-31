@@ -96,7 +96,6 @@ model Company {
   
   // Business Info
   business_sector      String?
-  tax_regime           TaxRegime?  @default(NORMAL)  // NEW: IVA regime for Mozambique
   
   // Ownership
   owner_id             String
@@ -277,7 +276,6 @@ model Sale {
   // FINANCIAL FIELDS - REFATORADO PARA DECIMAL
   subtotal       Decimal    @db.Decimal(10, 2)  // NEW: Subtotal before discount/tax
   discount_amount Decimal?  @db.Decimal(10, 2)  // NEW: Total discount applied
-  tax_amount     Decimal?   @db.Decimal(10, 2)  // NEW: IVA (17% em Moçambique)
   total          Decimal    @db.Decimal(10, 2)  // Total final
   total_profit   Decimal?   @db.Decimal(10, 2)  // Lucro total (calculado)
   
@@ -533,12 +531,6 @@ enum SubscriptionType {
   QUARTERLY    // Quarterly billing
   ANNUAL       // Annual billing
   LIFETIME     // One-time payment
-}
-
-enum TaxRegime {
-  NORMAL       // IVA normal (17% em Moçambique)
-  SIMPLIFIED   // Regime simplificado
-  EXEMPT       // Isento de IVA
 }
 
 enum DiscountType {

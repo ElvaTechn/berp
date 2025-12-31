@@ -6,6 +6,7 @@ import { NeuButton } from '@/components/ui/neu-button';
 import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
 import { NeuInput } from '@/components/ui/neu-input';
 import { NeuSelect, NeuSelectContent, NeuSelectItem, NeuSelectTrigger, NeuSelectValue } from '@/components/ui/neu-select';
+import { useViewport } from '@/hooks/useViewport';
 import {
     Calendar,
     Plus,
@@ -60,6 +61,7 @@ interface Stats {
 }
 
 export default function ReservationsPage() {
+    const { isMobile } = useViewport();
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
     const [stats, setStats] = useState<Stats | null>(null);
@@ -254,6 +256,7 @@ export default function ReservationsPage() {
                     variant="accent" 
                     size="md"
                     onClick={() => setShowCreateModal(true)}
+                    className={isMobile ? "w-full" : ""}
                 >
                     <Plus className="w-5 h-5" />
                     <span>Nova Reserva</span>
@@ -390,9 +393,100 @@ export default function ReservationsPage() {
                                     Crie a primeira reserva clicando no botão acima
                                 </p>
                             </div>
+                        ) : isMobile ? (
+                            /* Mobile Card View */
+                            <div className="space-y-4 p-4">
+                                {filteredReservations.map((reservation, index) => {
+                                    const timeRemaining = getTimeRemaining(reservation.expires_at);
+                                    const total = (reservation.product?.price || 0) * reservation.quantity;
+
+                                    return (
+                                        <motion.div
+                                            key={reservation.id}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.05 }}
+                                        >
+                                            <NeuCard variant="convex" size="sm">
+                                                <NeuCardContent className="p-4 space-y-3">
+                                                    {/* Header */}
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="flex-1">
+                                                            <p className="neu-text-body font-bold">{reservation.customer_name}</p>
+                                                            <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                                                                {reservation.customer_phone || reservation.customer_bi || '-'}
+                                                            </p>
+                                                        </div>
+                                                        {getStatusBadge(reservation.status)}
+                                                    </div>
+
+                                                    {/* Product */}
+                                                    <div className="space-y-1">
+                                                        <p className="neu-text-caption text-[var(--neu-text-muted)]">Produto</p>
+                                                        <p className="neu-text-body font-medium">{reservation.product?.name || '-'}</p>
+                                                    </div>
+
+                                                    {/* Info Grid */}
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <div>
+                                                            <p className="neu-text-caption text-[var(--neu-text-muted)]">Quantidade</p>
+                                                            <p className="neu-text-body">{reservation.quantity}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="neu-text-caption text-[var(--neu-text-muted)]">Total</p>
+                                                            <p className="neu-text-body font-bold text-[var(--neu-accent)]">
+                                                                {total.toLocaleString('pt-MZ')} MT
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Expiration */}
+                                                    <div className="flex items-center gap-2">
+                                                        <Clock className="w-4 h-4 text-[var(--neu-text-muted)]" />
+                                                        <span className={`neu-text-caption font-bold ${timeRemaining.color}`}>
+                                                            {timeRemaining.text}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Actions */}
+                                                    {reservation.status === 'PENDING' && (
+                                                        <div className="flex gap-2 pt-2">
+                                                            <NeuButton
+                                                                variant="accent"
+                                                                size="sm"
+                                                                onClick={() => handleComplete(reservation.id)}
+                                                                disabled={processingId === reservation.id}
+                                                                className="flex-1"
+                                                            >
+                                                                {processingId === reservation.id ? (
+                                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                                ) : (
+                                                                    <CheckCircle className="w-4 h-4" />
+                                                                )}
+                                                                <span>Completar</span>
+                                                            </NeuButton>
+                                                            <NeuButton
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleCancel(reservation.id)}
+                                                                disabled={processingId === reservation.id}
+                                                                className="flex-1"
+                                                            >
+                                                                <XCircle className="w-4 h-4" />
+                                                                <span>Cancelar</span>
+                                                            </NeuButton>
+                                                        </div>
+                                                    )}
+                                                </NeuCardContent>
+                                            </NeuCard>
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
                         ) : (
+                            /* Desktop Table View */
                             <div className="overflow-x-auto">
-                                <table className="w-full min-w-[800px]">
+                                <table className="w-full">
                                     <thead className="bg-[var(--neu-base)] border-b border-[var(--neu-border)]">
                                         <tr>
                                             <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">Cliente</th>

@@ -13,6 +13,7 @@ interface InventoryAlert {
 
 interface InventoryAlertsProps {
   alerts: InventoryAlert[];
+  limit?: number;
 }
 
 const statusConfig = {
@@ -36,16 +37,19 @@ const statusConfig = {
   }
 };
 
-export function InventoryAlerts({ alerts }: InventoryAlertsProps) {
+export function InventoryAlerts({ alerts, limit }: InventoryAlertsProps) {
+  // Aplicar limite se fornecido
+  const limitedAlerts = limit ? alerts.slice(0, limit) : alerts;
+
   // Ordenar por status (critical primeiro)
-  const sortedAlerts = [...alerts].sort((a, b) => {
+  const sortedAlerts = [...limitedAlerts].sort((a, b) => {
     const order = { critical: 0, warning: 1, low: 2 };
     return order[a.status] - order[b.status];
   });
 
   // Contar por status
-  const criticalCount = alerts.filter(a => a.status === "critical").length;
-  const warningCount = alerts.filter(a => a.status === "warning").length;
+  const criticalCount = limitedAlerts.filter(a => a.status === "critical").length;
+  const warningCount = limitedAlerts.filter(a => a.status === "warning").length;
 
   return (
     <div>

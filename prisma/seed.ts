@@ -78,7 +78,6 @@ async function main() {
       phone: '+258 84 123 4567',
       email: 'contacto@nexus.co.mz',
       owner_id: gestor.id,
-      tax_regime: 'NORMAL',
     },
   });
 
@@ -552,9 +551,8 @@ async function seedSales(
       };
     });
 
-    const taxRate = new Prisma.Decimal('0.16'); // IVA 16%
-    const taxAmount = subtotal.mul(taxRate);
-    const total = subtotal.add(taxAmount);
+    // Total é igual ao subtotal (sem IVA)
+    const total = subtotal;
 
     // Método de pagamento aleatório
     const paymentMethod = paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
@@ -565,7 +563,6 @@ async function seedSales(
         company_id: companyId,
         employee_id: employeeId,
         subtotal: subtotal,
-        tax_amount: taxAmount,
         total: total,
         total_profit: totalProfit,
         payment_method: paymentMethod,

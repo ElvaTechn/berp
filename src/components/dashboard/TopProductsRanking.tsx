@@ -15,6 +15,7 @@ interface TopProduct {
 
 interface TopProductsRankingProps {
   products: TopProduct[];
+  limit?: number;
 }
 
 const rankColors = [
@@ -25,12 +26,15 @@ const rankColors = [
   "text-purple-500"  // 5º
 ];
 
-export function TopProductsRanking({ products }: TopProductsRankingProps) {
+export function TopProductsRanking({ products, limit }: TopProductsRankingProps) {
+  // Aplicar limite se fornecido
+  const limitedProducts = limit ? products.slice(0, limit) : products;
+
   // Encontrar o maior valor para calcular percentuais
-  const maxRevenue = Math.max(...products.map(p => p.revenue), 1);
+  const maxRevenue = Math.max(...limitedProducts.map(p => p.revenue), 1);
 
   return (
-    <div className="space-y-4">{products.length === 0 ? (
+    <div className="space-y-4">{limitedProducts.length === 0 ? (
         <div className="text-center py-12">
           <div className="w-16 h-16 rounded-full neu-surface neu-convex-md flex items-center justify-center mx-auto mb-4">
             <Package className="w-8 h-8 text-[var(--neu-text-muted)]" />
@@ -40,8 +44,7 @@ export function TopProductsRanking({ products }: TopProductsRankingProps) {
           </p>
         </div>
       ) : (
-
-        products.map((product, index) => {
+        limitedProducts.map((product, index) => {
           const percentage = (product.revenue / maxRevenue) * 100;
           
           return (

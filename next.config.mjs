@@ -34,17 +34,18 @@ const nextConfig = {
   },
 };
 
-// Configuração PWA
+// Configuração PWA - Usando SW Manual (InjectManifest)
 const pwaConfig = {
   dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development', // Desabilitado em dev
   
-  // Service Worker config
+  // IMPORTANTE: Configuração para preservar SW manual
   sw: 'sw.js',
+  buildExcludes: [/sw\.js$/, /sw\.js\.map$/],
   
-  // Workbox options
+  // Workbox options (não usado em modo manual, mas mantido para referência)
   workboxOptions: {
     disableDevLogs: true,
     runtimeCaching: [
@@ -194,5 +195,20 @@ const pwaConfig = {
     ],
   },
 };
+
+/**
+ * NOTA IMPORTANTE: Service Worker Manual
+ * =======================================
+ * O projeto usa um Service Worker MANUAL customizado (public/sw.js).
+ * O next-pwa está configurado para NÃO sobrescrever o SW manual.
+ * 
+ * O workboxOptions acima é mantido apenas como referência/documentação
+ * das estratégias de cache, mas NÃO é usado pelo Workbox em runtime.
+ * 
+ * As estratégias de cache reais estão implementadas em: public/sw.js
+ * 
+ * Se precisar modificar as estratégias de cache, edite public/sw.js
+ * e NÃO este arquivo.
+ */
 
 export default withPWA(pwaConfig)(nextConfig);

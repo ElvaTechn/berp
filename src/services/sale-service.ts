@@ -9,7 +9,6 @@
  * - Validação de Produtos (Ativos, Não expirados)
  * - Cálculo Financeiro com Precisão Decimal
  * - Aplicação de Descontos
- * - Cálculo de IVA (17% Moçambique)
  * - Snapshot Financeiro Imutável
  * - Transação Atômica (Tudo ou Nada)
  * - Atualização de Stock
@@ -21,15 +20,14 @@
  */
 
 import "server-only";
-import { Prisma, PaymentMethod, TaxRegime, PaymentStatus } from '@prisma/client';
+import { Prisma, PaymentMethod, PaymentStatus } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { 
   toDecimal, 
   calculateSubtotal, 
   calculateProfit,
-  calculateTax,
   applyDiscount,
-  calculateTotal,
+  calculateTotalWithoutTax,
   sumDecimals,
   formatCurrency
 } from '@/lib/decimal-helpers';
@@ -54,7 +52,6 @@ export interface SaleResult {
   sale_id: string;
   subtotal: string;
   discount_amount: string;
-  tax_amount: string;
   total: string;
   total_profit: string;
   items_count: number;
@@ -93,12 +90,11 @@ export class SaleService {
     // ============================================================
     const result = await prisma.$transaction(
       async (tx) => {
-        // 1. Buscar informações da empresa (para tax_regime)
+        // 1. Buscar informações da empresa
         const company = await tx.company.findUnique({
           where: { id: input.company_id },
           select: { 
             id: true, 
-            tax_regime: true,
             subscription_status: true 
           }
         });
@@ -150,23 +146,10 @@ export class SaleService {
           });
         }
 
-        // 5. Calcular IVA (baseado no regime fiscal da empresa)
-        const taxAmount = this.calculateTaxAmount(
+        // 5. Calcular total final (subtotal - desconto)
+        const total = calculateTotalWithoutTax({
           subtotal,
-          discountAmount,
-          company.tax_regime || TaxRegime.NORMAL
-        );
-
-        logger.info('Tax calculated', {
-          tax_regime: company.tax_regime,
-          tax_amount: taxAmount.toString()
-        });
-
-        // 6. Calcular total final
-        const total = calculateTotal({
-          subtotal,
-          discountAmount,
-          taxAmount
+          discountAmount
         });
 
         // 7. Calcular lucro total
@@ -177,7 +160,6 @@ export class SaleService {
         logger.info('Sale totals calculated', {
           subtotal: subtotal.toString(),
           discount: discountAmount.toString(),
-          tax: taxAmount.toString(),
           total: total.toString(),
           profit: totalProfit.toString()
         });
@@ -187,7 +169,6 @@ export class SaleService {
           data: {
             subtotal,
             discount_amount: discountAmount,
-            tax_amount: taxAmount,
             total,
             total_profit: totalProfit,
             payment_method: input.payment_method,
@@ -223,7 +204,6 @@ export class SaleService {
           sale_id: sale.id,
           subtotal: subtotal.toString(),
           discount_amount: discountAmount.toString(),
-          tax_amount: taxAmount.toString(),
           total: total.toString(),
           total_profit: totalProfit.toString(),
           items_count: validatedItems.length,
@@ -399,29 +379,6 @@ export class SaleService {
   }
 
   /**
-   * Calcula IVA baseado no regime fiscal
-   */
-  private static calculateTaxAmount(
-    subtotal: Prisma.Decimal,
-    discountAmount: Prisma.Decimal,
-    taxRegime: TaxRegime
-  ): Prisma.Decimal {
-    // Base de cálculo: subtotal após desconto
-    const taxableAmount = subtotal.sub(discountAmount);
-
-    // Taxa de IVA por regime
-    const taxRates: Record<TaxRegime, number> = {
-      [TaxRegime.NORMAL]: 0.17,      // 17% (padrão Moçambique)
-      [TaxRegime.SIMPLIFIED]: 0.0,   // Simplificado não paga IVA
-      [TaxRegime.EXEMPT]: 0.0        // Isento de IVA
-    };
-
-    const rate = taxRates[taxRegime] || 0.17;
-
-    return rate > 0 ? calculateTax(taxableAmount, rate) : toDecimal(0);
-  }
-
-  /**
    * Cria os itens da venda (snapshot completo)
    */
   private static async createSaleItems(
@@ -492,7 +449,6 @@ export class SaleService {
       id: result.sale_id,
       subtotal: formatCurrency(toDecimal(result.subtotal)),
       discount_amount: formatCurrency(toDecimal(result.discount_amount)),
-      tax_amount: formatCurrency(toDecimal(result.tax_amount)),
       total: formatCurrency(toDecimal(result.total)),
       total_profit: formatCurrency(toDecimal(result.total_profit)),
       items_count: result.items_count,

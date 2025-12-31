@@ -52,12 +52,6 @@ export enum ReturnStatus {
   COMPLETED = 'COMPLETED'
 }
 
-export enum TaxRegime {
-  NORMAL = 'NORMAL',
-  SIMPLIFIED = 'SIMPLIFIED',
-  EXEMPT = 'EXEMPT'
-}
-
 // ================================================================
 // HELPER: Validação de Decimal como String
 // ================================================================
@@ -118,7 +112,6 @@ export const companySchema = z.object({
     .max(255, 'Email muito longo')
     .optional()
     .nullable(),
-  tax_regime: z.nativeEnum(TaxRegime).default(TaxRegime.NORMAL),  // NEW
   owner_id: z.string().cuid('ID do proprietário inválido'),
   created_at: z.date().optional(),
   updated_at: z.date().optional(),
@@ -258,7 +251,6 @@ export const saleSchema = z.object({
   // FINANCIAL FIELDS (all Decimal)
   subtotal: decimalString,           // NEW: Total before discount/tax
   discount_amount: decimalStringOptional,  // NEW: Total discount
-  tax_amount: decimalStringOptional,       // NEW: IVA amount
   total: decimalString,
   total_profit: decimalStringOptional,
   

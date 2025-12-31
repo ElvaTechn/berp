@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { NeuInput } from "@/components/ui/neu-input";
@@ -25,6 +25,20 @@ export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeM
     role: "VENDEDOR",
     is_active: true
   });
+
+  // Reset form quando o modal for aberto
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        full_name: "",
+        email: "",
+        password: "",
+        role: "VENDEDOR",
+        is_active: true
+      });
+      setShowPassword(false);
+    }
+  }, [open]);
 
   const handleClose = () => {
     onOpenChange(false);

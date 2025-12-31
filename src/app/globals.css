@@ -433,7 +433,7 @@ body {
     background: white;
     color: black;
   }
-  
+
   .neu-convex-sm,
   .neu-convex-md,
   .neu-convex-lg,
@@ -443,4 +443,160 @@ body {
     box-shadow: none !important;
     border: 1px solid #E5E7EB;
   }
+}
+
+/* ============================================
+   RESPONSIVE UTILITIES - MOBILE & TABLET
+   ============================================ */
+
+/* Scrollbar oculta para tabelas horizontais */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Touch action utilities */
+.touch-action-manipulation {
+  touch-action: manipulation;
+}
+
+.touch-action-pan-x {
+  touch-action: pan-x;
+}
+
+.touch-action-pan-y {
+  touch-action: pan-y;
+}
+
+/* Safe area insets para notched phones */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Combined safe areas */
+.safe-area-all {
+  padding-top: env(safe-area-inset-top);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+}
+
+/* Hide content but keep accessible for screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Text truncation utilities */
+.truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Hover fix para touch devices - using a more general selector */
+@media (hover: none) {
+  *:hover {
+    box-shadow: inherit;
+  }
+}
+
+/* Smooth scroll for iOS */
+.smooth-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Prevent text selection on touch actions */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Touch-friendly tap highlight removal */
+.tap-highlight-transparent {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile font scaling fix */
+.text-mobile-adjust {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Flex utilities for mobile layouts */
+.flex-mobile-col {
+  flex-direction: column;
+}
+
+/* Responsive breakpoints helper */
+@media (max-width: 639px) {
+  .mobile-flex-col {
+    flex-direction: column;
+  }
+  .mobile-w-full {
+    width: 100%;
+  }
+  .mobile-p-4 {
+    padding: 1rem;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .tablet-flex-row {
+    flex-direction: row;
+  }
+}
+
+/* Touch target minimum size (44px as per WCAG) */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Prevent bounce scroll on fixed elements */
+.no-bounce {
+  overscroll-behavior: none;
+}
+
+/* Safe area for fixed headers on mobile */
+.mobile-header-safe {
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+
+/* Safe area for fixed footers on mobile */
+.mobile-footer-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }

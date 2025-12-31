@@ -71,7 +71,6 @@ export async function GET(
         id: sale.id,
         subtotal: sale.subtotal,
         discount_amount: sale.discount_amount,
-        tax_amount: sale.tax_amount,
         total: sale.total,
         payment_method: sale.payment_method,
         created_at: sale.created_at,

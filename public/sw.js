@@ -53,6 +53,12 @@ const CRITICAL_ASSETS = [
   '/favicon.ico',
 ];
 
+// APIs críticas para precache (dados essenciais)
+const CRITICAL_API_ENDPOINTS = [
+  '/api/products?is_active=true', // Produtos ativos para POS
+  '/api/categories',              // Categorias
+];
+
 // ================================================================
 // INSTALL EVENT - Precache inteligente
 // ================================================================
@@ -89,6 +95,28 @@ self.addEventListener('install', (event) => {
         );
 
         console.log('[SW] Critical assets precached');
+
+        // Precache de APIs críticas (produtos e categorias)
+        const apiCache = await caches.open(CACHES.api);
+        await Promise.allSettled(
+          CRITICAL_API_ENDPOINTS.map(async (endpoint) => {
+            try {
+              const request = new Request(endpoint, { 
+                cache: 'reload',
+                credentials: 'include' 
+              });
+              const response = await fetch(request);
+              if (response.ok) {
+                await apiCache.put(request, response);
+                console.log(`[SW] API Precached: ${endpoint}`);
+              }
+            } catch (error) {
+              console.warn(`[SW] Failed to precache API ${endpoint}:`, error.message);
+            }
+          })
+        );
+        
+        console.log('[SW] Critical APIs precached');
 
         // Skip waiting para ativar imediatamente
         await self.skipWaiting();
@@ -489,4 +517,154 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-console.log(`[SW ${VERSION}] Loaded successfully`);
+// ================================================================
+// BACKGROUND SYNC - Sincronização automática offline
+// ================================================================
+
+self.addEventListener('sync', (event) => {
+  console.log('[SW] Sync event triggered:', event.tag);
+  
+  if (event.tag === 'sync-sales') {
+    event.waitUntil(syncPendingSales());
+  }
+});
+
+/**
+ * Sincroniza vendas pendentes com o servidor
+ */
+async function syncPendingSales() {
+  try {
+    console.log('[SW] Iniciando sincronização de vendas...');
+    
+    // Abrir IndexedDB
+    const db = await openIndexedDB();
+    const transaction = db.transaction(['sales_queue'], 'readwrite');
+    const store = transaction.objectStore('sales_queue');
+    
+    // Buscar vendas pendentes
+    const pendingSales = await getAllPending(store);
+    console.log(`[SW] ${pendingSales.length} vendas para sincronizar`);
+    
+    if (pendingSales.length === 0) {
+      console.log('[SW] Nenhuma venda pendente');
+      return;
+    }
+    
+    // Sincronizar cada venda
+    let successCount = 0;
+    let failCount = 0;
+    
+    for (const sale of pendingSales) {
+      try {
+        // Atualizar status para "syncing"
+        sale.status = 'syncing';
+        await store.put(sale);
+        
+        // Enviar para o servidor
+        const response = await fetch('/api/sales/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(sale.data),
+        });
+        
+        if (response.ok) {
+          // Sucesso: remover da queue
+          await store.delete(sale.id);
+          successCount++;
+          console.log(`[SW] Venda ${sale.id} sincronizada com sucesso`);
+        } else {
+          // Erro: marcar como erro
+          sale.status = 'error';
+          sale.lastError = `HTTP ${response.status}`;
+          sale.retryCount += 1;
+          await store.put(sale);
+          failCount++;
+          console.error(`[SW] Erro ao sincronizar ${sale.id}:`, response.status);
+        }
+      } catch (error) {
+        // Erro de rede: manter como pending para retry
+        sale.status = 'pending';
+        sale.lastError = error.message;
+        sale.retryCount += 1;
+        await store.put(sale);
+        failCount++;
+        console.error(`[SW] Erro de rede ao sincronizar ${sale.id}:`, error);
+      }
+    }
+    
+    // Atualizar status de sync
+    await updateSyncStatusDB(db, successCount, failCount);
+    
+    // Notificar clientes sobre o resultado
+    const clients = await self.clients.matchAll();
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'SYNC_COMPLETE',
+        success: successCount,
+        failed: failCount,
+        total: pendingSales.length,
+      });
+    });
+    
+    // Mostrar notificação de resultado
+    if (successCount > 0) {
+      self.registration.showNotification('Vendas Sincronizadas', {
+        body: `${successCount} ${successCount === 1 ? 'venda sincronizada' : 'vendas sincronizadas'} com sucesso!`,
+        icon: '/icons/icon-192x192.png',
+        badge: '/icons/icon-96x96.png',
+        tag: 'sync-complete',
+      });
+    }
+    
+    console.log(`[SW] Sincronização completa: ${successCount} sucesso, ${failCount} falhas`);
+  } catch (error) {
+    console.error('[SW] Erro fatal na sincronização:', error);
+    throw error;
+  }
+}
+
+/**
+ * Abre conexão com IndexedDB
+ */
+function openIndexedDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('bizcontrol_offline', 1);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+/**
+ * Busca todas as vendas pendentes
+ */
+function getAllPending(store) {
+  return new Promise((resolve, reject) => {
+    const index = store.index('status');
+    const request = index.getAll('pending');
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+/**
+ * Atualiza status de sincronização
+ */
+async function updateSyncStatusDB(db, successCount, failCount) {
+  try {
+    const transaction = db.transaction(['sync_status'], 'readwrite');
+    const store = transaction.objectStore('sync_status');
+    
+    await store.put({
+      id: 'main',
+      lastSync: Date.now(),
+      lastSuccess: successCount,
+      lastFailed: failCount,
+    });
+  } catch (error) {
+    console.error('[SW] Erro ao atualizar status:', error);
+  }
+}
+
+console.log(`[SW ${VERSION}] Loaded successfully with Background Sync support`);

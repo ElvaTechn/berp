@@ -275,7 +275,7 @@ export default function PointOfSale() {
                 <Card
                   key={product.id}
                   className={`border-0 shadow-md cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${isOutOfStock ? 'opacity-50' : ''
-                    } ${inCart ? 'ring-2 ring-blue-500' : ''}`}
+                    } ${inCart ? 'ring-2 ring-blue-500' : ''} ${!isOnline && product.quantity <= 5 ? 'ring-2 ring-yellow-400' : ''}`}
                   onClick={() => !isOutOfStock && addToCart(product)}
                 >
                   <CardContent className="p-3">
@@ -291,6 +291,13 @@ export default function PointOfSale() {
                           <span className="text-white text-xs font-bold">{inCart.quantity}</span>
                         </div>
                       )}
+                      {/* Warning Badge: Offline + Low Stock */}
+                      {!isOnline && product.quantity <= 5 && !isOutOfStock && (
+                        <div className="absolute top-1 left-1 bg-yellow-500 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                          <WifiOff className="h-3 w-3 text-white" />
+                          <span className="text-white text-[10px] font-bold">!</span>
+                        </div>
+                      )}
                     </div>
                     <h4 className="font-medium text-sm text-slate-900 truncate">{product.name}</h4>
                     <div className="flex items-center justify-between mt-1">
@@ -300,6 +307,12 @@ export default function PointOfSale() {
                         {product.quantity} un.
                       </span>
                     </div>
+                    {/* Offline Low Stock Warning */}
+                    {!isOnline && product.quantity <= 5 && !isOutOfStock && (
+                      <div className="mt-2 text-[10px] text-yellow-700 bg-yellow-50 px-2 py-1 rounded">
+                        ⚠️ Estoque pode estar desatualizado
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               );
@@ -400,16 +413,25 @@ export default function PointOfSale() {
         </div>
       </div>
 
-      {/* Offline Notice */}
+      {/* Offline Notice - Enhanced */}
       {!isOnline && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center gap-3">
-            <WifiOff className="h-5 w-5 text-yellow-600" />
-            <div>
-              <h3 className="font-medium text-yellow-800">Modo Offline</h3>
-              <p className="text-sm text-yellow-700">
+          <div className="flex items-start gap-3">
+            <WifiOff className="h-5 w-5 text-yellow-600 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-medium text-yellow-800">⚠️ Modo Offline Ativo</h3>
+              <p className="text-sm text-yellow-700 mt-1">
                 As vendas serão salvas localmente e sincronizadas automaticamente quando a conexão for restaurada.
               </p>
+              <div className="mt-3 p-3 bg-yellow-100 rounded-md">
+                <p className="text-xs font-semibold text-yellow-900 mb-1">⚠️ ATENÇÃO - Estoque Offline:</p>
+                <ul className="text-xs text-yellow-800 space-y-1">
+                  <li>• Os valores de estoque podem estar <strong>desatualizados</strong></li>
+                  <li>• Produtos com <strong>estoque baixo</strong> são marcados com <span className="inline-flex items-center gap-1 bg-yellow-500 text-white px-1 rounded text-[10px]"><WifiOff className="h-2.5 w-2.5" />!</span></li>
+                  <li>• Se outro vendedor já vendeu, pode haver <strong>conflito de estoque</strong></li>
+                  <li>• Vendas conflitantes serão <strong>alertadas ao gerente</strong> na sincronização</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>

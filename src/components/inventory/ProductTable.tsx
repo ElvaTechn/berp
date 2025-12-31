@@ -45,12 +45,14 @@ interface ProductTableProps {
   products: Product[];
   onEdit: (product: Product) => void;
   onDelete: () => void;
+  isMobile?: boolean;
 }
 
 export default function ProductTable({
   products,
   onEdit,
   onDelete,
+  isMobile = false,
 }: ProductTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);

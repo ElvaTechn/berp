@@ -1,6 +1,6 @@
 
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { apiClient } from '@/services/api';
 import { Sale, Product, Category } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 import { format, subDays, startOfMonth, startOfYear } from 'date-fns';
+import { useViewport } from '@/hooks/useViewport';
 import PageHeader from '@/components/Common/PageHeader';
 import StatsCard from '@/components/Common/StatsCard';
 import LoadingSpinner from '@/components/Common/LoadingSpinner';
@@ -41,9 +42,19 @@ export default function Reports() {
     salesByCategory: [] as any[],
   });
 
+  // Hook de viewport para responsividade
+  const { isMobile, isTablet } = useViewport();
+
   useEffect(() => {
     loadData();
   }, [period]);
+
+  // Altura do chart adaptativa
+  const chartHeight = useMemo(() => {
+    if (isMobile) return 200;
+    if (isTablet) return 250;
+    return 300;
+  }, [isMobile, isTablet]);
 
   const getDateRange = () => {
     const today = new Date();
@@ -181,23 +192,25 @@ export default function Reports() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <PageHeader
-        title="Relatórios"
-        description="Análise detalhada das suas vendas e desempenho"
+        title={isMobile ? "Relatórios" : "Relatórios"}
+        description={isMobile ? "" : "Análise detalhada das suas vendas e desempenho"}
         action={
-          <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger className="w-48">
-              <Calendar className="h-4 w-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="today">Hoje</SelectItem>
-              <SelectItem value="week">Últimos 7 dias</SelectItem>
-              <SelectItem value="month">Este Mês</SelectItem>
-              <SelectItem value="year">Este Ano</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className={isMobile ? "w-full" : ""}>
+            <Select value={period} onValueChange={setPeriod}>
+              <SelectTrigger className={isMobile ? "w-full" : "w-48"}>
+                <Calendar className="h-4 w-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Hoje</SelectItem>
+                <SelectItem value="week">7 Dias</SelectItem>
+                <SelectItem value="month">Este Mês</SelectItem>
+                <SelectItem value="year">Este Ano</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         }
       />
 
@@ -233,67 +246,80 @@ export default function Reports() {
         />
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sales Over Time */}
+      {/* Charts Row - Tailwind responsivo */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Sales Over Time - Altura adaptativa */}
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-lg">Evolução das Vendas</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Evolução das Vendas</CardTitle>
           </CardHeader>
           <CardContent>
             {stats.salesByDay.length > 0 ? (
-              <div className="h-64">
+              <div style={{ minHeight: chartHeight }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={stats.salesByDay}>
-                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: isMobile ? 10 : 12 }}
+                      tickMargin={isMobile ? 8 : undefined}
+                    />
+                    <YAxis
+                      tick={{ fontSize: isMobile ? 10 : 12 }}
+                      tickMargin={isMobile ? 8 : undefined}
+                      tickFormatter={(value) => formatMT(value)}
+                    />
                     <Tooltip
                       formatter={(value: any) => formatMT(value)}
-                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                      contentStyle={{
+                        borderRadius: '8px',
+                        border: 'none',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        fontSize: isMobile ? 12 : 14
+                      }}
                     />
                     <Line
                       type="monotone"
                       dataKey="total"
                       stroke="#3b82f6"
-                      strokeWidth={3}
-                      dot={{ fill: '#3b82f6', strokeWidth: 2 }}
+                      strokeWidth={isMobile ? 2 : 3}
+                      dot={{ fill: '#3b82f6', strokeWidth: 2, r: isMobile ? 2 : 3 }}
                       name="Vendas"
                     />
                     <Line
                       type="monotone"
                       dataKey="profit"
                       stroke="#10b981"
-                      strokeWidth={3}
-                      dot={{ fill: '#10b981', strokeWidth: 2 }}
+                      strokeWidth={isMobile ? 2 : 3}
+                      dot={{ fill: '#10b981', strokeWidth: 2, r: isMobile ? 2 : 3 }}
                       name="Lucro"
                     />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-64 flex items-center justify-center text-slate-500">
-                Sem dados no período seleccionado
+              <div className="flex items-center justify-center" style={{ minHeight: chartHeight }}>
+                <p className="text-slate-500 text-sm sm:text-base">Sem dados no período seleccionado</p>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Sales by Payment Method */}
+        {/* Sales by Payment Method - Altura adaptativa */}
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-lg">Vendas por Método de Pagamento</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Vendas por Método de Pagamento</CardTitle>
           </CardHeader>
           <CardContent>
             {stats.salesByPayment.length > 0 ? (
-              <div className="h-64">
+              <div style={{ minHeight: chartHeight }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={stats.salesByPayment}
                       cx="50%"
                       cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
+                      innerRadius={isMobile ? 40 : 60}
+                      outerRadius={isMobile ? 60 : 90}
                       paddingAngle={5}
                       dataKey="value"
                     >
@@ -303,21 +329,26 @@ export default function Reports() {
                     </Pie>
                     <Tooltip
                       formatter={(value: any) => formatMT(value)}
-                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                      contentStyle={{
+                        borderRadius: '8px',
+                        border: 'none',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        fontSize: isMobile ? 12 : 14
+                      }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-64 flex items-center justify-center text-slate-500">
-                Sem dados no período seleccionado
+              <div className="flex items-center justify-center" style={{ minHeight: chartHeight }}>
+                <p className="text-slate-500 text-sm sm:text-base">Sem dados no período seleccionado</p>
               </div>
             )}
             <div className="flex flex-wrap gap-3 justify-center mt-4">
               {stats.salesByPayment.map((item, index) => (
                 <div key={item.name} className="flex items-center gap-2">
                   <div
-                    className="h-3 w-3 rounded-full"
+                    className={`h-3 w-3 rounded-full ${isMobile ? 'h-2 w-2' : ''}`}
                     style={{ backgroundColor: COLORS[index % COLORS.length] }}
                   />
                   <span className="text-sm text-slate-600">{item.name}</span>
@@ -328,23 +359,17 @@ export default function Reports() {
         </Card>
       </div>
 
-      {/* Top Products */}
+      {/* Top Products - Compacto no mobile */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="text-lg">Produtos Mais Vendidos</CardTitle>
+          <CardTitle className="text-base sm:text-lg">Produtos Mais Vendidos</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Simple table/list for top products */}
+          {/* Lista compacta para mobile */}
           {stats.topProducts.length > 0 ? (
-            <div className="space-y-4">
-              {stats.topProducts.map((p, i) => (
-                <div key={i} className="flex items-center justify-between border-b pb-2 last:border-0">
-                  <div>
-                    <p className="font-medium">{p.name}</p>
-                    <p className="text-sm text-gray-500">{p.quantity} vendidos</p>
-                  </div>
-                  <p className="font-bold">{formatMT(p.total)}</p>
-                </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {stats.topProducts.slice(0, isMobile ? 5 : 10).map((p, i) => (
+                <ProductRankingItem key={i} product={p} rank={i + 1} isMobile={isMobile} />
               ))}
             </div>
           ) : (
@@ -352,6 +377,34 @@ export default function Reports() {
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// Componente de item de ranking
+function ProductRankingItem({
+  product,
+  rank,
+  isMobile = false
+}: {
+  product: { name: string; quantity?: number; total?: number };
+  rank: number;
+  isMobile?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 last:border-0 py-2">
+      <div className="flex items-center gap-3">
+        <span className="text-xs sm:text-sm font-bold text-slate-500 w-6">{rank}.</span>
+        <div className="min-w-0">
+          <p className="text-xs sm:text-sm font-medium truncate">{product.name}</p>
+          <p className="text-xs sm:text-sm text-gray-500">
+            {product.quantity !== undefined ? `${product.quantity} vendidos` : ''}
+          </p>
+        </div>
+      </div>
+      <p className="text-xs sm:text-sm font-bold sm:text-base">
+        {formatMT(product.total || 0)}
+      </p>
     </div>
   );
 }

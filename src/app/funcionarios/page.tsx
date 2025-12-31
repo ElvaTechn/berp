@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Users, Plus, Search, RefreshCw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Users, Plus, Search, RefreshCw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useViewport } from '@/hooks/useViewport';
 import { EmployeeTable } from "@/components/employees/EmployeeTable";
 import { AddEmployeeModal } from "@/components/employees/AddEmployeeModal";
 import { EditEmployeeModal } from "@/components/employees/EditEmployeeModal";
@@ -18,7 +19,7 @@ interface Employee {
   role: string;
   is_active: boolean;
   user?: {
-    id: string;
+    id?: string;
     email: string;
   };
   created_at: string;
@@ -31,6 +32,9 @@ export default function FuncionariosPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+
+  // Hook de viewport para responsividade
+  const { isMobile } = useViewport();
 
   // Fetch employees
   const fetchEmployees = async () => {
@@ -215,10 +219,11 @@ export default function FuncionariosPage() {
           </NeuCard>
         </motion.div>
 
-        {/* Table */}
+        {/* Table com scroll horizontal em mobile */}
         <EmployeeTable
           employees={filteredEmployees}
           loading={loading}
+          isMobile={isMobile}
           onEdit={(employee) => {
             setEditingEmployee(employee);
             setShowEditModal(true);

@@ -17,6 +17,8 @@ import {
   AlertTriangle,
   Trash2,
 } from 'lucide-react';
+import { MobileScrollWrapper } from '@/components/ui/MobileScrollWrapper';
+import { useViewport } from '@/hooks/useViewport';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -30,6 +32,7 @@ interface BackupRecord {
 }
 
 export default function BackupPage() {
+  const { isMobile } = useViewport();
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [backups, setBackups] = useState<BackupRecord[]>([]);
@@ -110,19 +113,19 @@ export default function BackupPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="neu-text-h1">Backup e Recuperação</h1>
-        <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+        <h1 className="neu-text-h1 text-2xl sm:text-3xl">Backup e Recuperação</h1>
+        <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1 text-sm">
           Faça backup dos dados do sistema
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Manual Backup */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -319,8 +322,9 @@ export default function BackupPage() {
 
             {backups.length > 0 ? (
               <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-[var(--neu-base)] border-b border-[var(--neu-border)]">
+                <MobileScrollWrapper isMobile={isMobile} itemCount={backups.length}>
+                  <table className="w-full min-w-[700px]">
+                    <thead className="bg-[var(--neu-base)] border-b border-[var(--neu-border)]">
                     <tr>
                       <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">Data/Hora</th>
                       <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">Tamanho</th>
@@ -383,6 +387,7 @@ export default function BackupPage() {
                     ))}
                   </tbody>
                 </table>
+                </MobileScrollWrapper>
               </div>
             ) : (
               <div className="text-center py-12 px-4">

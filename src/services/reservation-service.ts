@@ -203,7 +203,6 @@ export async function completeReservation(
                 data: {
                     subtotal: subtotal,
                     discount_amount: reservation.deposit_amount || new Prisma.Decimal(0),
-                    tax_amount: new Prisma.Decimal(0),
                     total: subtotal.sub(reservation.deposit_amount || 0),
                     total_profit: profit,
                     payment_method: paymentMethod as any,

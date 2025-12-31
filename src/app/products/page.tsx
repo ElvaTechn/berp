@@ -10,6 +10,7 @@ import { NeuSelect, NeuSelectContent, NeuSelectItem, NeuSelectTrigger, NeuSelect
 import { NeuDialog, NeuDialogContent, NeuDialogHeader, NeuDialogTitle, NeuDialogFooter } from '@/components/ui/neu-dialog';
 import { Plus, Pencil, Trash2, Package, Search, Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useViewport } from '@/hooks/useViewport';
 
 interface Product {
   id: string;
@@ -29,6 +30,9 @@ interface Category {
 }
 
 export default function ProductsPage() {
+  // Responsividade
+  const { isMobile, isTablet } = useViewport();
+  
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -183,7 +187,12 @@ export default function ProductsPage() {
             Gerencie o inventário da sua empresa
           </p>
         </div>
-        <NeuButton onClick={() => openDialog()} variant="accent" size="md">
+        <NeuButton 
+          onClick={() => openDialog()} 
+          variant="accent" 
+          size="md"
+          className={isMobile ? "w-full" : ""}
+        >
           <Plus className="h-4 w-4" />
           <span>Novo Produto</span>
         </NeuButton>

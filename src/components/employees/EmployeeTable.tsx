@@ -25,9 +25,10 @@ interface EmployeeTableProps {
   onEdit: (employee: Employee) => void;
   onDelete: (id: string) => void;
   onReload?: () => void;
+  isMobile?: boolean;
 }
 
-export function EmployeeTable({ employees, loading, onEdit, onDelete, onReload }: EmployeeTableProps) {
+export function EmployeeTable({ employees, loading, onEdit, onDelete, onReload, isMobile = false }: EmployeeTableProps) {
   const roleLabels: Record<string, string> = {
     GESTOR: "Gestor",
     VENDEDOR: "Vendedor",
@@ -114,8 +115,13 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete, onReload }
           <NeuCardTitle>Lista de Funcionários</NeuCardTitle>
         </NeuCardHeader>
         <NeuCardContent>
-          {/* Table */}
-          <div className="overflow-x-auto">
+          {/* Table com scroll horizontal para mobile */}
+          {isMobile && employees.length > 3 && (
+            <div className="flex justify-center mb-2 text-xs text-[var(--neu-text-muted)]">
+              ← Deslize para mais →
+            </div>
+          )}
+          <div className={`overflow-x-auto ${isMobile ? '-mx-4 sm:mx-0' : ''} scrollbar-hide`}>
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[var(--neu-border-light)] bg-[var(--neu-base-light)]">
@@ -265,6 +271,7 @@ export function EmployeeTable({ employees, loading, onEdit, onDelete, onReload }
               </tbody>
             </table>
           </div>
+          {isMobile && <div className="px-4"></div>}
         </NeuCardContent>
       </NeuCard>
     </motion.div>

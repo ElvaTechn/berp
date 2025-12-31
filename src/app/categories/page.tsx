@@ -8,6 +8,7 @@ import { NeuInput } from '@/components/ui/neu-input';
 import { NeuDialog, NeuDialogContent, NeuDialogHeader, NeuDialogTitle, NeuDialogFooter } from '@/components/ui/neu-dialog';
 import { Plus, Pencil, Trash2, Tags, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useViewport } from '@/hooks/useViewport';
 
 interface Category {
   id: string;
@@ -25,6 +26,7 @@ const COLORS = [
 ];
 
 export default function CategoriesPage() {
+  const { isMobile } = useViewport();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -130,7 +132,7 @@ export default function CategoriesPage() {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
           <h1 className="neu-text-h1">Categorias</h1>
@@ -138,7 +140,12 @@ export default function CategoriesPage() {
             Gerencie as categorias dos seus produtos
           </p>
         </div>
-        <NeuButton onClick={() => openDialog()} variant="accent" size="md">
+        <NeuButton 
+          onClick={() => openDialog()} 
+          variant="accent" 
+          size="md"
+          className={isMobile ? "w-full" : ""}
+        >
           <Plus className="h-4 w-4" />
           <span>Nova Categoria</span>
         </NeuButton>

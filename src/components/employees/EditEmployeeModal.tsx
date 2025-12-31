@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { NeuInput } from "@/components/ui/neu-input";
@@ -9,6 +9,7 @@ import { NeuDialog, NeuDialogContent, NeuDialogHeader, NeuDialogTitle, NeuDialog
 import { NeuSelect, NeuSelectTrigger, NeuSelectValue, NeuSelectContent, NeuSelectItem } from "@/components/ui/neu-select";
 import { NeuSwitch } from "@/components/ui/neu-switch";
 
+// Usar tipo consistente com o EmployeeTable
 interface Employee {
   id: string;
   full_name: string;
@@ -16,7 +17,7 @@ interface Employee {
   role: string;
   is_active: boolean;
   user?: {
-    id: string;
+    id?: string;
     email: string;
   };
 }
@@ -38,6 +39,20 @@ export function EditEmployeeModal({ employee, open, onOpenChange, onSuccess }: E
     is_active: employee.is_active,
     password: ""
   });
+
+  // Atualizar formData quando o funcionário mudar
+  useEffect(() => {
+    if (employee) {
+      setFormData({
+        full_name: employee.full_name,
+        email: employee.email,
+        role: employee.role,
+        is_active: employee.is_active,
+        password: ""
+      });
+      setShowPassword(false);
+    }
+  }, [employee]);
 
   const handleClose = () => {
     onOpenChange(false);

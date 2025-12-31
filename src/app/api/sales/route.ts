@@ -227,7 +227,6 @@ export async function POST(request: NextRequest) {
         new_values: JSON.stringify({
           subtotal: result.subtotal,
           discount_amount: result.discount_amount,
-          tax_amount: result.tax_amount,
           total: result.total,
           total_profit: result.total_profit
         }),

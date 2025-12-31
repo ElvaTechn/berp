@@ -6,6 +6,7 @@ import { NeuButton } from '@/components/ui/neu-button';
 import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
 import { NeuInput } from '@/components/ui/neu-input';
 import { NeuSelect, NeuSelectContent, NeuSelectItem, NeuSelectTrigger, NeuSelectValue } from '@/components/ui/neu-select';
+import { useViewport } from '@/hooks/useViewport';
 import {
   Building2,
   Calendar,
@@ -34,6 +35,7 @@ interface Company {
 }
 
 export default function SubscriptionsPage() {
+  const { isMobile } = useViewport();
   const [loading, setLoading] = useState(true);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([]);
@@ -212,11 +214,17 @@ export default function SubscriptionsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="neu-text-h1">Gestão de Subscrições</h1>
-        <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
-          Controle as subscrições das empresas
-        </p>
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }} 
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+      >
+        <div>
+          <h1 className="neu-text-h1">Gestão de Subscrições</h1>
+          <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
+            Controle as subscrições das empresas
+          </p>
+        </div>
       </motion.div>
 
       {/* Stats */}
@@ -332,9 +340,9 @@ export default function SubscriptionsPage() {
                   >
                     <NeuCard variant="convex" size="sm">
                       <NeuCardContent className="p-4">
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div className="flex flex-col gap-4">
                           {/* Company Info */}
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-start sm:items-center gap-4">
                             <div className="w-12 h-12 rounded-xl neu-surface neu-convex-md flex items-center justify-center flex-shrink-0">
                               <Building2 className="w-6 h-6 text-[var(--neu-accent)]" />
                             </div>
@@ -351,15 +359,17 @@ export default function SubscriptionsPage() {
                           </div>
 
                           {/* Actions */}
-                          <div className="flex items-center gap-3">
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                             {getStatusBadge(company.subscription_status, company.subscription_end)}
 
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 flex-wrap">
                               {company.subscription_status !== 'activo' && (
                                 <NeuButton
                                   variant="accent"
+                                  size={isMobile ? "sm" : "md"}
                                   onClick={() => handleActivate(company)}
                                   disabled={updating}
+                                  className={isMobile ? "flex-1" : ""}
                                 >
                                   <CheckCircle className="w-4 h-4" />
                                   <span>Activar</span>
@@ -370,16 +380,20 @@ export default function SubscriptionsPage() {
                                 <>
                                   <NeuButton
                                     variant="convex"
+                                    size={isMobile ? "sm" : "md"}
                                     onClick={() => handleRenew(company, 1)}
                                     disabled={updating}
+                                    className={isMobile ? "flex-1" : ""}
                                   >
                                     <RefreshCw className="w-4 h-4" />
                                     <span>+1 mês</span>
                                   </NeuButton>
                                   <NeuButton
                                     variant="ghost"
+                                    size={isMobile ? "sm" : "md"}
                                     onClick={() => handleSuspend(company)}
                                     disabled={updating}
+                                    className={isMobile ? "flex-1" : ""}
                                   >
                                     <XCircle className="w-4 h-4 text-[var(--neu-error)]" />
                                     <span>Suspender</span>

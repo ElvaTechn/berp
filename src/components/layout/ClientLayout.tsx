@@ -145,6 +145,21 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
 
   // ========== RENDERIZAÇÃO ==========
 
+  // Renderiza loading enquanto não estiver hidratado
+  // Isso evita mismatch entre servidor e cliente
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen bg-[var(--neu-base)] flex items-center justify-center">
+        <div className="text-center">
+          <div className="neu-surface neu-convex-md rounded-2xl p-8 inline-block">
+            <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin mx-auto mb-4" />
+            <p className="neu-text-body font-medium">A carregar...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ROTA PÚBLICA: Renderiza APENAS o conteúdo (sem Sidebar)
   if (isPublicRoute) {
     return (
@@ -163,14 +178,14 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
     );
   }
 
-  // LOADING: Ainda não hidratou ou está a carregar autenticação
-  if (!isHydrated || authLoading) {
+  // LOADING: Ainda está a carregar autenticação
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-[var(--neu-base)] flex items-center justify-center">
         <div className="text-center">
           <div className="neu-surface neu-convex-md rounded-2xl p-8 inline-block">
             <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin mx-auto mb-4" />
-            <p className="neu-text-body font-medium">A carregar...</p>
+            <p className="neu-text-body font-medium">A carregar autenticação...</p>
           </div>
         </div>
       </div>

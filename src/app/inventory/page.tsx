@@ -8,12 +8,13 @@ import {
   Search,
   AlertTriangle,
   TrendingUp,
-  DollarSign,
+  Receipt,
   Filter,
   Download,
   Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useViewport } from '@/hooks/useViewport';
 import ProductTable from '@/components/inventory/ProductTable';
 import AddProductModal from '@/components/inventory/AddProductModal';
 import EditProductModal from '@/components/inventory/EditProductModal';
@@ -68,6 +69,9 @@ export default function InventoryPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  // Hook de viewport
+  const { isMobile, isTablet } = useViewport();
 
   // Fetch products
   const fetchProducts = async () => {
@@ -171,7 +175,7 @@ export default function InventoryPage() {
   ).map((c) => JSON.parse(c));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -179,29 +183,30 @@ export default function InventoryPage() {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
-          <h1 className="neu-text-h1">
+          <h1 className="neu-text-h1 text-xl sm:text-2xl lg:text-3xl">
             Inventário
           </h1>
           <p className="neu-text-caption text-[var(--neu-text-muted)] mt-1">
             Controle total do seu stock
           </p>
         </div>
-        
+
         <NeuButton
           onClick={() => setShowAddModal(true)}
           variant="accent"
+          className={isMobile ? "w-full" : ""}
         >
           <Plus className="w-5 h-5" />
           <span>Adicionar Produto</span>
         </NeuButton>
       </motion.div>
 
-      {/* Statistics Cards */}
+      {/* Statistics Cards - Ajuste de layout com Tailwind responsivo */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
       >
         {/* Total Products */}
         <NeuCard variant="convex" size="sm">
@@ -262,7 +267,7 @@ export default function InventoryPage() {
           <NeuCardContent className="p-4">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-[var(--neu-success)]" />
+                <Receipt className="w-5 h-5 text-[var(--neu-success)]" />
               </div>
               <p className="neu-text-label text-[var(--neu-text-muted)]">
                 Valor
@@ -281,7 +286,7 @@ export default function InventoryPage() {
         </NeuCard>
       </motion.div>
 
-      {/* Filters */}
+      {/* Filters - Empilhados no mobile com Tailwind */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -292,7 +297,7 @@ export default function InventoryPage() {
         <div className="flex-1">
           <NeuInput
             type="text"
-            placeholder="Buscar por nome, código de barras ou SKU..."
+            placeholder={isMobile ? "Buscar..." : "Buscar por nome, código de barras ou SKU..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             icon={<Search className="w-5 h-5" />}
@@ -301,37 +306,49 @@ export default function InventoryPage() {
 
         {/* Stock Filter */}
         <NeuSelect value={filterStock} onValueChange={setFilterStock}>
-          <NeuSelectTrigger variant="concave" size="md" className="w-full sm:w-[200px]">
-            <NeuSelectValue placeholder="Filtrar stock..." />
+          <NeuSelectTrigger variant="concave" size="md" className={isMobile ? "w-full" : "w-full sm:w-[200px]"}>
+            <NeuSelectValue placeholder="Stock..." />
           </NeuSelectTrigger>
           <NeuSelectContent>
-            <NeuSelectItem value="all">Todos os stocks</NeuSelectItem>
-            <NeuSelectItem value="ok">Stock OK</NeuSelectItem>
-            <NeuSelectItem value="low">Stock Baixo</NeuSelectItem>
+            <NeuSelectItem value="all">Todos</NeuSelectItem>
+            <NeuSelectItem value="ok">OK</NeuSelectItem>
+            <NeuSelectItem value="low">Baixo</NeuSelectItem>
             <NeuSelectItem value="critical">Esgotado</NeuSelectItem>
           </NeuSelectContent>
         </NeuSelect>
       </motion.div>
 
-      {/* Products Table */}
+      {/* Products Table - Scroll wrapper */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
       >
+        {/* Indicador de scroll horizontal (apenas mobile/tablet com muitos produtos) */}
+        {(isMobile || isTablet) && filteredProducts.length > 3 && (
+          <div className="flex justify-center mb-2">
+            <span className="neu-text-caption text-[var(--neu-text-muted)]">
+              ← Deslize para mais →
+            </span>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
+            <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin" />
           </div>
         ) : (
-          <ProductTable
-            products={filteredProducts}
-            onEdit={(product) => {
-              setEditingProduct(product);
-              setShowEditModal(true);
-            }}
-            onDelete={handleProductDeleted}
-          />
+          <div className="-mx-4 sm:mx-0 overflow-x-auto scrollbar-hide">
+            <ProductTable
+              products={filteredProducts}
+              isMobile={isMobile}
+              onEdit={(product) => {
+                setEditingProduct(product);
+                setShowEditModal(true);
+              }}
+              onDelete={handleProductDeleted}
+            />
+          </div>
         )}
       </motion.div>
 

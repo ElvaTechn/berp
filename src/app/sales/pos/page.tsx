@@ -16,9 +16,11 @@ import {
   X,
   Loader2,
   Percent,
-  DollarSign,
+  Receipt,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useViewport } from '@/hooks/useViewport';
+import { useOrientation } from '@/hooks/useOrientation';
 import { NeuButton } from '@/components/ui/neu-button';
 import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
 import { NeuInput } from '@/components/ui/neu-input';
@@ -51,10 +53,12 @@ export default function POSPage() {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [lastSaleId, setLastSaleId] = useState<string | null>(null);
+  const [showMobileCart, setShowMobileCart] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // IVA 17% Moçambique
-  const IVA_RATE = 0.17;
+  // Hook de viewport para layout adaptativo
+  const { isMobile, isTablet } = useViewport();
+  const orientation = useOrientation();
 
   useEffect(() => {
     fetchProducts();
@@ -149,12 +153,8 @@ export default function POSPage() {
     return cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   };
 
-  const calculateIVA = () => {
-    return calculateSubtotal() * IVA_RATE;
-  };
-
   const calculateTotal = () => {
-    return calculateSubtotal() + calculateIVA();
+    return calculateSubtotal();
   };
 
   const handleCheckout = async () => {
@@ -188,13 +188,17 @@ export default function POSPage() {
       }
 
       const data = await response.json();
-      if (data.sale?.id) {
-        setLastSaleId(data.sale.id);
+      if (data.data?.id) {
+        setLastSaleId(data.data.id);
+
+        // Abrir recibo automaticamente em nova aba
+        // O próprio HTML do recibo já tem auto-print no window.onload
+        window.open(`/api/sales/${data.data.id}/receipt`, '_blank');
       }
       setShowSuccessModal(true);
       clearCart();
       fetchProducts(); // Atualizar stock
-      
+
       toast.success('✅ Venda finalizada com sucesso!');
     } catch (error: any) {
       toast.error(`❌ ${error.message}`);
@@ -206,6 +210,9 @@ export default function POSPage() {
   const isLowStock = (product: Product) => {
     return product.quantity <= product.min_stock && product.quantity > 0;
   };
+
+  // Layout ajustado baseado em viewport (mantido para lógica do drawer mobile)
+  const isSplitLayout = !isMobile && !isTablet;
 
   return (
     <div className="min-h-screen bg-[var(--neu-base)] p-4 lg:p-8">
@@ -228,8 +235,10 @@ export default function POSPage() {
 
       </motion.div>
 
-      {/* Layout Split */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+      {/* Layout Baseado em Viewport */}
+      {isSplitLayout ? (
+        // Desktop: Lado a lado
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
         {/* LEFT: Products */}
         <div className="lg:col-span-2 flex flex-col gap-4 overflow-hidden">
           {/* Search */}
@@ -249,7 +258,7 @@ export default function POSPage() {
             />
           </motion.div>
 
-          {/* Products Grid */}
+          {/* Products Grid - Colunas adaptativas */}
           <NeuCard variant="flat" className="flex-1 overflow-hidden">
             <NeuCardContent className="h-full overflow-y-auto p-4">
               {isLoading ? (
@@ -265,7 +274,7 @@ export default function POSPage() {
                   <p className="neu-text-body text-[var(--neu-text-muted)]">Ajuste sua busca</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {filteredProducts.map((product, index) => (
                     <motion.div
                       key={product.id}
@@ -483,21 +492,9 @@ export default function POSPage() {
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center">
-                    <span className="neu-text-body flex items-center gap-1">
-                      <Percent className="w-4 h-4" />
-                      IVA (17%)
-                    </span>
-                    <span className="neu-text-body font-bold text-[var(--neu-warning)]">
-                      {calculateIVA().toLocaleString('pt-MZ', {
-                        minimumFractionDigits: 2,
-                      })} MT
-                    </span>
-                  </div>
-
                   <div className="flex justify-between items-center p-4 rounded-xl neu-surface neu-concave-sm">
                     <span className="neu-text-h3 flex items-center gap-2">
-                      <DollarSign className="w-6 h-6" />
+                      <Receipt className="w-6 h-6" />
                       Total
                     </span>
                     <span className="neu-text-h2 text-[var(--neu-success)]">
@@ -523,7 +520,304 @@ export default function POSPage() {
             </NeuCardContent>
           </NeuCard>
         </motion.div>
-      </div>
+        </div>
+      ) : (
+        // Mobile/Tablet: Produtos em tela cheia, cart em modal
+        <>
+          <NeuCard variant="flat" className="h-[calc(100vh-180px)] overflow-hidden">
+            <NeuCardContent className="h-full overflow-y-auto p-4">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin" />
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <div className="w-20 h-20 rounded-full neu-surface neu-convex-md flex items-center justify-center mb-4">
+                    <Package className="w-10 h-10 text-[var(--neu-accent)]" />
+                  </div>
+                  <h3 className="neu-text-h2 mb-2">Nenhum produto encontrado</h3>
+                  <p className="neu-text-body text-[var(--neu-text-muted)]">Ajuste sua busca</p>
+                </div>
+              ) : (
+                <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                  {filteredProducts.map((product, index) => (
+                    <motion.div
+                      key={product.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.02 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <NeuCard
+                        variant="convex"
+                        className={cn(
+                          "cursor-pointer transition-all h-full",
+                          product.quantity === 0 && "opacity-50 cursor-not-allowed"
+                        )}
+                        onClick={() => product.quantity > 0 && addToCart(product)}
+                      >
+                        <NeuCardContent className="p-3 relative">
+                          {/* Product Image/Avatar */}
+                          <div className="w-full aspect-square rounded-xl neu-surface neu-convex-md flex items-center justify-center mb-3 overflow-hidden relative">
+                            <Package className="w-8 sm:w-12 h-8 sm:h-12 text-[var(--neu-text-muted)]" />
+                            
+                            {/* Category Badge */}
+                            <div
+                              className="absolute top-2 right-2 w-6 h-6 sm:w-8 sm:h-8 rounded-lg neu-convex-xs flex items-center justify-center text-white text-[10px] sm:text-xs font-black"
+                              style={{ backgroundColor: product.category.color }}
+                            >
+                              {product.category.name.charAt(0)}
+                            </div>
+                            
+                            {/* Stock Alert */}
+                            {product.quantity === 0 ? (
+                              <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full bg-[var(--neu-error)] text-white text-[8px] sm:text-[10px] font-bold">
+                                <AlertTriangle className="w-2 h-2 sm:w-3 sm:h-3" />
+                                ESGOTADO
+                              </div>
+                            ) : isLowStock(product) ? (
+                              <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full bg-[var(--neu-warning)] text-white text-[8px] sm:text-[10px] font-bold">
+                                <AlertTriangle className="w-2 h-2 sm:w-3 sm:h-3" />
+                                BAIXO
+                              </div>
+                            ) : null}
+                          </div>
+
+                          {/* Product Info */}
+                          <div className="space-y-1">
+                            <p className="neu-text-caption sm:neu-text-body font-medium line-clamp-2" title={product.name}>
+                              {product.name}
+                            </p>
+                            <p className="neu-text-caption sm:neu-text-h3 font-bold text-[var(--neu-accent)]">
+                              {product.price.toLocaleString('pt-MZ', {
+                                minimumFractionDigits: 2,
+                              })} MT
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={cn(
+                                  "px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg text-[10px] sm:text-xs font-bold neu-convex-xs",
+                                  product.quantity > product.min_stock
+                                    ? "text-[var(--neu-success)]"
+                                    : "text-[var(--neu-warning)]"
+                                )}
+                              >
+                                Stock: {product.quantity}
+                              </span>
+                            </div>
+                          </div>
+                        </NeuCardContent>
+                      </NeuCard>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </NeuCardContent>
+          </NeuCard>
+
+          {/* Carrinho Mobile (Drawer/Modal) */}
+          <AnimatePresence>
+            {showMobileCart && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 safe-area-top"
+                  onClick={() => setShowMobileCart(false)}
+                />
+                <motion.div
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "100%" }}
+                  transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                  className="fixed bottom-0 left-0 right-0 h-[80vh] bg-[var(--neu-base)] rounded-t-3xl z-50 overflow-hidden"
+                >
+                  {/* Drag handle */}
+                  <div className="flex justify-center pt-3 pb-2">
+                    <div className="w-12 h-1.5 rounded-full bg-[var(--neu-border)]" />
+                  </div>
+
+                  {/* Mobile Cart Content */}
+                  <div className="h-[calc(100%-2rem)] flex flex-col">
+                    <div className="p-4 border-b border-[var(--neu-border)] flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl neu-surface neu-convex-md flex items-center justify-center">
+                          <ShoppingCart className="w-5 h-5 text-[var(--neu-accent)]" />
+                        </div>
+                        <div>
+                          <h2 className="neu-text-h2">Carrinho</h2>
+                          <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                            {cart.length} {cart.length === 1 ? 'item' : 'itens'}
+                          </p>
+                        </div>
+                      </div>
+                      <NeuButton
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowMobileCart(false)}
+                      >
+                        <X className="w-5 h-5" />
+                      </NeuButton>
+                    </div>
+
+                    {/* Cart Items */}
+                    <div className="flex-1 overflow-y-auto p-4">
+                      <AnimatePresence>
+                        {cart.length === 0 ? (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex flex-col items-center justify-center h-full py-12"
+                          >
+                            <div className="w-16 h-16 rounded-full neu-surface neu-convex-md flex items-center justify-center mb-4">
+                              <ShoppingCart className="w-8 h-8 text-[var(--neu-accent)]" />
+                            </div>
+                            <p className="neu-text-body font-medium mb-1">Carrinho vazio</p>
+                            <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                              Adicione produtos para começar
+                            </p>
+                          </motion.div>
+                        ) : (
+                          cart.map((item) => (
+                            <motion.div
+                              key={item.product.id}
+                              initial={{ opacity: 0, x: 20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: -20 }}
+                              className="mb-3"
+                            >
+                              <NeuCard variant="convex" size="sm">
+                                <NeuCardContent className="p-3">
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="neu-text-caption sm:neu-text-body font-medium mb-1 truncate">
+                                        {item.product.name}
+                                      </p>
+                                      <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                                        {item.product.price.toLocaleString('pt-MZ', {
+                                          minimumFractionDigits: 2,
+                                        })} MT
+                                      </p>
+                                    </div>
+                                    <NeuButton
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => removeFromCart(item.product.id)}
+                                    >
+                                      <X className="w-4 h-4 text-[var(--neu-error)]" />
+                                    </NeuButton>
+                                  </div>
+
+                                  <div className="flex items-center justify-between pt-3 border-t border-[var(--neu-border)]">
+                                    <div className="flex items-center gap-2">
+                                      <NeuButton
+                                        variant="convex"
+                                        size="icon"
+                                        onClick={() =>
+                                          updateQuantity(item.product.id, item.quantity - 1)
+                                        }
+                                      >
+                                        <Minus className="w-4 h-4" />
+                                      </NeuButton>
+                                      <span className="w-12 text-center neu-text-body font-bold">
+                                        {item.quantity}
+                                      </span>
+                                      <NeuButton
+                                        variant="convex"
+                                        size="icon"
+                                        onClick={() =>
+                                          updateQuantity(item.product.id, item.quantity + 1)
+                                        }
+                                        disabled={item.quantity >= item.product.quantity}
+                                      >
+                                        <Plus className="w-4 h-4" />
+                                      </NeuButton>
+                                    </div>
+
+                                    <div className="text-right">
+                                      <p className="neu-text-caption sm:neu-text-body font-bold">
+                                        {(item.product.price * item.quantity).toLocaleString(
+                                          'pt-MZ',
+                                          { minimumFractionDigits: 2 }
+                                        )} MT
+                                      </p>
+                                    </div>
+                                  </div>
+                                </NeuCardContent>
+                              </NeuCard>
+                            </motion.div>
+                          ))
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Totals e Checkout Button */}
+                    {cart.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-4 border-t border-[var(--neu-border)] bg-[var(--neu-base)]"
+                      >
+                        <div className="space-y-3 mb-4">
+                          <div className="flex justify-between items-center">
+                            <span className="neu-text-body">Subtotal</span>
+                            <span className="neu-text-body font-bold">
+                              {calculateSubtotal().toLocaleString('pt-MZ', {
+                                minimumFractionDigits: 2,
+                              })} MT
+                            </span>
+                          </div>
+
+                          <div className="flex justify-between items-center p-4 rounded-xl neu-surface neu-concave-sm">
+                            <span className="neu-text-h3 flex items-center gap-2">
+                              <Receipt className="w-6 h-6" />
+                              Total
+                            </span>
+                            <span className="neu-text-h2 text-[var(--neu-success)]">
+                              {calculateTotal().toLocaleString('pt-MZ', {
+                                minimumFractionDigits: 2,
+                              })} MT
+                            </span>
+                          </div>
+                        </div>
+
+                        <NeuButton
+                          variant="accent"
+                          onClick={handleCheckout}
+                          disabled={isCheckingOut}
+                          loading={isCheckingOut}
+                          className="w-full"
+                        >
+                          <CreditCard className="w-6 h-6" />
+                          <span>Finalizar Venda</span>
+                        </NeuButton>
+                      </motion.div>
+                    )}
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+
+          {/* Botão flutuante do carrinho no grid */}
+          {isMobile && cart.length > 0 && (
+            <motion.button
+              onClick={() => setShowMobileCart(true)}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="fixed bottom-6 right-6 w-16 h-16 rounded-full neu-surface neu-convex-lg flex items-center justify-center shadow-xl z-30 touch-target"
+            >
+              <ShoppingCart className="w-7 h-7 text-[var(--neu-accent)]" />
+              <span className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[var(--neu-accent)] text-white text-sm font-bold">
+                {cart.length}
+              </span>
+            </motion.button>
+          )}
+        </>
+      )}
 
       {/* Success Modal */}
       <NeuDialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>

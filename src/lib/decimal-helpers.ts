@@ -101,23 +101,6 @@ export function calculateProfit(
 }
 
 /**
- * Calcula IVA (Imposto sobre Valor Acrescentado)
- * Taxa padrão em Moçambique: 17%
- * 
- * @example
- * calculateTax(1000)       // → Decimal(170.00) - 17% de 1000
- * calculateTax(1000, 0.10) // → Decimal(100.00) - 10% de 1000
- */
-export function calculateTax(
-  subtotal: Prisma.Decimal | number,
-  taxRate: number = 0.17
-): Prisma.Decimal {
-  const amount = toDecimal(subtotal);
-  const rate = toDecimal(taxRate);
-  return amount.mul(rate);
-}
-
-/**
  * Aplica desconto ao subtotal
  * 
  * @param subtotal - Valor antes do desconto
@@ -150,16 +133,29 @@ export function applyDiscount(
 }
 
 /**
- * Calcula total final de uma venda
- * Total = Subtotal - Desconto + IVA
+ * Calcula total final de uma venda (sem impostos)
+ * Total = Subtotal - Desconto
  * 
  * @example
- * calculateTotal({
+ * calculateTotalWithoutTax({
  *   subtotal: 1000,
- *   discountAmount: 100,
- *   taxAmount: 153  // (1000 - 100) × 0.17
+ *   discountAmount: 100
  * })
- * // → Decimal(1053.00)
+ * // → Decimal(900.00)
+ */
+export function calculateTotalWithoutTax(params: {
+  subtotal: Prisma.Decimal | number;
+  discountAmount?: Prisma.Decimal | number;
+}): Prisma.Decimal {
+  const subtotal = toDecimal(params.subtotal);
+  const discount = toDecimal(params.discountAmount || 0);
+  
+  return subtotal.sub(discount);
+}
+
+/**
+ * Calcula total final de uma venda (legado, mantida para compatibilidade)
+ * @deprecated Use calculateTotalWithoutTax instead
  */
 export function calculateTotal(params: {
   subtotal: Prisma.Decimal | number;
@@ -168,9 +164,9 @@ export function calculateTotal(params: {
 }): Prisma.Decimal {
   const subtotal = toDecimal(params.subtotal);
   const discount = toDecimal(params.discountAmount || 0);
-  const tax = toDecimal(params.taxAmount || 0);
+  // Ignora taxAmount, pois o sistema não usa mais IVA
   
-  return subtotal.sub(discount).add(tax);
+  return subtotal.sub(discount);
 }
 
 /**

@@ -7,6 +7,7 @@ import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
 import { NeuInput } from '@/components/ui/neu-input';
 import { NeuSelect, NeuSelectContent, NeuSelectItem, NeuSelectTrigger, NeuSelectValue } from '@/components/ui/neu-select';
 import { NeuDialog, NeuDialogContent, NeuDialogHeader, NeuDialogTitle, NeuDialogDescription } from '@/components/ui/neu-dialog';
+import { useViewport } from '@/hooks/useViewport';
 import {
     Building2,
     Plus,
@@ -34,7 +35,7 @@ import {
     Hash,
     Briefcase,
     Loader2,
-    DollarSign,
+    Receipt,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -69,6 +70,7 @@ interface Stats {
 }
 
 export default function AdminCompaniesPage() {
+    const { isMobile } = useViewport();
     const [companies, setCompanies] = useState<Company[]>([]);
     const [stats, setStats] = useState<Stats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -263,6 +265,7 @@ export default function AdminCompaniesPage() {
                 <NeuButton
                     variant="accent"
                     onClick={() => setShowCreateModal(true)}
+                    className={isMobile ? "w-full" : ""}
                 >
                     <Plus className="w-5 h-5" />
                     <span>Nova Empresa</span>
@@ -414,7 +417,115 @@ export default function AdminCompaniesPage() {
                                     Crie a primeira empresa clicando no botão acima
                                 </p>
                             </div>
+                        ) : isMobile ? (
+                            /* Mobile Card View */
+                            <div className="space-y-4 p-4">
+                                {companies.map((company, index) => (
+                                    <motion.div
+                                        key={company.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.05 }}
+                                    >
+                                        <NeuCard variant="convex" size="sm">
+                                            <NeuCardContent className="p-4 space-y-3">
+                                                {/* Header */}
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-12 h-12 rounded-xl neu-surface neu-convex-md flex items-center justify-center flex-shrink-0">
+                                                        <span className="neu-text-h3 font-bold text-[var(--neu-accent)]">
+                                                            {company.name.charAt(0).toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="neu-text-body font-bold truncate">{company.name}</p>
+                                                        <p className="neu-text-caption text-[var(--neu-text-muted)] truncate">
+                                                            NUIT: {company.nuit || '—'}
+                                                        </p>
+                                                        {getStatusBadge(company.subscription_status)}
+                                                    </div>
+                                                </div>
+
+                                                {/* Info Grid */}
+                                                <div className="space-y-2">
+                                                    <div>
+                                                        <p className="neu-text-caption text-[var(--neu-text-muted)]">Proprietário</p>
+                                                        <p className="neu-text-body">{company.owner.full_name}</p>
+                                                        <p className="neu-text-caption text-[var(--neu-text-muted)] truncate">{company.owner.email}</p>
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center gap-2">
+                                                        <Calendar className="w-4 h-4 text-[var(--neu-text-muted)]" />
+                                                        <span className="neu-text-caption">
+                                                            {company.subscription_end
+                                                                ? new Date(company.subscription_end).toLocaleDateString('pt-MZ')
+                                                                : 'Sem data'}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center gap-2">
+                                                        <Receipt className="w-4 h-4 text-[var(--neu-accent)]" />
+                                                        <span className="neu-text-body font-bold text-[var(--neu-accent)]">
+                                                            {company.monthlyRevenue > 0
+                                                                ? company.monthlyRevenue.toLocaleString('pt-MZ', { maximumFractionDigits: 0 })
+                                                                : '0'} MT
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center gap-4 neu-text-caption">
+                                                        <span className="flex items-center gap-1">
+                                                            <Users className="w-3 h-3" />
+                                                            {company._count.employees}
+                                                        </span>
+                                                        <span className="flex items-center gap-1">
+                                                            <Package className="w-3 h-3" />
+                                                            {company._count.products}
+                                                        </span>
+                                                        <span className="flex items-center gap-1">
+                                                            <ShoppingCart className="w-3 h-3" />
+                                                            {company._count.sales}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Actions */}
+                                                <div className="flex gap-2 pt-2">
+                                                    <NeuButton
+                                                        variant="convex"
+                                                        size="sm"
+                                                        onClick={() => handleImpersonate(company.id, company.name)}
+                                                        className="flex-1"
+                                                    >
+                                                        <Eye className="w-4 h-4" />
+                                                        <span>Ver</span>
+                                                    </NeuButton>
+                                                    <NeuButton
+                                                        variant="convex"
+                                                        size="sm"
+                                                        onClick={() => handleRenew(company.id, company.name)}
+                                                        className="flex-1"
+                                                    >
+                                                        <RotateCcw className="w-4 h-4" />
+                                                        <span>Renovar</span>
+                                                    </NeuButton>
+                                                    {company.subscription_status !== 'SUSPENDED' && (
+                                                        <NeuButton
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleSuspend(company.id, company.name)}
+                                                            className="flex-1"
+                                                        >
+                                                            <Pause className="w-4 h-4" />
+                                                            <span>Suspender</span>
+                                                        </NeuButton>
+                                                    )}
+                                                </div>
+                                            </NeuCardContent>
+                                        </NeuCard>
+                                    </motion.div>
+                                ))}
+                            </div>
                         ) : (
+                            /* Desktop Table View */
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead className="bg-[var(--neu-base)] border-b border-[var(--neu-border)]">
@@ -485,7 +596,7 @@ export default function AdminCompaniesPage() {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-2">
-                                                        <DollarSign className="w-4 h-4 text-[var(--neu-accent)]" />
+                                                        <Receipt className="w-4 h-4 text-[var(--neu-accent)]" />
                                                         <span className="neu-text-body font-bold text-[var(--neu-accent)]">
                                                             {company.monthlyRevenue > 0
                                                                 ? company.monthlyRevenue.toLocaleString('pt-MZ', { maximumFractionDigits: 0 })

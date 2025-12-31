@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { 
-  DollarSign, 
-  TrendingUp, 
-  ShoppingCart, 
+import {
+  TrendingUp,
+  ShoppingCart,
   Receipt,
-  RefreshCw
+  RefreshCw,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+
+// Hooks
+import { useViewport } from "@/hooks/useViewport";
 
 // Components - Neumorphic
 import { NeuKPICard } from "@/components/dashboard/NeuKPICard";
@@ -57,6 +60,10 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const router = useRouter();
+
+  // Hook de viewport para responsividade
+  const { isMobile, isTablet } = useViewport();
 
   // Fetch dashboard data
   const fetchDashboard = async (showToast = false) => {
@@ -114,6 +121,13 @@ export default function DashboardPage() {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Altura do chart adaptativa (mantido para componentes Recharts que não suportam CSS responsivo)
+  const chartHeight = useMemo(() => {
+    if (isMobile) return 250;
+    if (isTablet) return 300;
+    return 400;
+  }, [isMobile, isTablet]);
 
   // Loading state
   if (loading) {
@@ -224,14 +238,8 @@ export default function DashboardPage() {
         </motion.div>
       )}
 
-      {/* KPI Grid - Mobile: 1 col, Tablet: 2 cols, Desktop: 4 cols */}
-      <div 
-        className="w-full gap-4 lg:gap-6"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))'
-        }}
-      >
+      {/* KPI Grid - Mobile: 1 col, Tablet: 2 cols, Desktop: 4 cols - usando Tailwind responsivo */}
+      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         <NeuKPICard
           title="Faturação Hoje"
           value={data.kpis.today.revenue_formatted}
@@ -244,7 +252,7 @@ export default function DashboardPage() {
                 }
               : undefined
           }
-          icon={DollarSign}
+          icon={Receipt}
           color="accent"
           index={0}
         />
@@ -301,25 +309,25 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Main Chart */}
+      {/* Main Chart - Altura adaptativa */}
       <NeuCard variant="convex" size="md" className="w-full">
         <NeuCardHeader>
-          <NeuCardTitle>Tendência de Vendas (7 dias)</NeuCardTitle>
+          <NeuCardTitle className="text-base sm:text-lg">Tendência de Vendas (7 dias)</NeuCardTitle>
         </NeuCardHeader>
-        <NeuCardContent>
-          <TrendChart data={data.trend} />
+        <NeuCardContent style={{ minHeight: chartHeight }}>
+          <TrendChart data={data.trend} isMobile={isMobile} />
         </NeuCardContent>
       </NeuCard>
 
       {/* Bottom Grid */}
-      <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+      <div className={`w-full grid gap-4 lg:gap-6 ${isMobile ? 'grid-cols-1' : 'lg:grid-cols-2'}`}>
         {/* Left: Top Products */}
         <NeuCard variant="convex" size="md">
           <NeuCardHeader>
-            <NeuCardTitle>Produtos Mais Vendidos</NeuCardTitle>
+            <NeuCardTitle className="text-base sm:text-lg">Produtos Mais Vendidos</NeuCardTitle>
           </NeuCardHeader>
           <NeuCardContent>
-            <TopProductsRanking products={data.top_products} />
+            <TopProductsRanking products={data.top_products} limit={isMobile ? 3 : 5} />
           </NeuCardContent>
         </NeuCard>
 
@@ -328,7 +336,7 @@ export default function DashboardPage() {
           {/* Payment Distribution */}
           <NeuCard variant="convex" size="md">
             <NeuCardHeader>
-              <NeuCardTitle>Distribuição de Pagamentos</NeuCardTitle>
+              <NeuCardTitle className="text-base sm:text-lg">Distribuição de Pagamentos</NeuCardTitle>
             </NeuCardHeader>
             <NeuCardContent>
               <PaymentDistribution distribution={data.payment_distribution} />
@@ -338,14 +346,26 @@ export default function DashboardPage() {
           {/* Inventory Alerts */}
           <NeuCard variant="convex" size="md">
             <NeuCardHeader>
-              <NeuCardTitle>Alertas de Stock</NeuCardTitle>
+              <NeuCardTitle className="text-base sm:text-lg">Alertas de Stock</NeuCardTitle>
             </NeuCardHeader>
             <NeuCardContent>
-              <InventoryAlerts alerts={data.inventory_alerts} />
+              <InventoryAlerts alerts={data.inventory_alerts} limit={isMobile ? 2 : 3} />
             </NeuCardContent>
           </NeuCard>
         </div>
       </div>
+
+      {/* Botão flutuante "Nova Venda" para mobile */}
+      {isMobile && (
+        <motion.button
+          onClick={() => router.push('/pos')}
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="fixed bottom-6 right-6 w-14 h-14 rounded-full neu-surface neu-convex-lg flex items-center justify-center shadow-xl z-50 touch-target tap-highlight-transparent"
+        >
+          <ShoppingCart className="w-6 h-6 text-[var(--neu-accent)]" />
+        </motion.button>
+      )}
 
       {/* Footer */}
       <motion.div

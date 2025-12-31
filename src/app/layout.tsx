@@ -12,6 +12,7 @@ import { ToastProvider, ToastInitializer } from '@/components/ui/toast';
 import ClientLayout from '@/components/layout/ClientLayout';
 import AccessibilityHelper from '@/components/accessibility/AccessibilityHelper';
 import { OfflineIndicator } from '@/components/offline/OfflineIndicator';
+import { SyncStatus } from '@/components/offline/SyncStatus';
 import { ThemeProvider } from '@/components/theme-provider';
 import { ToastContainer } from '@/components/notifications/toast-container';
 import { NeuToaster } from '@/components/ui/neu-toast';
@@ -27,6 +28,7 @@ export const metadata: Metadata = {
     initialScale: 1,
     maximumScale: 5,
     userScalable: true,
+    viewportFit: 'cover', // iOS: Preenche área do notch/Dynamic Island
   },
   appleWebApp: {
     capable: true,
@@ -99,6 +101,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <></>
               </AccessibilityHelper>
               <OfflineIndicator />
+              <SyncStatus />
               <ClientLayout user={initialUser}>
                 {children}
               </ClientLayout>

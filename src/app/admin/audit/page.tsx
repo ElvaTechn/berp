@@ -22,6 +22,7 @@ import {
   Filter,
   TrendingUp,
 } from 'lucide-react';
+import { useViewport } from '@/hooks/useViewport';
 
 interface AuditLog {
   id: string;
@@ -62,6 +63,7 @@ interface Filters {
 }
 
 export default function AuditLogsPage() {
+  const { isMobile } = useViewport();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [stats, setStats] = useState<AuditStats | null>(null);
   const [pagination, setPagination] = useState<Pagination | null>(null);
@@ -451,11 +453,99 @@ export default function AuditLogsPage() {
                   Ajuste os filtros para ver mais resultados
                 </p>
               </div>
+            ) : isMobile ? (
+              /* Mobile Card View */
+              <div className="space-y-4 p-4">
+                {logs.map((log, index) => (
+                  <motion.div
+                    key={log.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <NeuCard variant="convex" size="sm">
+                      <NeuCardContent className="p-4 space-y-3">
+                        {/* Header */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            {getResourceIcon(log.resource)}
+                            <span className={`px-2 py-1 rounded-lg neu-convex-xs text-xs font-bold ${getActionBadgeColor(log.action)}`}>
+                              {log.action}
+                            </span>
+                          </div>
+                          {log.success ? (
+                            <CheckCircle className="h-5 w-5 text-[var(--neu-success)] flex-shrink-0" />
+                          ) : (
+                            <XCircle className="h-5 w-5 text-[var(--neu-error)] flex-shrink-0" />
+                          )}
+                        </div>
+
+                        {/* Info */}
+                        <div className="space-y-2">
+                          <div>
+                            <p className="neu-text-caption text-[var(--neu-text-muted)]">Recurso</p>
+                            <p className="neu-text-body">
+                              {log.resource}
+                              {log.resource_id && (
+                                <span className="neu-text-caption text-[var(--neu-text-muted)]">
+                                  {' '}({log.resource_id.slice(0, 8)}...)
+                                </span>
+                              )}
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="neu-text-caption text-[var(--neu-text-muted)]">Usuário</p>
+                            <p className="neu-text-body font-medium">
+                              {log.user?.full_name || log.employee?.full_name || 'Sistema'}
+                            </p>
+                            {(log.user?.email || log.employee?.email) && (
+                              <p className="neu-text-caption text-[var(--neu-text-muted)] truncate">
+                                {log.user?.email || log.employee?.email}
+                              </p>
+                            )}
+                            {log.company && (
+                              <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                                {log.company.name}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="neu-text-caption text-[var(--neu-text-muted)]">IP</p>
+                              <p className="neu-text-caption font-mono">{log.ip_address}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="neu-text-caption text-[var(--neu-text-muted)]">Data/Hora</p>
+                              <p className="neu-text-caption font-mono">{formatDate(log.timestamp)}</p>
+                            </div>
+                          </div>
+
+                          {(log.error || log.details) && (
+                            <div>
+                              <p className="neu-text-caption text-[var(--neu-text-muted)]">Detalhes</p>
+                              {log.error ? (
+                                <p className="neu-text-caption text-[var(--neu-error)]">{log.error}</p>
+                              ) : log.details ? (
+                                <p className="neu-text-caption text-[var(--neu-text-muted)] break-all">
+                                  {JSON.stringify(parseDetails(log.details)).slice(0, 100)}...
+                                </p>
+                              ) : null}
+                            </div>
+                          )}
+                        </div>
+                      </NeuCardContent>
+                    </NeuCard>
+                  </motion.div>
+                ))}
+              </div>
             ) : (
               <>
+                {/* Desktop Table View */}
                 <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-[var(--neu-base)] border-b border-[var(--neu-border)]">
+                    <table className="w-full">
+                      <thead className="bg-[var(--neu-base)] border-b border-[var(--neu-border)]">
                       <tr>
                         <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
                           Data/Hora
@@ -563,8 +653,8 @@ export default function AuditLogsPage() {
 
                 {/* Paginação */}
                 {pagination && pagination.totalPages > 1 && (
-                  <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--neu-border)]">
-                    <div className="neu-text-caption text-[var(--neu-text-muted)]">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 sm:px-6 py-4 border-t border-[var(--neu-border)]">
+                    <div className="neu-text-caption text-[var(--neu-text-muted)] text-center sm:text-left">
                       Mostrando {((pagination.page - 1) * pagination.limit) + 1} a{' '}
                       {Math.min(pagination.page * pagination.limit, pagination.total)} de{' '}
                       {pagination.total} registros

@@ -8,7 +8,6 @@ import {
   Calendar,
   User,
   CreditCard,
-  DollarSign,
   ChevronDown,
   ChevronUp,
   Loader2,
@@ -18,8 +17,10 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useViewport } from '@/hooks/useViewport';
 import { NeuButton } from '@/components/ui/neu-button';
 import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
+import { MobileScrollWrapper } from '@/components/ui/MobileScrollWrapper';
 
 interface SaleItem {
   id: string;
@@ -59,6 +60,9 @@ export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedSaleId, setExpandedSaleId] = useState<string | null>(null);
+
+  // Hook de viewport
+  const { isMobile } = useViewport();
 
   useEffect(() => {
     fetchSales();
@@ -244,7 +248,8 @@ export default function SalesPage() {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <MobileScrollWrapper isMobile={isMobile} itemCount={sales.length}>
+                    <table className="w-full">
                     <thead className="bg-[var(--neu-base)]">
                       <tr className="border-b border-[var(--neu-border)]">
                         <th className="px-6 py-4 text-left neu-text-label text-[var(--neu-text-muted)]">
@@ -309,7 +314,7 @@ export default function SalesPage() {
                             </td>
                             <td className="px-6 py-4 text-right">
                               <div className="flex items-center justify-end gap-2">
-                                <DollarSign className="w-4 h-4 text-[var(--neu-success)]" />
+                                <Receipt className="w-4 h-4 text-[var(--neu-success)]" />
                                 <span className="neu-text-h3 text-[var(--neu-success)]">
                                   {Number(sale.total).toLocaleString('pt-MZ', {
                                     minimumFractionDigits: 2,
@@ -405,6 +410,7 @@ export default function SalesPage() {
                       ))}
                     </tbody>
                   </table>
+                  </MobileScrollWrapper>
                 </div>
               )}
             </NeuCardContent>

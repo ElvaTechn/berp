@@ -115,28 +115,28 @@ export default function Settings() {
   const status = getSubscriptionStatus();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
       <PageHeader
         title="Definições"
         description="Configurações da sua empresa"
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Company Info */}
         <div className="lg:col-span-2">
           <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
                 Dados da Empresa
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 Informações básicas da sua empresa
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6">
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="md:col-span-2 space-y-2">
                     <Label htmlFor="name">Nome da Empresa</Label>
                     <Input
@@ -202,7 +202,7 @@ export default function Settings() {
                 </div>
 
                 <div className="flex justify-end pt-4">
-                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={saving}>
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto" disabled={saving}>
                     {saving ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -222,15 +222,15 @@ export default function Settings() {
         </div>
 
         {/* Subscription */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
                 Subscrição
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-slate-500">Estado</span>
                 <Badge className={`${status.bg} ${status.color} hover:${status.bg}`}>
@@ -271,10 +271,10 @@ export default function Settings() {
 
           {/* Quick Stats */}
           <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-base">Informações da Conta</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg">Informações da Conta</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 p-4 sm:p-6">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Criada em</span>
                 <span className="font-medium">
