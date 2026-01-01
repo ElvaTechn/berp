@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
 import { Settings, Shield, Database, Bell, Globe, Palette } from 'lucide-react';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 export default function AdminSettingsPage() {
     const settingsCards = [
@@ -39,7 +40,8 @@ export default function AdminSettingsPage() {
     ];
 
     return (
-        <div className="space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-6">
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -101,5 +103,6 @@ export default function AdminSettingsPage() {
                 </NeuCard>
             </motion.div>
         </div>
-    );
+      </MaxWidthContainer>
+  );
 }

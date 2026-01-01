@@ -33,6 +33,7 @@ import PageHeader from '@/components/Common/PageHeader';
 import LoadingSpinner from '@/components/Common/LoadingSpinner';
 import { formatMT } from '@/components/Common/FormatCurrency';
 import { addPendingSale } from '@/lib/pwa/indexedDB';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 export default function PointOfSale() {
   const { isOnline, pendingCount, isSyncing } = useOfflineSync();
@@ -213,7 +214,8 @@ export default function PointOfSale() {
   }
 
   return (
-    <div className="space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-6">
       <div className="flex justify-between items-center">
         <PageHeader
           title="Ponto de Venda"
@@ -449,5 +451,6 @@ export default function PointOfSale() {
         formatMT={formatMT}
       />
     </div>
+    </MaxWidthContainer>
   );
 }

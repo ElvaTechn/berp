@@ -241,7 +241,6 @@ export default function EditProductModal({ product, open, onOpenChange, onSucces
                 required
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Ex: Arroz Tio Lucas 5kg"
                 icon={<Tag className="w-5 h-5" />}
                 error={errors.name}
               />

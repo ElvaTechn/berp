@@ -19,7 +19,7 @@ interface AcaoRapida {
   label: string;
   href: string;
   badge?: number;
-  variant: 'success' | 'accent' | 'warning' | 'error';
+  variant: 'success' | 'info' | 'warning' | 'error';
 }
 
 export function AcoesRapidas() {
@@ -34,7 +34,7 @@ export function AcoesRapidas() {
       icon: Package,
       label: 'Produtos',
       href: '/products',
-      variant: 'accent',
+      variant: 'info',
     },
     {
       icon: Users,
@@ -81,7 +81,7 @@ export function AcoesRapidas() {
               {/* Badge (se existir) */}
               {acao.badge && (
                 <div className="absolute -top-2 -right-2">
-                  <NeuBadge variant={acao.variant} className="animate-pulse">
+                  <NeuBadge status={acao.variant} className="animate-pulse">
                     {acao.badge}
                   </NeuBadge>
                 </div>

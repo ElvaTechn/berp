@@ -24,6 +24,7 @@ import { format } from 'date-fns';
 import PageHeader from '@/components/Common/PageHeader';
 import LoadingSpinner from '@/components/Common/LoadingSpinner';
 import { formatMT } from '@/components/Common/FormatCurrency';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 export default function Settings() {
   const [loading, setLoading] = useState(true);
@@ -115,7 +116,8 @@ export default function Settings() {
   const status = getSubscriptionStatus();
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
       <PageHeader
         title="Definições"
         description="Configurações da sua empresa"
@@ -298,5 +300,6 @@ export default function Settings() {
         </div>
       </div>
     </div>
+    </MaxWidthContainer>
   );
 }

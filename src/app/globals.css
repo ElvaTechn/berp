@@ -265,10 +265,10 @@ body {
 }
 
 .neu-text-label {
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.8125rem; /* 13px (was 12px) - Better legibility */
+  font-weight: 600; /* Bolder for small text */
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em; /* Slightly reduced */
   color: var(--neu-text-muted);
 }
 
@@ -571,6 +571,17 @@ body {
   }
   .mobile-p-4 {
     padding: 1rem;
+  }
+}
+
+/* Extra small screens (< 375px) - Reduce padding */
+@media (max-width: 374px) {
+  .xs-px-3 {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  .text-xs-sm {
+    font-size: 0.875rem;
   }
 }
 

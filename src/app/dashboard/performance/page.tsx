@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 interface HealthStatus {
   status: 'healthy' | 'degraded' | 'unhealthy';
@@ -106,14 +107,17 @@ export default function PerformanceDashboard() {
 
   if (!health || !metrics) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+      <MaxWidthContainer size="xl">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </MaxWidthContainer>
     );
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="container mx-auto p-4 md:p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">Performance Dashboard</h1>
@@ -416,6 +420,7 @@ export default function PerformanceDashboard() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </MaxWidthContainer>
   );
 }

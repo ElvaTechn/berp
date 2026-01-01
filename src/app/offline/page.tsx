@@ -5,6 +5,7 @@ import { NeuButton } from '@/components/ui/neu-button';
 import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
 import { WifiOff, RefreshCw, Home } from 'lucide-react';
 import Link from 'next/link';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 /**
  * Página de fallback para modo offline
@@ -12,7 +13,8 @@ import Link from 'next/link';
  */
 export default function OfflinePage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--neu-base)] p-4">
+    <MaxWidthContainer size="xl">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--neu-base)] p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -107,5 +109,6 @@ export default function OfflinePage() {
         </NeuCard>
       </motion.div>
     </div>
+    </MaxWidthContainer>
   );
 }

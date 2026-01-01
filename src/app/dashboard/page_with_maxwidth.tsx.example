@@ -1,0 +1,31 @@
+/**
+ * EXEMPLO: Como adicionar MaxWidthContainer em páginas
+ * 
+ * Copie este padrão para suas páginas de dashboard
+ */
+
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
+
+export default function DashboardPage() {
+  return (
+    <MaxWidthContainer size="xl"> {/* 1280px max */}
+      <div className="p-3 sm:p-4 md:p-6 lg:p-8">
+        {/* Seu conteúdo aqui */}
+        <h1>Dashboard</h1>
+        
+        {/* Cards, charts, etc */}
+      </div>
+    </MaxWidthContainer>
+  );
+}
+
+/**
+ * Guia de tamanhos:
+ * 
+ * size="sm"   - 640px  - Formulários estreitos, modals
+ * size="md"   - 768px  - Conteúdo text-heavy, artigos
+ * size="lg"   - 1024px - Dashboards simples
+ * size="xl"   - 1280px - Dashboards complexos (RECOMENDADO)
+ * size="2xl"  - 1536px - Data tables largas
+ * size="full" - 100%   - Sem limite (quando precisar)
+ */

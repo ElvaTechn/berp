@@ -31,6 +31,7 @@ import { cn } from '@/lib/utils';
 import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
 import { useAuth } from '@/contexts/auth-context';
 import { toast } from 'sonner';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 interface MenuItem {
   icon: React.ReactNode;
@@ -156,7 +157,8 @@ export default function MorePage() {
   const allItems = user?.role === 'ADMIN' ? [...menuItems, ...adminItems] : menuItems;
 
   return (
-    <div className="space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -283,5 +285,6 @@ export default function MorePage() {
         </button>
       </motion.div>
     </div>
+    </MaxWidthContainer>
   );
 }

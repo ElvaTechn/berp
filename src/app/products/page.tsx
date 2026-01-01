@@ -12,6 +12,7 @@ import { Plus, Pencil, Trash2, Package, Search, Loader2, AlertTriangle } from 'l
 import { TouchActionButtons } from '@/components/ui/touch-button';
 import { toast } from 'sonner';
 import { useViewport } from '@/hooks/useViewport';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 interface Product {
   id: string;
@@ -168,14 +169,17 @@ export default function ProductsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <MaxWidthContainer size="xl">
+        <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-[var(--neu-accent)]" />
-      </div>
+        </div>
+      </MaxWidthContainer>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-6 p-3 sm:p-4 md:p-6 lg:p-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -258,7 +262,7 @@ export default function ProductsPage() {
         </motion.div>
       ) : (
         /* Products Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredProducts.map((product, index) => {
             const category = getCategoryById(product.category_id);
             const isLowStock = product.quantity <= product.min_stock;
@@ -410,6 +414,7 @@ export default function ProductsPage() {
           </form>
         </NeuDialogContent>
       </NeuDialog>
-    </div>
+      </div>
+    </MaxWidthContainer>
   );
 }

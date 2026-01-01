@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 interface HealthStatus {
   database: 'online' | 'offline' | 'degraded';
@@ -83,7 +84,8 @@ export default function AdminSystemPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-6">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="neu-text-h1 flex items-center gap-3">
@@ -323,5 +325,6 @@ export default function AdminSystemPage() {
         </NeuCard>
       </motion.div>
     </div>
+    </MaxWidthContainer>
   );
 }

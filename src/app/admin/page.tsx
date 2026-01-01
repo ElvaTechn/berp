@@ -19,6 +19,7 @@ import Link from "next/link";
 import { NeuButton } from "@/components/ui/neu-button";
 import { NeuCard, NeuCardContent } from "@/components/ui/neu-card";
 import { NeuInput } from "@/components/ui/neu-input";
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 interface Company {
   id: string;
@@ -72,7 +73,8 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -291,5 +293,6 @@ export default function AdminPage() {
         </NeuCardContent>
       </NeuCard>
     </div>
+    </MaxWidthContainer>
   );
 }

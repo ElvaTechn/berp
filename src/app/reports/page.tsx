@@ -27,6 +27,7 @@ import PageHeader from '@/components/Common/PageHeader';
 import StatsCard from '@/components/Common/StatsCard';
 import LoadingSpinner from '@/components/Common/LoadingSpinner';
 import { formatMT, formatNumber } from '@/components/Common/FormatCurrency';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 export default function Reports() {
   const [loading, setLoading] = useState(true);
@@ -192,7 +193,8 @@ export default function Reports() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-4 sm:space-y-6">
       <PageHeader
         title={isMobile ? "Relatórios" : "Relatórios"}
         description={isMobile ? "" : "Análise detalhada das suas vendas e desempenho"}
@@ -377,7 +379,8 @@ export default function Reports() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </MaxWidthContainer>
   );
 }
 

@@ -1,9 +1,10 @@
 /**
  * ================================================================
- * BOTTOM NAVIGATION BAR - BIZCONTROL 360 ERP v2.1.0
+ * BOTTOM NAVIGATION BAR - BIZCONTROL 360 ERP v2.1.1
  * ================================================================
  * Navegação inferior para mobile (estilo Instagram/Spotify)
  * Resolve problema: Menu hambúrguer requer 3 toques
+ * NOVO: Suporte para landscape (altura reduzida)
  * ================================================================
  */
 
@@ -22,6 +23,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useOrientation, useIsMobileLandscape } from '@/hooks/useOrientation';
 
 interface NavItem {
   id: string;
@@ -34,6 +36,8 @@ interface NavItem {
 export function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const orientation = useOrientation();
+  const isMobileLandscape = orientation === 'landscape';
 
   // Principais navegações (max 5 por recomendação HIG)
   const navItems: NavItem[] = [
@@ -88,7 +92,10 @@ export function BottomNav() {
   return (
     <>
       {/* Spacer para evitar que conteúdo fique escondido atrás do nav */}
-      <div className="h-20 lg:hidden" />
+      <div className={cn(
+        "lg:hidden",
+        isMobileLandscape ? "h-14" : "h-20" // Menor em landscape
+      )} />
 
       {/* Bottom Navigation */}
       <nav
@@ -97,14 +104,19 @@ export function BottomNav() {
           "lg:hidden", // Esconder em desktop
           "bg-white dark:bg-[#0A0A0A]",
           "border-t border-slate-200 dark:border-white/10",
-          "shadow-2xl"
+          "shadow-2xl",
+          "transition-all duration-200" // Smooth transition
         )}
         style={{
           // iOS safe area
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        <div className="flex items-center justify-around px-2 pt-2 pb-1">
+        <div className={cn(
+          "flex items-center justify-around px-2 pb-1",
+          // Compact em landscape
+          isMobileLandscape ? "pt-1" : "pt-2"
+        )}>
           {navItems.map((item) => {
             const active = isActive(item.href);
             
@@ -113,8 +125,10 @@ export function BottomNav() {
                 key={item.id}
                 onClick={() => handleNavigation(item)}
                 className={cn(
-                  "relative flex flex-col items-center justify-center gap-1",
-                  "min-w-[64px] py-2 px-3", // Touch target adequado
+                  "relative flex flex-col items-center justify-center",
+                  "min-w-[64px] px-3",
+                  // Responsive padding: Compact em landscape
+                  isMobileLandscape ? "py-1 gap-0.5" : "py-2 gap-1",
                   "rounded-xl transition-all duration-200",
                   "active:scale-95",
                   "touch-manipulation",
@@ -146,17 +160,19 @@ export function BottomNav() {
                   )}
                 </div>
 
-                {/* Label */}
-                <span
-                  className={cn(
-                    "text-[11px] font-medium transition-colors duration-200",
-                    active 
-                      ? "text-blue-600 dark:text-blue-400" 
-                      : "text-slate-600 dark:text-slate-400"
-                  )}
-                >
-                  {item.label}
-                </span>
+                {/* Label - Hidden em landscape para economizar espaço */}
+                {!isMobileLandscape && (
+                  <span
+                    className={cn(
+                      "text-[11px] font-medium transition-colors duration-200",
+                      active 
+                        ? "text-blue-600 dark:text-blue-400" 
+                        : "text-slate-600 dark:text-slate-400"
+                    )}
+                  >
+                    {item.label}
+                  </span>
+                )}
 
                 {/* Active indicator */}
                 {active && (

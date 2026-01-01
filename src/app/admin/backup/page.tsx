@@ -22,6 +22,7 @@ import { useViewport } from '@/hooks/useViewport';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 interface BackupRecord {
   id: string;
@@ -106,14 +107,17 @@ export default function BackupPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin" />
-      </div>
+      <MaxWidthContainer size="xl">
+        <div className="flex items-center justify-center h-96">
+          <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin" />
+        </div>
+      </MaxWidthContainer>
     );
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -403,6 +407,7 @@ export default function BackupPage() {
           </NeuCardContent>
         </NeuCard>
       </motion.div>
-    </div>
+      </div>
+    </MaxWidthContainer>
   );
 }

@@ -38,6 +38,7 @@ import {
     Receipt,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 interface Company {
     id: string;
@@ -68,6 +69,15 @@ interface Stats {
     expiringCompanies: number;
     monthlyRevenue: number;
 }
+
+type CompanyData = {
+    name: string;
+    subscriptionEnd: string;
+};
+
+type UserData = {
+    email: string;
+};
 
 export default function AdminCompaniesPage() {
     const { isMobile } = useViewport();
@@ -245,7 +255,8 @@ export default function AdminCompaniesPage() {
     };
 
     return (
-        <div className="space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-6">
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -692,6 +703,7 @@ export default function AdminCompaniesPage() {
                 )}
             </AnimatePresence>
         </div>
+      </MaxWidthContainer>
     );
 }
 
@@ -701,7 +713,7 @@ export default function AdminCompaniesPage() {
 
 interface CreateCompanyModalProps {
     onClose: () => void;
-    onSuccess: (result: { company: { name: string; subscriptionEnd: string }; user: { email: string } }) => void;
+    onSuccess: (result: { company: CompanyData; user: UserData }) => void;
     onSaveFormData: (data: any) => void;
     initialData: any;
 }

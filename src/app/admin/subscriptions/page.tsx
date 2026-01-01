@@ -22,6 +22,7 @@ import {
 import { format, differenceInDays, addMonths } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 interface Company {
   id: string;
@@ -205,14 +206,17 @@ export default function SubscriptionsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin" />
-      </div>
+      <MaxWidthContainer size="xl">
+        <div className="flex items-center justify-center h-96">
+          <Loader2 className="w-12 h-12 text-[var(--neu-accent)] animate-spin" />
+        </div>
+      </MaxWidthContainer>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-6">
       {/* Header */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }} 
@@ -422,6 +426,7 @@ export default function SubscriptionsPage() {
           </NeuCardContent>
         </NeuCard>
       </motion.div>
-    </div>
+      </div>
+    </MaxWidthContainer>
   );
 }

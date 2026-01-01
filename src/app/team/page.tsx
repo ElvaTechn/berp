@@ -38,6 +38,7 @@ import { format } from 'date-fns';
 import PageHeader from '@/components/Common/PageHeader';
 import LoadingSpinner from '@/components/Common/LoadingSpinner';
 import { toast } from 'sonner';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 export default function Team() {
   const [loading, setLoading] = useState(true);
@@ -172,7 +173,8 @@ export default function Team() {
   }
 
   return (
-    <div className="space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-6">
       <PageHeader
         title="Equipa"
         description="Gerir os membros da sua equipa"
@@ -348,5 +350,6 @@ export default function Team() {
         </DialogContent>
       </Dialog>
     </div>
+    </MaxWidthContainer>
   );
 }

@@ -9,6 +9,7 @@ import { NeuDialog, NeuDialogContent, NeuDialogHeader, NeuDialogTitle, NeuDialog
 import { Plus, Pencil, Trash2, Tags, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useViewport } from '@/hooks/useViewport';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 interface Category {
   id: string;
@@ -120,14 +121,17 @@ export default function CategoriesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--neu-accent)]" />
-      </div>
+      <MaxWidthContainer size="xl">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-[var(--neu-accent)]" />
+        </div>
+      </MaxWidthContainer>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -293,6 +297,7 @@ export default function CategoriesPage() {
           </form>
         </NeuDialogContent>
       </NeuDialog>
-    </div>
+      </div>
+    </MaxWidthContainer>
   );
 }

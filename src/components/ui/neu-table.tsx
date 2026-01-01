@@ -2,13 +2,20 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /* =================================================================
-   NEU TABLE - Neumorphic Table Component
+   NEU TABLE - Neumorphic Table Component (RESPONSIVE + OVERFLOW)
    
    Features:
    - Concave container (pressed in effect)
    - Subtle borders for rows
    - Hover states for interactivity
-   - Responsive design
+   - Responsive design with horizontal scroll
+   - Touch-friendly scrolling
+   
+   Changes from v1:
+   - ✅ Wrapper with overflow-x-auto
+   - ✅ Scrollbar customization
+   - ✅ Touch-friendly scrolling
+   - ✅ Responsive padding
    
    Usage:
    <NeuTable>
@@ -27,11 +34,13 @@ import { cn } from "@/lib/utils";
    </NeuTable>
    ================================================================= */
 
-/* Table Container */
-interface NeuTableProps extends React.HTMLAttributes<HTMLDivElement> {}
+/* Table Container with Overflow Wrapper */
+interface NeuTableProps extends React.HTMLAttributes<HTMLDivElement> {
+  scrollable?: boolean; // Enable horizontal scrolling
+}
 
 const NeuTable = React.forwardRef<HTMLDivElement, NeuTableProps>(
-  ({ className, children, ...props }, ref) => {
+  ({ className, children, scrollable = true, ...props }, ref) => {
     return (
       <div
         ref={ref}
@@ -43,9 +52,25 @@ const NeuTable = React.forwardRef<HTMLDivElement, NeuTableProps>(
         )}
         {...props}
       >
-        <table className="w-full">
-          {children}
-        </table>
+        <div
+          className={cn(
+            // Scrollable wrapper
+            scrollable && [
+              "overflow-x-auto",
+              "smooth-scroll",
+              "-webkit-overflow-scrolling: touch",
+            ]
+          )}
+          style={{
+            // Custom scrollbar for better UX
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'var(--neu-surface-hover) var(--neu-surface)',
+          }}
+        >
+          <table className="w-full">
+            {children}
+          </table>
+        </div>
       </div>
     );
   }
@@ -94,6 +119,7 @@ const NeuTableRow = React.forwardRef<HTMLTableRowElement, NeuTableRowProps>(
             "cursor-pointer",
             "hover:bg-[var(--neu-surface-hover)]",
             "active:bg-[var(--neu-surface-active)]",
+            "touch-manipulation"
           ],
           className
         )}
@@ -104,7 +130,7 @@ const NeuTableRow = React.forwardRef<HTMLTableRowElement, NeuTableRowProps>(
 );
 NeuTableRow.displayName = "NeuTableRow";
 
-/* Table Head */
+/* Table Head - RESPONSIVE PADDING */
 interface NeuTableHeadProps extends React.ThHTMLAttributes<HTMLTableCellElement> {}
 
 const NeuTableHead = React.forwardRef<HTMLTableCellElement, NeuTableHeadProps>(
@@ -113,9 +139,10 @@ const NeuTableHead = React.forwardRef<HTMLTableCellElement, NeuTableHeadProps>(
       ref={ref}
       className={cn(
         "neu-text-label font-semibold",
-        "px-6 py-4",
+        "px-3 py-3 md:px-6 md:py-4", // Responsive: 12px mobile → 24px desktop
         "text-left",
         "bg-[var(--neu-base-light)]",
+        "whitespace-nowrap", // Prevents wrapping in headers
         className
       )}
       {...props}
@@ -124,19 +151,39 @@ const NeuTableHead = React.forwardRef<HTMLTableCellElement, NeuTableHeadProps>(
 );
 NeuTableHead.displayName = "NeuTableHead";
 
-/* Table Cell */
+/* Table Cell - RESPONSIVE PADDING */
 interface NeuTableCellProps extends React.TdHTMLAttributes<HTMLTableCellElement> {}
 
 const NeuTableCell = React.forwardRef<HTMLTableCellElement, NeuTableCellProps>(
   ({ className, ...props }, ref) => (
     <td
       ref={ref}
-      className={cn("px-6 py-4 neu-text-body", className)}
+      className={cn(
+        "px-3 py-3 md:px-6 md:py-4", // Responsive: 12px mobile → 24px desktop
+        "neu-text-body",
+        className
+      )}
       {...props}
     />
   )
 );
 NeuTableCell.displayName = "NeuTableCell";
+
+/**
+ * Table Caption (for accessibility)
+ */
+interface NeuTableCaptionProps extends React.HTMLAttributes<HTMLTableCaptionElement> {}
+
+const NeuTableCaption = React.forwardRef<HTMLTableCaptionElement, NeuTableCaptionProps>(
+  ({ className, ...props }, ref) => (
+    <caption
+      ref={ref}
+      className={cn("mt-3 neu-text-caption text-[var(--neu-text-muted)]", className)}
+      {...props}
+    />
+  )
+);
+NeuTableCaption.displayName = "NeuTableCaption";
 
 export {
   NeuTable,
@@ -145,4 +192,5 @@ export {
   NeuTableRow,
   NeuTableHead,
   NeuTableCell,
+  NeuTableCaption,
 };

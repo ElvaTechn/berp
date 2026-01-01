@@ -22,6 +22,7 @@ import { NeuButton } from '@/components/ui/neu-button';
 import { NeuInput } from '@/components/ui/neu-input';
 import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
 import { NeuSelect, NeuSelectTrigger, NeuSelectValue, NeuSelectContent, NeuSelectItem } from '@/components/ui/neu-select';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 interface Product {
   id: string;
@@ -175,7 +176,8 @@ export default function InventoryPage() {
   ).map((c) => JSON.parse(c));
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -371,5 +373,6 @@ export default function InventoryPage() {
         />
       )}
     </div>
+    </MaxWidthContainer>
   );
 }

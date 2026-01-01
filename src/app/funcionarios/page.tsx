@@ -11,6 +11,7 @@ import { EditEmployeeModal } from "@/components/employees/EditEmployeeModal";
 import { NeuButton } from "@/components/ui/neu-button";
 import { NeuInput } from "@/components/ui/neu-input";
 import { NeuCard, NeuCardContent } from "@/components/ui/neu-card";
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 interface Employee {
   id: string;
@@ -109,7 +110,8 @@ export default function FuncionariosPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--neu-base)] p-4 md:p-6">
+    <MaxWidthContainer size="xl">
+      <div className="min-h-screen bg-[var(--neu-base)] p-4 md:p-6">
       <div className="max-w-[1800px] mx-auto space-y-6">
         {/* Header */}
         <motion.div
@@ -252,5 +254,6 @@ export default function FuncionariosPage() {
         />
       )}
     </div>
+    </MaxWidthContainer>
   );
 }

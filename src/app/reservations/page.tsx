@@ -22,6 +22,7 @@ import {
     Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 interface Product {
     id: string;
@@ -235,7 +236,8 @@ export default function ReservationsPage() {
     };
 
     return (
-        <div className="space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-6">
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -582,6 +584,7 @@ export default function ReservationsPage() {
                 />
             )}
         </div>
+      </MaxWidthContainer>
     );
 }
 

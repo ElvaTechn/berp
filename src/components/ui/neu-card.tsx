@@ -2,12 +2,22 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /* =================================================================
-   NEU CARD - Neumorphic Card Component
+   NEU CARD - Neumorphic Card Component (RESPONSIVE)
    
    Variants:
    - convex: Pops out of surface (default for cards)
    - concave: Pressed into surface (for inputs, recessed areas)
    - flat: No depth (for overlays, simple containers)
+   
+   Sizes (RESPONSIVE):
+   - sm: p-3 (mobile) → p-4 (desktop) - Compact
+   - md: p-4 (mobile) → p-6 (desktop) - Standard
+   - lg: p-5 (mobile) → p-8 (desktop) - Spacious
+   
+   Changes from v1:
+   - ✅ Responsive padding (smaller on mobile)
+   - ✅ Compact variant for mobile
+   - ✅ Better spacing in small screens
    
    Usage:
    <NeuCard variant="convex" size="md">
@@ -28,10 +38,11 @@ interface NeuCardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const NeuCard = React.forwardRef<HTMLDivElement, NeuCardProps>(
   ({ variant = 'convex', size = 'md', interactive = false, className, children, onClick, ...props }, ref) => {
+    // Responsive padding: smaller on mobile, larger on desktop
     const sizeClasses = {
-      sm: 'p-3 rounded-xl',
-      md: 'p-5 rounded-2xl',
-      lg: 'p-7 rounded-3xl'
+      sm: 'p-3 md:p-4 rounded-xl',           // 12px → 16px
+      md: 'p-4 md:p-6 rounded-2xl',          // 16px → 24px
+      lg: 'p-5 md:p-8 rounded-3xl'           // 20px → 32px
     };
     
     const shadowClasses = {
@@ -46,7 +57,7 @@ const NeuCard = React.forwardRef<HTMLDivElement, NeuCardProps>(
         onClick={onClick}
         className={cn(
           'transition-all duration-200',
-          // Size
+          // Responsive size
           sizeClasses[size],
           // Shadow variant
           shadowClasses[variant],
@@ -54,7 +65,8 @@ const NeuCard = React.forwardRef<HTMLDivElement, NeuCardProps>(
           interactive && [
             'cursor-pointer',
             'hover:neu-convex-lg hover:-translate-y-0.5',
-            'active:neu-concave-sm active:translate-y-0'
+            'active:neu-concave-sm active:translate-y-0',
+            'touch-manipulation'
           ],
           className
         )}
@@ -74,7 +86,7 @@ const NeuCardHeader = React.forwardRef<HTMLDivElement, NeuCardHeaderProps>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("flex flex-col space-y-1.5 mb-4", className)}
+      className={cn("flex flex-col space-y-1.5 mb-3 md:mb-4", className)}
       {...props}
     />
   )
@@ -126,7 +138,7 @@ const NeuCardFooter = React.forwardRef<HTMLDivElement, NeuCardFooterProps>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("flex items-center pt-4 mt-4 border-t border-[var(--neu-border-light)]", className)}
+      className={cn("flex items-center pt-3 md:pt-4 mt-3 md:mt-4 border-t border-[var(--neu-border-light)]", className)}
       {...props}
     />
   )

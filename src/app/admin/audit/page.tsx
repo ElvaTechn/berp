@@ -23,6 +23,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { useViewport } from '@/hooks/useViewport';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 interface AuditLog {
   id: string;
@@ -171,25 +172,28 @@ export default function AuditLogsPage() {
 
   if (error) {
     return (
-      <div className="space-y-6">
-        <NeuCard variant="concave" size="md">
-          <NeuCardContent className="p-6">
-            <div className="flex items-center gap-3 text-[var(--neu-error)] mb-4">
-              <AlertTriangle className="h-6 w-6" />
-              <span className="neu-text-body font-semibold">{error}</span>
-            </div>
-            <NeuButton onClick={fetchLogs} variant="convex" size="md">
-              <RefreshCw className="h-4 w-4" />
-              <span>Tentar novamente</span>
-            </NeuButton>
-          </NeuCardContent>
-        </NeuCard>
-      </div>
+      <MaxWidthContainer size="xl">
+        <div className="space-y-6">
+          <NeuCard variant="concave" size="md">
+            <NeuCardContent className="p-6">
+              <div className="flex items-center gap-3 text-[var(--neu-error)] mb-4">
+                <AlertTriangle className="h-6 w-6" />
+                <span className="neu-text-body font-semibold">{error}</span>
+              </div>
+              <NeuButton onClick={fetchLogs} variant="convex" size="md">
+                <RefreshCw className="h-4 w-4" />
+                <span>Tentar novamente</span>
+              </NeuButton>
+            </NeuCardContent>
+          </NeuCard>
+        </div>
+      </MaxWidthContainer>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -687,6 +691,7 @@ export default function AuditLogsPage() {
           </NeuCardContent>
         </NeuCard>
       </motion.div>
-    </div>
+      </div>
+    </MaxWidthContainer>
   );
 }

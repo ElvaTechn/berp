@@ -23,6 +23,7 @@ import { TopProductsRanking } from "@/components/dashboard/TopProductsRanking";
 import { PaymentDistribution } from "@/components/dashboard/PaymentDistribution";
 import { InventoryAlerts } from "@/components/dashboard/InventoryAlerts";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
+import { MaxWidthContainer } from "@/components/layout/MaxWidthContainer";
 
 // Types
 interface DashboardData {
@@ -191,7 +192,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="w-full space-y-6">
+    <MaxWidthContainer size="xl">
+      <div className="w-full space-y-6 p-3 sm:p-4 md:p-6 lg:p-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -378,6 +380,7 @@ export default function DashboardPage() {
           BizControl 360 ERP • Neumorphism Design • v2.0.0
         </p>
       </motion.div>
-    </div>
+      </div>
+    </MaxWidthContainer>
   );
 }

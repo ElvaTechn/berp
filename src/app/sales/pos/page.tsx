@@ -26,6 +26,7 @@ import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
 import { NeuInput } from '@/components/ui/neu-input';
 import { NeuDialog, NeuDialogContent, NeuDialogHeader, NeuDialogTitle, NeuDialogDescription } from '@/components/ui/neu-dialog';
 import { cn } from '@/lib/utils';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 interface Product {
   id: string;
@@ -215,7 +216,8 @@ export default function POSPage() {
   const isSplitLayout = !isMobile && !isTablet;
 
   return (
-    <div className="min-h-screen bg-[var(--neu-base)] p-4 lg:p-8">
+    <MaxWidthContainer size="xl">
+      <div className="min-h-screen bg-[var(--neu-base)] p-4 lg:p-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -274,7 +276,7 @@ export default function POSPage() {
                   <p className="neu-text-body text-[var(--neu-text-muted)]">Ajuste sua busca</p>
                 </div>
               ) : (
-                <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {filteredProducts.map((product, index) => (
                     <motion.div
                       key={product.id}
@@ -539,7 +541,7 @@ export default function POSPage() {
                   <p className="neu-text-body text-[var(--neu-text-muted)]">Ajuste sua busca</p>
                 </div>
               ) : (
-                <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {filteredProducts.map((product, index) => (
                     <motion.div
                       key={product.id}
@@ -870,6 +872,7 @@ export default function POSPage() {
           </div>
         </NeuDialogContent>
       </NeuDialog>
-    </div>
+      </div>
+    </MaxWidthContainer>
   );
 }

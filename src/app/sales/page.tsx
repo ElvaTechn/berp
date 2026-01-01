@@ -21,6 +21,7 @@ import { useViewport } from '@/hooks/useViewport';
 import { NeuButton } from '@/components/ui/neu-button';
 import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
 import { MobileScrollWrapper } from '@/components/ui/MobileScrollWrapper';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
 
 interface SaleItem {
   id: string;
@@ -127,7 +128,8 @@ export default function SalesPage() {
   const todayTotal = todaySales.reduce((sum, sale) => sum + Number(sale.total), 0);
 
   return (
-    <div className="min-h-screen bg-[var(--neu-base)] p-4 md:p-6">
+    <MaxWidthContainer size="xl">
+      <div className="min-h-screen bg-[var(--neu-base)] p-4 md:p-6">
       <div className="max-w-[1800px] mx-auto space-y-6">
         {/* Header */}
         <motion.div
@@ -418,5 +420,6 @@ export default function SalesPage() {
         </motion.div>
       </div>
     </div>
+    </MaxWidthContainer>
   );
 }

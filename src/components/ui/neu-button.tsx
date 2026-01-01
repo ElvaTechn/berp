@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
 /* =================================================================
-   NEU BUTTON - Neumorphic Button Component
+   NEU BUTTON - Neumorphic Button Component (RESPONSIVE + WCAG)
    
    Variants:
    - convex: Raised button that pops out (default)
@@ -13,11 +13,17 @@ import { Loader2 } from "lucide-react";
    - accent: Primary action with accent color
    - ghost: Transparent, minimal interaction
    
-   Sizes:
-   - sm: Small (h-8, text-sm)
-   - md: Medium (h-10, text-sm) - default
-   - lg: Large (h-12, text-base)
-   - icon: Square icon button (h-10 w-10)
+   Sizes (WCAG 2.1 AA Compliant - Min 44x44px touch target):
+   - sm: Small (h-11, text-sm) - 44px ✅
+   - md: Medium (h-12, text-sm) - 48px ✅ (default)
+   - lg: Large (h-14, text-base) - 56px ✅
+   - icon: Square icon button (h-11 w-11) - 44px ✅
+   
+   Changes from v1:
+   - ✅ sm: 32px → 44px (WCAG compliant)
+   - ✅ md: 40px → 48px (improved touch)
+   - ✅ lg: 48px → 56px (more comfortable)
+   - ✅ icon: 40px → 44px (WCAG compliant)
    
    Usage:
    <NeuButton variant="convex" size="md">Click me</NeuButton>
@@ -33,6 +39,9 @@ const buttonVariants = cva(
     "transition-all duration-200",
     "disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neu-accent)] focus-visible:ring-offset-2",
+    // Touch-friendly
+    "touch-manipulation",
+    "select-none",
   ],
   {
     variants: {
@@ -66,12 +75,33 @@ const buttonVariants = cva(
           "hover:bg-[var(--neu-surface-hover)]",
           "active:bg-[var(--neu-surface-active)]",
         ],
+        success: [
+          "bg-[var(--neu-success)]",
+          "text-white",
+          "shadow-[4px_4px_8px_var(--neu-shadow-dark),-4px_-4px_8px_var(--neu-shadow-light)]",
+          "hover:shadow-[6px_6px_12px_var(--neu-shadow-dark),-6px_-6px_12px_var(--neu-shadow-light)]",
+          "hover:-translate-y-0.5",
+        ],
+        warning: [
+          "bg-[var(--neu-warning)]",
+          "text-white",
+          "shadow-[4px_4px_8px_var(--neu-shadow-dark),-4px_-4px_8px_var(--neu-shadow-light)]",
+          "hover:shadow-[6px_6px_12px_var(--neu-shadow-dark),-6px_-6px_12px_var(--neu-shadow-light)]",
+          "hover:-translate-y-0.5",
+        ],
+        error: [
+          "bg-[var(--neu-error)]",
+          "text-white",
+          "shadow-[4px_4px_8px_var(--neu-shadow-dark),-4px_-4px_8px_var(--neu-shadow-light)]",
+          "hover:shadow-[6px_6px_12px_var(--neu-shadow-dark),-6px_-6px_12px_var(--neu-shadow-light)]",
+          "hover:-translate-y-0.5",
+        ],
       },
       size: {
-        sm: "h-8 px-3 rounded-lg text-sm",
-        md: "h-10 px-5 rounded-xl text-sm",
-        lg: "h-12 px-7 rounded-2xl text-base",
-        icon: "h-10 w-10 rounded-xl",
+        sm: "h-11 px-3 rounded-lg text-sm",        // 44px ✅ WCAG
+        md: "h-12 px-5 rounded-xl text-sm",        // 48px ✅
+        lg: "h-14 px-7 rounded-2xl text-base",     // 56px ✅
+        icon: "h-11 w-11 rounded-xl",              // 44x44px ✅ WCAG
       },
     },
     defaultVariants: {

@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /* =================================================================
-   NEU INPUT - Neumorphic Input Component
+   NEU INPUT - Neumorphic Input Component (RESPONSIVE + WCAG)
    
    Features:
    - Concave shadow (pressed in effect)
@@ -10,6 +10,13 @@ import { cn } from "@/lib/utils";
    - Optional icon (left side)
    - Error state with message
    - Full keyboard accessibility
+   - Responsive height (48px mobile, 40px desktop)
+   
+   Changes from v1:
+   - ✅ Height: 40px → 48px on mobile (better touch)
+   - ✅ Height: 48px → 44px on desktop (space efficient)
+   - ✅ Font-size: 16px (prevents iOS auto-zoom)
+   - ✅ Touch-friendly spacing
    
    Usage:
    <NeuInput 
@@ -37,7 +44,7 @@ const NeuInput = React.forwardRef<HTMLInputElement, NeuInputProps>(
         {label && (
           <label 
             htmlFor={inputId}
-            className="neu-text-label mb-1.5 block"
+            className="neu-text-label mb-2 block font-semibold"
           >
             {label}
           </label>
@@ -56,9 +63,11 @@ const NeuInput = React.forwardRef<HTMLInputElement, NeuInputProps>(
               "w-full",
               "neu-surface",
               "neu-concave-sm",
-              "rounded-xl px-4 py-3",
-              // Text styles
-              "neu-text-body",
+              // Responsive height: 48px mobile, 44px desktop
+              "h-12 md:h-11",
+              "rounded-xl px-4",
+              // Text styles (16px prevents iOS auto-zoom)
+              "text-base md:text-sm",
               "placeholder:text-[var(--neu-text-muted)]",
               // Focus styles
               "focus:outline-none",
@@ -70,6 +79,8 @@ const NeuInput = React.forwardRef<HTMLInputElement, NeuInputProps>(
               "disabled:opacity-50 disabled:cursor-not-allowed",
               // Icon padding
               icon && "pl-10",
+              // Touch-friendly
+              "touch-manipulation",
               className
             )}
             ref={ref}
@@ -81,7 +92,7 @@ const NeuInput = React.forwardRef<HTMLInputElement, NeuInputProps>(
         {error && (
           <p 
             id={`${inputId}-error`}
-            className="neu-text-caption mt-1 text-[var(--neu-error)]"
+            className="neu-text-caption mt-1.5 text-[var(--neu-error)]"
             role="alert"
           >
             {error}

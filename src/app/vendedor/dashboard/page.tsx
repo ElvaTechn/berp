@@ -1,41 +1,108 @@
 /**
  * ================================================================
- * DASHBOARD VENDEDOR - BIZCONTROL 360 ERP v2.1.0 (NEUMORPHIC)
+ * DASHBOARD VENDEDOR - SIMPLIFICADO (APENAS VENDAS) + RESPONSIVE
  * ================================================================
- * Página principal do dashboard do vendedor com design neumorphic
+ * Mostra apenas as vendas realizadas pelo vendedor
+ * Otimizado para mobile, tablet e desktop
  * ================================================================
  */
 
 "use client";
 
-import { useVendedorDashboard } from '@/hooks/useVendedorDashboard';
-import { useOfflineSales } from '@/hooks/useOfflineSales';
-import { AcoesRapidas } from '@/components/vendedor/AcoesRapidas';
-import { MetasPessoais } from '@/components/vendedor/MetasPessoais';
-import { DesempenhoHoje } from '@/components/vendedor/DesempenhoHoje';
-import { Comissoes } from '@/components/vendedor/Comissoes';
-import { Ranking } from '@/components/vendedor/Ranking';
-import { UltimasVendas } from '@/components/vendedor/UltimasVendas';
-import { ProdutosDestaque } from '@/components/vendedor/ProdutosDestaque';
+import { useEffect, useState } from 'react';
 import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
 import { NeuButton } from '@/components/ui/neu-button';
 import { motion } from 'framer-motion';
-import { RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { 
+  RefreshCw, 
+  ShoppingCart, 
+  DollarSign, 
+  TrendingUp, 
+  Package,
+  Calendar,
+  CreditCard,
+  CheckCircle,
+  Clock,
+  XCircle
+} from 'lucide-react';
+import { MaxWidthContainer } from '@/components/layout/MaxWidthContainer';
+
+interface VendaItem {
+  produto: string;
+  barcode: string | null;
+  quantidade: number;
+  preco_unitario: number;
+  subtotal: number;
+  lucro: number;
+}
+
+interface Venda {
+  id: string;
+  data: string;
+  total: number;
+  subtotal: number;
+  desconto: number;
+  lucro: number;
+  metodo_pagamento: string;
+  status_pagamento: string;
+  items: VendaItem[];
+}
+
+interface DashboardData {
+  vendedor: {
+    id: string;
+    nome: string;
+  };
+  resumo: {
+    total_vendas: number;
+    valor_total: number;
+    lucro_total: number;
+    vendas_por_metodo: Record<string, number>;
+  };
+  vendas: Venda[];
+}
 
 export default function VendedorDashboardPage() {
-  const { data, loading, error, refresh, refreshing } = useVendedorDashboard();
-  const { isOffline, pendingSales } = useOfflineSales();
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedSale, setExpandedSale] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch('/api/vendedor/dashboard');
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao carregar dados');
+      }
+      
+      const result = await response.json();
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--neu-base)] flex items-center justify-center">
-        <NeuCard variant="flat" className="w-64 text-center">
+      <div className="min-h-screen bg-[var(--neu-base)] flex items-center justify-center p-4">
+        <NeuCard variant="flat" className="w-full max-w-sm text-center">
           <NeuCardContent>
             <div className="w-16 h-16 mx-auto mb-4 rounded-full neu-surface neu-concave-lg flex items-center justify-center">
               <RefreshCw className="w-8 h-8 text-[var(--neu-accent)] animate-spin" />
             </div>
-            <p className="neu-text-body text-[var(--neu-text-muted)]">Carregando dashboard...</p>
+            <p className="neu-text-body text-[var(--neu-text-muted)]">Carregando vendas...</p>
           </NeuCardContent>
         </NeuCard>
       </div>
@@ -46,16 +113,16 @@ export default function VendedorDashboardPage() {
   if (error || !data) {
     return (
       <div className="min-h-screen bg-[var(--neu-base)] flex items-center justify-center p-4">
-        <NeuCard variant="flat" className="max-w-md text-center">
+        <NeuCard variant="flat" className="w-full max-w-md text-center">
           <NeuCardContent>
             <div className="w-20 h-20 mx-auto mb-4 rounded-full neu-surface neu-concave-lg flex items-center justify-center">
-              <span className="text-4xl">⚠️</span>
+              <XCircle className="w-10 h-10 text-[var(--neu-error)]" />
             </div>
-            <h2 className="neu-text-h2 mb-2">Erro ao Carregar Dashboard</h2>
+            <h2 className="neu-text-h2 mb-2">Erro ao Carregar</h2>
             <p className="neu-text-body text-[var(--neu-text-muted)] mb-6">
-              {error || 'Não foi possível carregar os dados'}
+              {error || 'Não foi possível carregar as vendas'}
             </p>
-            <NeuButton variant="accent" onClick={refresh}>
+            <NeuButton variant="accent" onClick={fetchData}>
               Tentar Novamente
             </NeuButton>
           </NeuCardContent>
@@ -64,178 +131,368 @@ export default function VendedorDashboardPage() {
     );
   }
 
-  const { metrics, ranking, ultimas_vendas, produtos_destaque } = data;
+  const { vendedor, resumo, vendas } = data;
+
+  // Ícone do método de pagamento
+  const getPaymentIcon = (metodo: string) => {
+    switch (metodo) {
+      case 'DINHEIRO': return '💵';
+      case 'MPESA': return '📱';
+      case 'EMOLA': return '📱';
+      case 'CARTAO': return '💳';
+      case 'MULTICAIXA': return '🏧';
+      case 'TRANSFERENCIA': return '🏦';
+      default: return '💰';
+    }
+  };
+
+  // Status do pagamento
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'PAID':
+        return <span className="text-[var(--neu-success)] flex items-center gap-1"><CheckCircle className="w-4 h-4" /> Pago</span>;
+      case 'PENDING':
+        return <span className="text-[var(--neu-warning)] flex items-center gap-1"><Clock className="w-4 h-4" /> Pendente</span>;
+      case 'PARTIAL':
+        return <span className="text-[var(--neu-warning)] flex items-center gap-1"><Clock className="w-4 h-4" /> Parcial</span>;
+      case 'REFUNDED':
+        return <span className="text-[var(--neu-error)] flex items-center gap-1"><XCircle className="w-4 h-4" /> Reembolsado</span>;
+      default:
+        return status;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[var(--neu-base)] p-4 md:p-6 lg:p-8">
+    <MaxWidthContainer size="xl">
+      <div className="min-h-screen bg-[var(--neu-base)] p-3 sm:p-4 md:p-6 lg:p-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-6"
+        className="mb-4 md:mb-6"
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <div>
             <h1 className="neu-text-h1 mb-1">
-              👋 Olá, {metrics.vendedor_nome}
+              👋 Olá, {vendedor.nome}
             </h1>
             <p className="neu-text-body text-[var(--neu-text-muted)]">
-              {new Date().toLocaleDateString('pt-MZ', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
+              Suas vendas realizadas
             </p>
           </div>
           
-          {/* Refresh Button Neumorphic */}
+          {/* Refresh Button */}
           <NeuButton
             variant="convex"
-            onClick={refresh}
-            disabled={refreshing}
-            className="flex items-center gap-2"
+            size="md"
+            onClick={fetchData}
+            className="flex items-center gap-2 w-full sm:w-auto"
           >
-            <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className="w-5 h-5" />
             <span>Atualizar</span>
           </NeuButton>
         </div>
-
-        {/* Offline Alert Neumorphic */}
-        {isOffline && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-          >
-            <NeuCard variant="concave" className="bg-[var(--neu-warning)]/10 border-[var(--neu-warning)]/20">
-              <NeuCardContent className="flex items-center gap-3 p-4">
-                <div className="w-12 h-12 rounded-xl neu-surface neu-concave-md flex items-center justify-center">
-                  <WifiOff className="w-6 h-6 text-[var(--neu-warning)]" />
-                </div>
-                <div className="flex-1">
-                  <p className="neu-text-body font-bold text-[var(--neu-warning)]">
-                    Modo Offline
-                  </p>
-                  <p className="neu-text-caption text-[var(--neu-text-muted)]">
-                    {pendingSales.length > 0 
-                      ? `${pendingSales.length} ${pendingSales.length === 1 ? 'venda aguardando' : 'vendas aguardando'} sincronização`
-                      : 'Vendas serão salvas localmente'}
-                  </p>
-                </div>
-              </NeuCardContent>
-            </NeuCard>
-          </motion.div>
-        )}
       </motion.div>
 
-      {/* Ações Rápidas */}
-      <div className="mb-6">
-        <AcoesRapidas />
-      </div>
-
-      {/* Dashboard Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Coluna 1 */}
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
+      {/* Resumo Cards - GRID PROGRESSIVO: 1 → 2 → 3 → 4 colunas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mb-4 md:mb-6">
+        {/* Total Vendas */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
-          className="space-y-6"
         >
-          <MetasPessoais metrics={metrics} />
-          <Comissoes metrics={metrics} />
+          <NeuCard variant="convex" size="sm">
+            <NeuCardContent className="p-4 md:p-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl neu-surface neu-concave-md flex items-center justify-center flex-shrink-0">
+                  <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 text-[var(--neu-accent)]" />
+                </div>
+                <div className="min-w-0">
+                  <p className="neu-text-caption text-[var(--neu-text-muted)] truncate">Total Vendas</p>
+                  <p className="neu-text-h2 text-[var(--neu-accent)]">{resumo.total_vendas}</p>
+                </div>
+              </div>
+            </NeuCardContent>
+          </NeuCard>
         </motion.div>
 
-        {/* Coluna 2 */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+        {/* Valor Total */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="space-y-6"
         >
-          <DesempenhoHoje metrics={metrics} />
-          <Ranking ranking={ranking} />
+          <NeuCard variant="convex" size="sm">
+            <NeuCardContent className="p-4 md:p-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl neu-surface neu-concave-md flex items-center justify-center flex-shrink-0">
+                  <DollarSign className="w-5 h-5 md:w-6 md:h-6 text-[var(--neu-success)]" />
+                </div>
+                <div className="min-w-0">
+                  <p className="neu-text-caption text-[var(--neu-text-muted)] truncate">Valor Total</p>
+                  <p className="neu-text-h3 text-[var(--neu-success)] truncate">
+                    {resumo.valor_total.toLocaleString('pt-MZ', {
+                      style: 'currency',
+                      currency: 'MZN',
+                      minimumFractionDigits: 0,
+                    })}
+                  </p>
+                </div>
+              </div>
+            </NeuCardContent>
+          </NeuCard>
         </motion.div>
 
-        {/* Coluna 3 */}
-        <motion.div 
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
+        {/* Lucro Total */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
-          className="space-y-6"
         >
-          <UltimasVendas vendas={ultimas_vendas} />
-          <ProdutosDestaque produtos={produtos_destaque} />
+          <NeuCard variant="convex" size="sm">
+            <NeuCardContent className="p-4 md:p-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl neu-surface neu-concave-md flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-[var(--neu-warning)]" />
+                </div>
+                <div className="min-w-0">
+                  <p className="neu-text-caption text-[var(--neu-text-muted)] truncate">Lucro Total</p>
+                  <p className="neu-text-h3 text-[var(--neu-warning)] truncate">
+                    {resumo.lucro_total.toLocaleString('pt-MZ', {
+                      style: 'currency',
+                      currency: 'MZN',
+                      minimumFractionDigits: 0,
+                    })}
+                  </p>
+                </div>
+              </div>
+            </NeuCardContent>
+          </NeuCard>
+        </motion.div>
+
+        {/* Ticket Médio */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4 }}
+        >
+          <NeuCard variant="convex" size="sm">
+            <NeuCardContent className="p-4 md:p-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl neu-surface neu-concave-md flex items-center justify-center flex-shrink-0">
+                  <Package className="w-5 h-5 md:w-6 md:h-6 text-[var(--neu-accent)]" />
+                </div>
+                <div className="min-w-0">
+                  <p className="neu-text-caption text-[var(--neu-text-muted)] truncate">Ticket Médio</p>
+                  <p className="neu-text-h3 truncate">
+                    {resumo.total_vendas > 0
+                      ? (resumo.valor_total / resumo.total_vendas).toLocaleString('pt-MZ', {
+                          style: 'currency',
+                          currency: 'MZN',
+                          minimumFractionDigits: 0,
+                        })
+                      : '0 MT'}
+                  </p>
+                </div>
+              </div>
+            </NeuCardContent>
+          </NeuCard>
         </motion.div>
       </div>
 
-      {/* Footer Stats Neumorphic */}
+      {/* Lista de Vendas */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="mt-8"
+        transition={{ delay: 0.5 }}
       >
-        <NeuCard variant="convex" size="lg">
+        <NeuCard variant="convex" size="md">
           <NeuCardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {/* Ranking */}
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-3 rounded-2xl neu-surface neu-concave-md flex items-center justify-center">
-                  <span className="neu-text-h2 text-[var(--neu-accent)]">
-                    {metrics.ranking_posicao}º
-                  </span>
-                </div>
-                <p className="neu-text-caption text-[var(--neu-text-muted)]">
-                  Posição Ranking
-                </p>
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl neu-surface neu-concave-md flex items-center justify-center flex-shrink-0">
+                <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 text-[var(--neu-accent)]" />
               </div>
-
-              {/* Vendas */}
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-3 rounded-2xl neu-surface neu-concave-md flex items-center justify-center">
-                  <span className="neu-text-h2 text-[var(--neu-success)]">
-                    {metrics.vendas_realizadas}
-                  </span>
-                </div>
-                <p className="neu-text-caption text-[var(--neu-text-muted)]">
-                  Vendas no Mês
-                </p>
-              </div>
-
-              {/* Meta */}
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-3 rounded-2xl neu-surface neu-concave-md flex items-center justify-center">
-                  <span className={`neu-text-h2 ${
-                    metrics.percentual_meta >= 100 
-                      ? 'text-[var(--neu-success)]' 
-                      : metrics.percentual_meta >= 80 
-                      ? 'text-[var(--neu-warning)]' 
-                      : 'text-[var(--neu-error)]'
-                  }`}>
-                    {metrics.percentual_meta.toFixed(0)}%
-                  </span>
-                </div>
-                <p className="neu-text-caption text-[var(--neu-text-muted)]">
-                  Da Meta
-                </p>
-              </div>
-
-              {/* Ticket Médio */}
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-3 rounded-2xl neu-surface neu-concave-md flex items-center justify-center">
-                  <span className="neu-text-h3 text-[var(--neu-accent)]">
-                    {(metrics.ticket_medio / 1000).toFixed(1)}K
-                  </span>
-                </div>
-                <p className="neu-text-caption text-[var(--neu-text-muted)]">
-                  Ticket Médio
-                </p>
-              </div>
+              <h2 className="neu-text-h2 truncate">Minhas Vendas</h2>
             </div>
+
+            {/* Vendas List */}
+            {vendas.length === 0 ? (
+              <div className="text-center py-8 md:py-12">
+                <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 rounded-full neu-surface neu-concave-lg flex items-center justify-center">
+                  <ShoppingCart className="w-8 h-8 md:w-10 md:h-10 text-[var(--neu-text-muted)]" />
+                </div>
+                <p className="neu-text-h3 text-[var(--neu-text-muted)] mb-2">Nenhuma venda ainda</p>
+                <p className="neu-text-body text-[var(--neu-text-muted)]">
+                  Suas vendas aparecerão aqui
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {vendas.map((venda, index) => (
+                  <motion.div
+                    key={venda.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 + index * 0.05 }}
+                  >
+                    <div className="p-3 md:p-4 rounded-xl neu-surface neu-convex-sm hover:neu-convex-md transition-all">
+                      {/* Venda Header */}
+                      <div 
+                        className="flex items-start justify-between gap-3 cursor-pointer"
+                        onClick={() => setExpandedSale(expandedSale === venda.id ? null : venda.id)}
+                      >
+                        <div className="flex-1 min-w-0">
+                          {/* Data e Hora */}
+                          <div className="flex items-center gap-2 mb-2">
+                            <Calendar className="w-4 h-4 text-[var(--neu-text-muted)] flex-shrink-0" />
+                            <span className="neu-text-body truncate">
+                              {new Date(venda.data).toLocaleString('pt-MZ', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                          </div>
+
+                          {/* Método de Pagamento */}
+                          <div className="flex items-center gap-2 mb-2">
+                            <CreditCard className="w-4 h-4 text-[var(--neu-text-muted)] flex-shrink-0" />
+                            <span className="neu-text-body truncate">
+                              {getPaymentIcon(venda.metodo_pagamento)} {venda.metodo_pagamento}
+                            </span>
+                          </div>
+
+                          {/* Status */}
+                          <div className="neu-text-caption">
+                            {getStatusBadge(venda.status_pagamento)}
+                          </div>
+                        </div>
+
+                        <div className="text-right flex-shrink-0">
+                          <p className="neu-text-h3 text-[var(--neu-success)] mb-1">
+                            {venda.total.toLocaleString('pt-MZ', {
+                              style: 'currency',
+                              currency: 'MZN',
+                              minimumFractionDigits: 0,
+                            })}
+                          </p>
+                          <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                            {venda.items.length} {venda.items.length === 1 ? 'item' : 'itens'}
+                          </p>
+                          {venda.desconto > 0 && (
+                            <p className="neu-text-caption text-[var(--neu-warning)]">
+                              Desc: {venda.desconto.toLocaleString('pt-MZ', {
+                                style: 'currency',
+                                currency: 'MZN',
+                                minimumFractionDigits: 0,
+                              })}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Detalhes Expandidos */}
+                      {expandedSale === venda.id && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="mt-4 pt-4 border-t border-[var(--neu-border)]"
+                        >
+                          <h4 className="neu-text-body font-bold mb-3">Itens da Venda:</h4>
+                          <div className="space-y-2">
+                            {venda.items.map((item, idx) => (
+                              <div
+                                key={idx}
+                                className="p-3 rounded-lg neu-surface neu-concave-sm flex justify-between items-start gap-2"
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <p className="neu-text-body font-semibold truncate">{item.produto}</p>
+                                  {item.barcode && (
+                                    <p className="neu-text-caption text-[var(--neu-text-muted)] truncate">
+                                      Código: {item.barcode}
+                                    </p>
+                                  )}
+                                  <p className="neu-text-caption text-[var(--neu-text-muted)]">
+                                    {item.quantidade}x {item.preco_unitario.toLocaleString('pt-MZ', {
+                                      style: 'currency',
+                                      currency: 'MZN',
+                                      minimumFractionDigits: 0,
+                                    })}
+                                  </p>
+                                </div>
+                                <div className="text-right flex-shrink-0">
+                                  <p className="neu-text-body font-bold">
+                                    {item.subtotal.toLocaleString('pt-MZ', {
+                                      style: 'currency',
+                                      currency: 'MZN',
+                                      minimumFractionDigits: 0,
+                                    })}
+                                  </p>
+                                  <p className="neu-text-caption text-[var(--neu-success)]">
+                                    Lucro: {item.lucro.toLocaleString('pt-MZ', {
+                                      style: 'currency',
+                                      currency: 'MZN',
+                                      minimumFractionDigits: 0,
+                                    })}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Resumo da Venda */}
+                          <div className="mt-4 p-3 rounded-lg neu-surface neu-convex-sm space-y-1">
+                            <div className="flex justify-between neu-text-caption">
+                              <span>Subtotal:</span>
+                              <span>{venda.subtotal.toLocaleString('pt-MZ', {
+                                style: 'currency',
+                                currency: 'MZN',
+                                minimumFractionDigits: 0,
+                              })}</span>
+                            </div>
+                            {venda.desconto > 0 && (
+                              <div className="flex justify-between neu-text-caption text-[var(--neu-warning)]">
+                                <span>Desconto:</span>
+                                <span>-{venda.desconto.toLocaleString('pt-MZ', {
+                                  style: 'currency',
+                                  currency: 'MZN',
+                                  minimumFractionDigits: 0,
+                                })}</span>
+                              </div>
+                            )}
+                            <div className="flex justify-between neu-text-body font-bold pt-2 border-t border-[var(--neu-border)]">
+                              <span>Total:</span>
+                              <span className="text-[var(--neu-success)]">{venda.total.toLocaleString('pt-MZ', {
+                                style: 'currency',
+                                currency: 'MZN',
+                                minimumFractionDigits: 0,
+                              })}</span>
+                            </div>
+                            <div className="flex justify-between neu-text-caption text-[var(--neu-success)]">
+                              <span>Lucro:</span>
+                              <span>{venda.lucro.toLocaleString('pt-MZ', {
+                                style: 'currency',
+                                currency: 'MZN',
+                                minimumFractionDigits: 0,
+                              })}</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </NeuCardContent>
         </NeuCard>
       </motion.div>
-    </div>
+      </div>
+    </MaxWidthContainer>
   );
 }
