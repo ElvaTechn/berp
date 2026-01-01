@@ -24,22 +24,33 @@ export function useVendedorDashboard() {
   const fetchDashboard = useCallback(async () => {
     try {
       setError(null);
-      
+      console.log('[useVendedorDashboard] Buscando dados do dashboard...');
+
       const response = await fetch('/api/vendedor/dashboard', {
         method: 'GET',
         credentials: 'include',
       });
 
+      console.log('[useVendedorDashboard] Status da resposta:', response.status);
+
       if (!response.ok) {
-        throw new Error('Erro ao buscar dados do dashboard');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[useVendedorDashboard] Erro na resposta:', errorData);
+        throw new Error(errorData.error || `Erro ${response.status}: ${response.statusText}`);
       }
 
       const dashboardData: VendedorDashboardResponse = await response.json();
-      
-      // Adicionar vendas offline pendentes
-      const syncStatus = await getSyncStatus();
-      dashboardData.metrics.vendas_offline_pendentes = syncStatus.pendingCount;
-      
+      console.log('[useVendedorDashboard] Dados recebidos:', dashboardData);
+
+      // Adicionar vendas offline pendentes (não falha se IndexedDB não estiver disponível)
+      try {
+        const syncStatus = await getSyncStatus();
+        dashboardData.metrics.vendas_offline_pendentes = syncStatus.pendingCount;
+      } catch (offlineError) {
+        console.warn('[useVendedorDashboard] Erro ao buscar status offline:', offlineError);
+        dashboardData.metrics.vendas_offline_pendentes = 0;
+      }
+
       setData(dashboardData);
     } catch (err) {
       console.error('[useVendedorDashboard] Erro:', err);

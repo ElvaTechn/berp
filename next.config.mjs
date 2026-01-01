@@ -134,7 +134,7 @@ const nextConfig = {
           {
             key: 'Access-Control-Allow-Origin',
             value: process.env.NODE_ENV === 'production'
-              ? 'https://app.stockpro.co.mz'
+              ? 'https://bizcontrol360-aw2wp72e6-eu001s-projects.vercel.app/'
               : 'http://localhost:3000',
           },
           {

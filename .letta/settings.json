@@ -44,7 +44,8 @@
       "Bash(dir src\\app\\sales\\pos /b)",
       "Bash(powershell -Command \"Get-Content 'F:\\berp\\src\\components\\inventory\\ProductTable.tsx' | Select-Object -Last 20\")",
       "Bash(type:*)",
-      "Bash(tree /F /A src 2>nul | findstr /V \"node_modules .next\")"
+      "Bash(tree /F /A src 2>nul | findstr /V \"node_modules .next\")",
+      "Bash(cd F:\\berp && node test-connection.js)"
     ]
   }
 }

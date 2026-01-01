@@ -14,26 +14,35 @@ import type { VendedorDashboardResponse } from '@/types/vendedor';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('[API Vendedor Dashboard] Iniciando requisição...');
+
     // Verificar autenticação
     const session = await getSession();
     if (!session) {
+      console.log('[API Vendedor Dashboard] Usuário não autenticado');
       return NextResponse.json(
         { error: 'Não autenticado' },
         { status: 401 }
       );
     }
 
+    console.log('[API Vendedor Dashboard] Sessão encontrada. User ID:', session.userId);
+
     // Buscar usuário
     const user = await db.user.findById(session.userId);
     if (!user) {
+      console.log('[API Vendedor Dashboard] Usuário não encontrado no banco');
       return NextResponse.json(
         { error: 'Usuário não encontrado' },
         { status: 404 }
       );
     }
 
+    console.log('[API Vendedor Dashboard] Usuário encontrado:', user.id, user.role);
+
     // Verificar se é vendedor
     if (user.role !== 'VENDEDOR' && user.role !== 'GESTOR' && user.role !== 'ADMIN') {
+      console.log('[API Vendedor Dashboard] Acesso negado. Role:', user.role);
       return NextResponse.json(
         { error: 'Acesso negado' },
         { status: 403 }
@@ -42,6 +51,8 @@ export async function GET(request: NextRequest) {
 
     // Buscar company_id do usuário
     let companyId: string | null = null;
+    console.log('[API Vendedor Dashboard] Buscando empresa do usuário...');
+    
     const employee = await prisma.employee.findFirst({
       where: { user_id: session.userId, is_active: true },
       select: { company_id: true }
@@ -49,6 +60,7 @@ export async function GET(request: NextRequest) {
 
     if (employee) {
       companyId = employee.company_id;
+      console.log('[API Vendedor Dashboard] Empresa encontrada via employee:', companyId);
     } else {
       const company = await prisma.company.findFirst({
         where: { owner_id: session.userId },
@@ -56,10 +68,12 @@ export async function GET(request: NextRequest) {
       });
       if (company) {
         companyId = company.id;
+        console.log('[API Vendedor Dashboard] Empresa encontrada via owner:', companyId);
       }
     }
 
     if (!companyId) {
+      console.log('[API Vendedor Dashboard] Empresa não encontrada');
       return NextResponse.json(
         { error: 'Empresa não encontrada' },
         { status: 404 }
@@ -284,8 +298,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response);
   } catch (error) {
     console.error('[API Vendedor Dashboard] Erro:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    console.error('[API Vendedor Dashboard] Detalhes:', errorMessage);
     return NextResponse.json(
-      { error: 'Erro ao buscar dados do dashboard' },
+      { error: 'Erro ao buscar dados do dashboard', details: errorMessage },
       { status: 500 }
     );
   }
