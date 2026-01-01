@@ -1,10 +1,11 @@
 /**
  * ================================================================
- * BOTTOM NAVIGATION BAR - BIZCONTROL 360 ERP v2.1.1
+ * BOTTOM NAVIGATION BAR - BIZCONTROL 360 ERP v2.2.0
  * ================================================================
  * Navegação inferior para mobile (estilo Instagram/Spotify)
  * Resolve problema: Menu hambúrguer requer 3 toques
  * NOVO: Suporte para landscape (altura reduzida)
+ * ✅ ATUALIZADO: Links agora consistentes com Sidebar
  * ================================================================
  */
 
@@ -15,11 +16,10 @@ import { motion } from 'framer-motion';
 import { 
   LayoutDashboard, 
   ShoppingCart, 
-  Package, 
+  Warehouse, 
   Users, 
   MoreHorizontal,
   CalendarClock,
-  Warehouse,
   TrendingUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -40,6 +40,7 @@ export function BottomNav() {
   const isMobileLandscape = orientation === 'landscape';
 
   // Principais navegações (max 5 por recomendação HIG)
+  // ALINHADO COM SIDEBAR - Mesmas rotas para consistência
   const navItems: NavItem[] = [
     {
       id: 'dashboard',
@@ -51,13 +52,13 @@ export function BottomNav() {
       id: 'sales',
       label: 'Vendas',
       icon: <ShoppingCart className="h-6 w-6" />,
-      href: '/pos',
+      href: '/sales', // ✅ CORRIGIDO: Era /pos, agora aponta para histórico de vendas (consistente com Sidebar)
     },
     {
-      id: 'products',
-      label: 'Produtos',
-      icon: <Package className="h-6 w-6" />,
-      href: '/products',
+      id: 'inventory',
+      label: 'Inventário',
+      icon: <Warehouse className="h-6 w-6" />,
+      href: '/inventory', // ✅ CORRIGIDO: Era /products, agora aponta para inventário completo (consistente com Sidebar)
     },
     {
       id: 'reservations',
@@ -193,6 +194,7 @@ export function BottomNav() {
 
 /**
  * Página "Mais" - Menu completo em grid
+ * (Exportada para uso em /more/page.tsx se necessário)
  */
 export function MoreMenuPage() {
   const router = useRouter();
@@ -200,15 +202,9 @@ export function MoreMenuPage() {
   const menuItems = [
     {
       icon: <Users className="h-6 w-6" />,
-      label: 'Clientes',
-      href: '/customers',
+      label: 'Funcionários',
+      href: '/funcionarios',
       color: 'text-purple-600 dark:text-purple-400',
-    },
-    {
-      icon: <Warehouse className="h-6 w-6" />,
-      label: 'Estoque',
-      href: '/inventory',
-      color: 'text-orange-600 dark:text-orange-400',
     },
     {
       icon: <TrendingUp className="h-6 w-6" />,
@@ -217,7 +213,7 @@ export function MoreMenuPage() {
       color: 'text-green-600 dark:text-green-400',
     },
     {
-      icon: <Package className="h-6 w-6" />,
+      icon: <Users className="h-6 w-6" />,
       label: 'Categorias',
       href: '/categories',
       color: 'text-blue-600 dark:text-blue-400',
