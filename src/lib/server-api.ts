@@ -26,6 +26,9 @@ export const db = {
     },
     async update(id: string, data: Prisma.UserUpdateInput) {
       return prisma.user.update({ where: { id }, data });
+    },
+    async findMany(filters?: Prisma.UserWhereInput) {
+      return prisma.user.findMany({ where: filters });
     }
   },
 
@@ -113,11 +116,11 @@ export const db = {
     async createWithItems(data: Prisma.SaleCreateInput, items: Prisma.SaleItemCreateManySaleInput[]) {
       // Transação Atômica: Ou grava tudo, ou nada. Essencial para ERP.
       return prisma.$transaction(async (tx) => {
-        const sale = await tx.sale.create({ 
+        const sale = await tx.sale.create({
           data,
           include: { sale_items: true }
         });
-        
+
         await tx.saleItem.createMany({
           data: items.map(item => ({ ...item, sale_id: sale.id }))
         });
@@ -133,10 +136,10 @@ export const db = {
         return sale;
       });
     },
-    async list(filters?: Prisma.SaleWhereInput) {
+    async list(filters?: Prisma.SaleWhereInput, options?: { include?: Prisma.SaleInclude }) {
       return prisma.sale.findMany({
         where: filters,
-        include: { 
+        include: options?.include || {
           sale_items: {
             include: { product: true }
           }
@@ -147,12 +150,18 @@ export const db = {
     async findById(id: string) {
       return prisma.sale.findUnique({
         where: { id },
-        include: { 
+        include: {
           sale_items: {
             include: { product: true }
           }
         }
       });
+    },
+    async count(filters?: Prisma.SaleWhereInput) {
+      return prisma.sale.count({ where: filters });
+    },
+    async aggregate(args: Prisma.SaleAggregateArgs) {
+      return prisma.sale.aggregate(args);
     }
   },
 

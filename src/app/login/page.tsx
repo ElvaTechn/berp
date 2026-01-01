@@ -42,7 +42,7 @@ export default function LoginPage() {
       if (role === 'ADMIN') {
         redirectTo = '/admin';
       } else if (role === 'VENDEDOR') {
-        redirectTo = '/sales/pos';
+        redirectTo = '/vendedor/dashboard';
       }
       
       // Força navegação completa para garantir que o servidor recarrega os dados

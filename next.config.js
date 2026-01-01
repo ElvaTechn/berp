@@ -1,4 +1,6 @@
-const withPWA = require('next-pwa')({
+import withPWA from '@ducanh2912/next-pwa';
+
+const pwaConfig = withPWA({
   dest: 'public',
   register: true,
   skipWaiting: true,
@@ -12,7 +14,7 @@ const withPWA = require('next-pwa')({
   reloadOnOnline: true,
   // Habilitar features modernas
   navigationPreload: true,
-  
+
   // Runtime caching configurações (Workbox gerencia automaticamente)
   workboxOptions: {
     disableDevLogs: true,
@@ -22,7 +24,7 @@ const withPWA = require('next-pwa')({
     clientsClaim: true,
     maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10MB
   },
-  
+
   runtimeCaching: [
     {
       urlPattern: /^https?:\/\/.*\/api\/.*/,
@@ -366,4 +368,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withPWA(nextConfig);
+export default pwaConfig(nextConfig);

@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth-server';
 import { getAllAlerts, getUnreadAlerts, markAlertAsRead, resolveAlert } from '@/lib/alerts';
 import { db } from '@/lib/server-api';
+import prisma from '@/lib/prisma';
 
 /**
  * GET /api/alerts - Buscar alertas
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Buscar usuário e empresa
+    // Buscar usuário
     const user = await db.user.findById(session.userId);
     if (!user) {
       return NextResponse.json(
@@ -34,16 +35,37 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const company = await db.user.getCompany(user.id);
-    if (!company) {
+    // Buscar company_id do usuário (pode ser employee ou owner)
+    let companyId: string | null = null;
+    
+    const employee = await prisma.employee.findFirst({
+      where: { user_id: session.userId, is_active: true },
+      select: { company_id: true }
+    });
+
+    if (employee) {
+      companyId = employee.company_id;
+    } else {
+      // Se não encontrou como funcionário, verifica se é dono de alguma empresa
+      const company = await prisma.company.findFirst({
+        where: { owner_id: session.userId },
+        select: { id: true }
+      });
+      
+      if (company) {
+        companyId = company.id;
+      }
+    }
+
+    if (!companyId) {
       return NextResponse.json(
         { error: 'Empresa não encontrada' },
         { status: 404 }
       );
     }
 
-    // Verificar permissão (apenas admin e manager)
-    if (user.role !== 'admin' && user.role !== 'manager') {
+    // Verificar permissão (apenas ADMIN e GESTOR)
+    if (user.role !== 'ADMIN' && user.role !== 'GESTOR') {
       return NextResponse.json(
         { error: 'Acesso negado' },
         { status: 403 }
@@ -56,8 +78,8 @@ export async function GET(request: NextRequest) {
 
     // Buscar alertas
     const alerts = onlyUnread 
-      ? await getUnreadAlerts(company.id)
-      : await getAllAlerts(company.id);
+      ? await getUnreadAlerts(companyId)
+      : await getAllAlerts(companyId);
 
     return NextResponse.json({
       alerts,
@@ -88,7 +110,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const user = await db.user.findById(session.userId);
-    if (!user || (user.role !== 'admin' && user.role !== 'manager')) {
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'GESTOR')) {
       return NextResponse.json(
         { error: 'Acesso negado' },
         { status: 403 }

@@ -1,8 +1,8 @@
 /**
  * ================================================================
- * AÇÕES RÁPIDAS - BIZCONTROL 360 ERP v2.1.0
+ * AÇÕES RÁPIDAS - BIZCONTROL 360 ERP v2.1.0 (NEUMORPHIC)
  * ================================================================
- * Botões de ação rápida para o vendedor
+ * Botões de ação rápida para o vendedor - Design neumorphic
  * ================================================================
  */
 
@@ -10,85 +10,83 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { NeuButton } from '@/components/ui/neu-button';
+import { NeuBadge } from '@/components/ui/neu-badge';
+import { ShoppingCart, Package, Users, Calendar } from 'lucide-react';
 
 interface AcaoRapida {
-  icon: string;
+  icon: React.ElementType;
   label: string;
   href: string;
   badge?: number;
-  color: string;
+  variant: 'success' | 'accent' | 'warning' | 'error';
 }
 
 export function AcoesRapidas() {
   const acoes: AcaoRapida[] = [
     {
-      icon: '💰',
+      icon: ShoppingCart,
       label: 'Nova Venda',
-      href: '/sales/nova',
-      color: 'bg-green-500 dark:bg-green-600',
+      href: '/sales/pos',
+      variant: 'success',
     },
     {
-      icon: '📦',
+      icon: Package,
       label: 'Produtos',
       href: '/products',
-      color: 'bg-blue-500 dark:bg-blue-600',
+      variant: 'accent',
     },
     {
-      icon: '👥',
+      icon: Users,
       label: 'Clientes',
       href: '/customers',
-      color: 'bg-purple-500 dark:bg-purple-600',
+      variant: 'warning',
     },
     {
-      icon: '📋',
+      icon: Calendar,
       label: 'Reservas',
       href: '/reservations',
       badge: 2,
-      color: 'bg-orange-500 dark:bg-orange-600',
+      variant: 'error',
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
       {acoes.map((acao, index) => (
         <motion.div
           key={acao.label}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: index * 0.1, type: 'spring' }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           <Link href={acao.href}>
-            <div className="relative group">
-              {/* Neumorphic Card */}
-              <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#0A0A0A] border border-slate-200 dark:border-white/10 
-                            hover:shadow-lg transition-all duration-300 cursor-pointer
-                            shadow-[inset_-2px_-2px_4px_rgba(255,255,255,0.1),inset_2px_2px_4px_rgba(0,0,0,0.1)]
-                            dark:shadow-[inset_-2px_-2px_4px_rgba(255,255,255,0.02),inset_2px_2px_4px_rgba(0,0,0,0.3)]
-                            active:shadow-[inset_-4px_-4px_8px_rgba(255,255,255,0.1),inset_4px_4px_8px_rgba(0,0,0,0.2)]">
-                
-                {/* Icon Container */}
-                <div className="flex flex-col items-center gap-3">
-                  {/* Icon */}
-                  <div className={`w-14 h-14 rounded-xl ${acao.color} flex items-center justify-center
-                                 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <span className="text-3xl">{acao.icon}</span>
-                  </div>
-                  
-                  {/* Label */}
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white text-center">
-                    {acao.label}
-                  </span>
-                </div>
-
-                {/* Badge (se existir) */}
-                {acao.badge && (
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white text-xs font-bold 
-                                rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                    {acao.badge}
-                  </div>
-                )}
+            <NeuButton
+              variant="convex"
+              className="w-full h-full min-h-[100px] flex-col gap-3 relative group"
+            >
+              {/* Icon Container Neumorphic */}
+              <div className="w-12 h-12 rounded-xl neu-surface neu-concave-md flex items-center justify-center 
+                            group-hover:neu-concave-lg transition-all">
+                <acao.icon className="w-6 h-6 text-[var(--neu-accent)]" />
               </div>
-            </div>
+              
+              {/* Label */}
+              <span className="neu-text-body font-semibold text-center">
+                {acao.label}
+              </span>
+
+              {/* Badge (se existir) */}
+              {acao.badge && (
+                <div className="absolute -top-2 -right-2">
+                  <NeuBadge variant={acao.variant} className="animate-pulse">
+                    {acao.badge}
+                  </NeuBadge>
+                </div>
+              )}
+            </NeuButton>
           </Link>
         </motion.div>
       ))}

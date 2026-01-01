@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/server-api';
 import { getSession } from '@/lib/auth-server';
+import { prisma } from '@/lib/prisma';
 import type { VendedorDashboardResponse } from '@/types/vendedor';
 
 export async function GET(request: NextRequest) {
@@ -32,16 +33,33 @@ export async function GET(request: NextRequest) {
     }
 
     // Verificar se é vendedor
-    if (user.role !== 'vendedor' && user.role !== 'manager' && user.role !== 'admin') {
+    if (user.role !== 'VENDEDOR' && user.role !== 'GESTOR' && user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Acesso negado' },
         { status: 403 }
       );
     }
 
-    // Buscar empresa do usuário
-    const company = await db.user.getCompany(user.id);
-    if (!company) {
+    // Buscar company_id do usuário
+    let companyId: string | null = null;
+    const employee = await prisma.employee.findFirst({
+      where: { user_id: session.userId, is_active: true },
+      select: { company_id: true }
+    });
+
+    if (employee) {
+      companyId = employee.company_id;
+    } else {
+      const company = await prisma.company.findFirst({
+        where: { owner_id: session.userId },
+        select: { id: true }
+      });
+      if (company) {
+        companyId = company.id;
+      }
+    }
+
+    if (!companyId) {
       return NextResponse.json(
         { error: 'Empresa não encontrada' },
         { status: 404 }
@@ -58,35 +76,26 @@ export async function GET(request: NextRequest) {
     const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
     
     // Buscar vendas do vendedor no período
-    const vendas = await db.sale.findMany({
-      where: {
-        company_id: company.id,
-        seller_id: user.id,
-        created_at: {
-          gte: primeiroDiaMes.toISOString(),
-          lte: ultimoDiaMes.toISOString(),
-        },
-      },
-      include: {
-        items: true,
-        customer: true,
-      },
-      orderBy: {
-        created_at: 'desc',
+    const vendas = await db.sale.list({
+      company_id: companyId,
+      employee_id: user.id,
+      created_at: {
+        gte: primeiroDiaMes.toISOString(),
+        lte: ultimoDiaMes.toISOString(),
       },
     });
 
     // Vendas de hoje
     const inicioDia = new Date(hoje.setHours(0, 0, 0, 0));
     const vendasHoje = vendas.filter(
-      v => new Date(v.created_at) >= inicioDia
+      (v: any) => new Date(v.created_at) >= inicioDia
     );
 
     // Calcular métricas
     const totalVendas = vendas.length;
-    const valorTotalVendido = vendas.reduce((sum, v) => sum + parseFloat(v.total.toString()), 0);
+    const valorTotalVendido = vendas.reduce((sum: number, v: any) => sum + parseFloat(v.total.toString()), 0);
     const vendasHojeCount = vendasHoje.length;
-    const valorHoje = vendasHoje.reduce((sum, v) => sum + parseFloat(v.total.toString()), 0);
+    const valorHoje = vendasHoje.reduce((sum: number, v: any) => sum + parseFloat(v.total.toString()), 0);
     
     // Metas (mock - você pode buscar de uma tabela de metas)
     const metaVendasQuantidade = 20;
@@ -100,39 +109,50 @@ export async function GET(request: NextRequest) {
     const ticketMedio = totalVendas > 0 ? valorTotalVendido / totalVendas : 0;
     const ticketMedioHoje = vendasHojeCount > 0 ? valorHoje / vendasHojeCount : 0;
     
-    // Clientes únicos hoje
-    const clientesHojeSet = new Set(
-      vendasHoje.map(v => v.customer_id).filter(Boolean)
-    );
-    const clientesAtendidosHoje = clientesHojeSet.size;
+    // Clientes atendidos hoje (aproximação baseada em vendas)
+    // Nota: Sistema atual não rastreia customer_id em vendas (walk-in)
+    const clientesAtendidosHoje = vendasHojeCount;
 
     // Buscar ranking (todos os vendedores da empresa)
-    const todosVendedores = await db.user.findMany({
+    const todosFuncionarios = await prisma.employee.findMany({
       where: {
-        company_id: company.id,
-        role: 'vendedor',
+        company_id: companyId,
+        is_active: true,
+        user_id: { not: null }
       },
+      include: {
+        user: {
+          select: {
+            id: true,
+            full_name: true,
+            role: true
+          }
+        }
+      }
     });
 
-    const rankingPromises = todosVendedores.map(async (vendedor) => {
+    // Filtrar apenas VENDEDORES
+    const todosVendedores = todosFuncionarios
+      .map((f: any) => f.user)
+      .filter((u: any) => u && u.role === 'VENDEDOR');
+
+    const rankingPromises = todosVendedores.map(async (vendedor: any) => {
       const vendasVendedor = await db.sale.count({
-        where: {
-          company_id: company.id,
-          seller_id: vendedor.id,
-          created_at: {
-            gte: primeiroDiaMes.toISOString(),
-            lte: ultimoDiaMes.toISOString(),
-          },
+        company_id: companyId,
+        employee_id: vendedor.id,
+        created_at: {
+          gte: primeiroDiaMes.toISOString(),
+          lte: ultimoDiaMes.toISOString(),
         },
       });
 
       const valorVendedor = await db.sale.aggregate({
         where: {
-          company_id: company.id,
-          seller_id: vendedor.id,
+          company_id: companyId,
+          employee_id: vendedor.id,
           created_at: {
             gte: primeiroDiaMes.toISOString(),
-            lte: ultimoDiaMes.toISOString(),
+            lte:ultimoDiaMes.toISOString(),
           },
         },
         _sum: {
@@ -145,42 +165,35 @@ export async function GET(request: NextRequest) {
         vendedor_id: vendedor.id,
         vendedor_nome: vendedor.full_name,
         vendas: vendasVendedor,
-        valor_total: parseFloat(valorVendedor._sum.total?.toString() || '0'),
+        valor_total: parseFloat(valorVendedor._sum?.total?.toString() || '0'),
         eh_voce: vendedor.id === user.id,
       };
     });
 
     const rankingData = await Promise.all(rankingPromises);
-    
+
     // Ordenar por vendas e atribuir posições
-    rankingData.sort((a, b) => b.vendas - a.vendas);
-    rankingData.forEach((item, index) => {
+    rankingData.sort((a: any, b: any) => b.vendas - a.vendas);
+    rankingData.forEach((item: any, index: number) => {
       item.posicao = index + 1;
     });
 
-    const minhaPosicao = rankingData.find(r => r.eh_voce)?.posicao || 0;
+    const minhaPosicao = rankingData.find((r: any) => r.eh_voce)?.posicao || 0;
 
     // Buscar produtos com estoque baixo ou em promoção
-    const produtosDestaque = await db.product.findMany({
-      where: {
-        company_id: company.id,
-        OR: [
-          { stock: { lte: 5 } }, // Estoque baixo
-          { price: { gt: 0 } }, // Simplificado
-        ],
-      },
-      take: 6,
-      orderBy: {
-        stock: 'asc',
-      },
+    const produtosDestaque = await db.product.list(companyId, {
+      OR: [
+        { quantity: { lte: 5 } }, // Estoque baixo
+        { price: { gt: 0 } }, // Simplificado
+      ],
     });
 
     // Ultimas vendas formatadas
-    const ultimasVendas = vendas.slice(0, 10).map(venda => ({
+    const ultimasVendas = vendas.slice(0, 10).map((venda: any) => ({
       id: venda.id,
-      cliente_nome: venda.customer?.name || 'Cliente anônimo',
+      cliente_nome: 'Cliente Walk-in',
       valor: parseFloat(venda.total.toString()),
-      items_count: venda.items.length,
+      items_count: (venda.sale_items || []).length,
       data: venda.created_at,
       status: 'synced' as const,
       metodo_pagamento: venda.payment_method,
@@ -216,8 +229,8 @@ export async function GET(request: NextRequest) {
         
         // Período
         ticket_medio: ticketMedio,
-        novos_clientes: clientesHojeSet.size, // Simplificado
-        clientes_recorrentes: 0, // Requer análise
+        novos_clientes: 0, // Sistema não rastreia clientes individuais
+        clientes_recorrentes: 0, // Sistema não rastreia clientes individuais
         taxa_conversao: 0, // Requer dados de visitas
         tempo_medio_venda: 15, // Mock
         
@@ -243,12 +256,12 @@ export async function GET(request: NextRequest) {
       
       ultimas_vendas: ultimasVendas,
       
-      produtos_destaque: produtosDestaque.map(p => ({
+      produtos_destaque: produtosDestaque.map((p: any) => ({
         id: p.id,
         nome: p.name,
         preco: parseFloat(p.price.toString()),
-        estoque_disponivel: p.stock,
-        estoque_baixo: p.stock <= 5,
+        estoque_disponivel: p.quantity,
+        estoque_baixo: p.quantity <= 5,
         promocao_ativa: false, // Simplificado
         categoria: p.category_id || 'Geral',
       })),

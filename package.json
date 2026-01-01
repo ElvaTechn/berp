@@ -21,10 +21,8 @@
     "install-favicon-tools": "npm install sharp to-ico",
     "setup-pwa": "npm run install-sharp && npm run convert-icons",
     "setup-pwa-complete": "npm run install-favicon-tools && npm run convert-icons && npm run generate-favicon",
-    "setup-pwa-full": "npm run setup-pwa-complete && npm run activate-optimized-sw"
-  },
-  "prisma": {
-    "seed": "ts-node prisma/seed-clean.ts"
+    "setup-pwa-full": "npm run setup-pwa-complete && npm run activate-optimized-sw",
+    "prisma:seed": "ts-node prisma/seed-clean.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.1",

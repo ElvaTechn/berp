@@ -80,6 +80,11 @@ export default function Sidebar({ user, company }: SidebarProps) {
     : isVendedor
     ? [
         {
+          icon: LayoutDashboard,
+          label: 'Dashboard',
+          href: '/vendedor/dashboard',
+        },
+        {
           icon: ShoppingCart,
           label: 'Ponto de Venda',
           href: '/sales/pos',
