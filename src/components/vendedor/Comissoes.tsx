@@ -10,7 +10,7 @@
 
 import { motion } from 'framer-motion';
 import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
-import { Briefcase, TrendingUp, DollarSign } from 'lucide-react';
+import { Briefcase, TrendingUp, Coins } from 'lucide-react';
 import type { VendedorMetrics } from '@/types/vendedor';
 
 interface Props {
@@ -72,7 +72,7 @@ export function Comissoes({ metrics }: Props) {
             {/* Última Paga */}
             <div className="p-4 rounded-xl neu-surface neu-convex-sm">
               <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="w-4 h-4 text-[var(--neu-text-muted)]" />
+                <Coins className="w-4 h-4 text-[var(--neu-text-muted)]" />
                 <p className="neu-text-caption text-[var(--neu-text-muted)]">
                   Última Paga
                 </p>

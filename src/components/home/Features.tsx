@@ -6,13 +6,13 @@
  * ================================================================
  */
 
-import { 
-  ShoppingCart, 
-  Package, 
-  DollarSign, 
-  Users, 
-  BarChart3, 
-  Shield 
+import {
+  ShoppingCart,
+  Package,
+  Coins,
+  Users,
+  BarChart3,
+  Shield
 } from 'lucide-react';
 import { GlassCard } from './GlassCard';
 
@@ -30,7 +30,7 @@ const features = [
     color: 'text-blue-500'
   },
   {
-    icon: DollarSign,
+    icon: Coins,
     title: 'Financeiro',
     description: 'Controle de fluxo de caixa, contas a pagar e receber, conciliação bancária e relatórios financeiros detalhados.',
     color: 'text-green-500'

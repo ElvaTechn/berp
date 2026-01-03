@@ -10,7 +10,7 @@
 
 import { motion } from 'framer-motion';
 import { NeuCard, NeuCardContent } from '@/components/ui/neu-card';
-import { BarChart3, DollarSign, Users, Receipt } from 'lucide-react';
+import { BarChart3, Coins, Users, Receipt } from 'lucide-react';
 import type { VendedorMetrics } from '@/types/vendedor';
 
 interface Props {
@@ -32,7 +32,7 @@ export function DesempenhoHoje({ metrics }: Props) {
         currency: 'MZN',
         minimumFractionDigits: 0,
       }),
-      icon: DollarSign,
+      icon: Coins,
       color: 'text-[var(--neu-accent)]',
     },
     {
@@ -88,7 +88,7 @@ export function DesempenhoHoje({ metrics }: Props) {
                       {stat.label}
                     </p>
                   </div>
-                  
+
                   {/* Value */}
                   <p className={`neu-text-h3 ${stat.color}`}>
                     {stat.value}

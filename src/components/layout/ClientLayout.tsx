@@ -4,16 +4,17 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import Sidebar from './Sidebar';
+import { BottomNav } from './BottomNav';
 import { Loader2 } from 'lucide-react';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
 
 interface ClientLayoutProps {
   children: React.ReactNode;
-  user: { 
-    id: string; 
-    full_name: string; 
-    email: string; 
+  user: {
+    id: string;
+    full_name: string;
+    email: string;
     role: string;
   } | null;
 }
@@ -28,10 +29,10 @@ const PUBLIC_ROUTES = ['/', '/login', '/register', '/setup', '/forgot-password',
 
 export default function ClientLayout({ children, user: serverUser }: ClientLayoutProps) {
   const pathname = usePathname();
-  
+
   // Usa o AuthContext para estado reativo do utilizador
   const { user: contextUser, loading: authLoading } = useAuth();
-  
+
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [isLoadingCompany, setIsLoadingCompany] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -108,7 +109,7 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
         await clearLease();
         localStorage.removeItem('bizcontrol_offline_queue');
       };
-      
+
       cleanup().then(() => {
         // Redireciona para login
         window.location.href = '/login';
@@ -197,7 +198,7 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
     <div className="flex h-screen bg-[var(--neu-base)] overflow-hidden">
       {/* Banner de Impersonation */}
       <ImpersonationBanner />
-      
+
       {/* Sidebar */}
       <Sidebar
         user={{
@@ -211,8 +212,8 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
       />
 
       {/* Main Content Area */}
-      <main 
-        id="main-content" 
+      <main
+        id="main-content"
         role="main"
         className="flex-1 flex flex-col overflow-hidden"
         style={{
@@ -222,9 +223,9 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
         {/* Content with independent scroll */}
         <div className="flex-1 overflow-y-auto bg-[var(--neu-base-light)]">
           {/* Container com padding adequado para aproveitar espaço */}
-          <div 
-            className="h-full px-6 lg:px-8 py-6 lg:py-8 pt-20 lg:pt-8"
-            style={{ 
+          <div
+            className="h-full px-6 lg:px-8 py-6 lg:py-8 pt-20 lg:pt-8 pb-24 lg:pb-8"
+            style={{
               width: '100%',
               maxWidth: '100%'
             }}
@@ -233,6 +234,9 @@ export default function ClientLayout({ children, user: serverUser }: ClientLayou
           </div>
         </div>
       </main>
+
+      {/* Bottom Navigation (Mobile only) */}
+      <BottomNav />
     </div>
   );
 }
