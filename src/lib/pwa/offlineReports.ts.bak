@@ -1,0 +1,890 @@
+/**
+ * ================================================================
+ * OFFLINE REPORTS - BIZCONTROL 360 ERP v2.1.0
+ * ================================================================
+ * Sistema de geração de relatórios offline usando dados cacheados
+ * 
+ * FEATURES:
+ * - Relatórios de vendas offline
+ * - Relatórios de produtos
+ * - Exportar como PDF e Excel
+ * - Gráficos e visualizações
+ * - Comparação offline vs online
+ * 
+ * USO:
+ * const report = await generateOfflineReport('sales', options);
+ * const pdf = await exportToPDF(report);
+ * const excel = await exportToExcel(report);
+ * ================================================================
+
+"use client";
+
+import { pwaStorage } from './indexedDB.enhanced';
+
+// ================================================================
+// TYPES
+// ================================================================
+
+export type ReportType = 
+  | 'sales'           // Vendas totais
+  | 'sales_by_product' // Vendas por produto
+  | 'daily_sales'      // Vendas diárias
+  | 'inventory'        // Estoque
+  | 'products'         // Todos produtos
+  | 'pending_sync';    // Itens pendentes de sync
+
+export type ReportFormat = 'pdf' | 'excel' | 'html' | 'json';
+
+export interface ReportOptions {
+  startDate?: Date;
+  endDate?: Date;
+  productId?: string;
+  category?: string;
+  includePending?: boolean;  // Incluir vendas pendentes
+  format?: ReportFormat;
+}
+
+export interface ReportData {
+  type: ReportType;
+  title: string;
+  subtitle: string;
+  generatedAt: Date;
+  dataSource: 'offline' | 'mixed' | 'online';
+  totalRecords: number;
+  data: any[];
+  summary: ReportSummary;
+  charts?: ChartData[];
+}
+
+export interface ReportSummary {
+  totalSales: number;
+  totalRevenue: number;
+  totalPending: number;
+  topProducts: ProductSale[];
+  dailyBreakdown: DailySale[];
+}
+
+export interface ProductSale {
+  productId: string;
+  productName: string;
+  quantity: number;
+  revenue: number;
+  percentage: number;
+}
+
+export interface DailySale {
+  date: string;
+  sales: number;
+  revenue: number;
+}
+
+export interface ChartData {
+  type: 'bar' | 'pie' | 'line';
+  title: string;
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    backgroundColor?: string[];
+  }[];
+}
+
+// ================================================================
+// REPORT GENERATOR
+// ================================================================
+
+class OfflineReportGenerator {
+  /**
+   * Generate report of specified type
+   */
+  async generateReport(type: ReportType, options: ReportOptions = {}): Promise<ReportData> {
+    const startDate = options.startDate || this.getStartDate(7); // Default: 7 days
+    const endDate = options.endDate || new Date();
+
+    switch (type) {
+      case 'sales':
+        return this.generateSalesReport(startDate, endDate, options);
+      case 'sales_by_product':
+        return this.generateSalesByProductReport(startDate, endDate, options);
+      case 'daily_sales':
+        return this.generateDailySalesReport(startDate, endDate, options);
+      case 'inventory':
+        return this.generateInventoryReport(options);
+      case 'products':
+        return this.generateProductsReport(options);
+      case 'pending_sync':
+        return this.generatePendingSyncReport();
+      default:
+        throw new Error(`Unknown report type: ${type}`);
+    }
+  }
+
+  /**
+   * Sales report - Total sales
+   */
+  private async generateSalesReport(
+    startDate: Date,
+    endDate: Date,
+    options: ReportOptions
+  ): Promise<ReportData> {
+    const includePending = options.includePending ?? true;
+
+    // Get sales from IndexedDB
+    const pendingSales = await pwaStorage.getPendingSales({ synced: false });
+    const syncedStatus = typeof window !== 'undefined' ? navigator.onLine : true;
+
+    // Filter by date range
+    const filteredSales = pendingSales.filter(sale => {
+      const saleDate = new Date(sale.timestamp);
+      return saleDate >= startDate && saleDate <= endDate;
+    });
+
+    // Calculate totals
+    const totalSales = filteredSales.length;
+    const totalRevenue = filteredSales.reduce((sum, sale) => sum + (sale.total || 0), 0);
+    const totalPending = includePending
+      ? await pwaStorage.getPendingSales({ synced: false }).then(s => s.length)
+      : 0;
+
+    // Top products
+    const productSales = this.calculateProductSales(filteredSales);
+    const topProducts = productSales.slice(0, 5);
+
+    // Daily breakdown
+    const dailyBreakdown = this.calculateDailyBreakdown(filteredSales, startDate, endDate);
+
+    return {
+      type: 'sales',
+      title: 'Relatório de Vendas',
+      subtitle: this.getDateRangeText(startDate, endDate),
+      generatedAt: new Date(),
+      dataSource: 'offline',
+      totalRecords: totalSales,
+      data: filteredSales,
+      summary: {
+        totalSales,
+        totalRevenue,
+        totalPending,
+        topProducts,
+        dailyBreakdown,
+      },
+      charts: [
+        {
+          type: 'bar',
+          title: 'Vendas por Produto (Top 5)',
+          labels: topProducts.map(p => p.productName),
+          datasets: [{
+            label: 'Receita',
+            data: topProducts.map(p => p.revenue),
+            backgroundColor: ['#F97316', '#EA580C', '#C2410C', '#9A3412', '#7C2D12'],
+          }],
+        },
+        {
+          type: 'line',
+          title: 'Vendas Diárias',
+          labels: dailyBreakdown.map(d => d.date),
+          datasets: [{
+            label: 'Vendas',
+            data: dailyBreakdown.map(d => d.sales),
+          }],
+        },
+      ],
+    };
+  }
+
+  /**
+   * Sales by product report
+   */
+  private async generateSalesByProductReport(
+    startDate: Date,
+    endDate: Date,
+    options: ReportOptions
+  ): Promise<ReportData> {
+    const pendingSales = await pwaStorage.getPendingSales();
+
+    // Filter
+    const filteredSales = pendingSales.filter(sale => {
+      const saleDate = new Date(sale.timestamp);
+      return saleDate >= startDate && saleDate <= endDate;
+    });
+
+    // Calculate product sales
+    const productSales = this.calculateProductSales(filteredSales);
+
+    return {
+      type: 'sales_by_product',
+      title: 'Vendas por Produto',
+      subtitle: this.getDateRangeText(startDate, endDate),
+      generatedAt: new Date(),
+      dataSource: 'offline',
+      totalRecords: productSales.length,
+      data: productSales,
+      summary: {
+        totalSales: filteredSales.length,
+        totalRevenue: productSales.reduce((sum, p) => sum + p.revenue, 0),
+        totalPending: pendingSales.length,
+        topProducts: productSales.slice(0, 10),
+        dailyBreakdown: [],
+      },
+      charts: [
+        {
+          type: 'pie',
+          title: 'Distribuição de Vendas por Produto',
+          labels: productSales.slice(0, 10).map(p => p.productName),
+          datasets: [{
+            label: 'Receita',
+            data: productSales.slice(0, 10).map(p => p.revenue),
+          }],
+        },
+      ],
+    };
+  }
+
+  /**
+   * Daily sales report
+   */
+  private async generateDailySalesReport(
+    startDate: Date,
+    endDate: Date,
+    options: ReportOptions
+  ): Promise<ReportData> {
+    const pendingSales = await pwaStorage.getPendingSales();
+
+    // Filter by date range
+    const filtered = pendingSales.filter(sale => {
+      const saleDate = new Date(sale.timestamp);
+      return saleDate >= startDate && saleDate <= endDate;
+    });
+
+    const dailyBreakdown = this.calculateDailyBreakdown(filtered, startDate, endDate);
+
+    return {
+      type: 'daily_sales',
+      title: 'Vendas Diárias',
+      subtitle: this.getDateRangeText(startDate, endDate),
+      generatedAt: new Date(),
+      dataSource: 'offline',
+      totalRecords: dailyBreakdown.length,
+      data: dailyBreakdown,
+      summary: {
+        totalSales: filtered.length,
+        totalRevenue: filtered.reduce((sum, s) => sum + (s.total || 0), 0),
+        totalPending: pendingSales.length,
+        topProducts: [],
+        dailyBreakdown,
+      },
+      charts: [
+        {
+          type: 'line',
+          title: 'Tendência de Vendas Diárias',
+          labels: dailyBreakdown.map(d => d.date),
+          datasets: [{
+            label: 'Vendas',
+            data: dailyBreakdown.map(d => d.sales),
+            backgroundColor: '#F97316',
+          }],
+        },
+        {
+          type: 'bar',
+          title: 'Receita Diária',
+          labels: dailyBreakdown.map(d => d.date),
+          datasets: [{
+            label: 'Receita (MT)',
+            data: dailyBreakdown.map(d => d.revenue),
+            backgroundColor: '#10B981',
+          }],
+        },
+      ],
+    };
+  }
+
+  /**
+   * Inventory report
+   */
+  private async generateInventoryReport(options: ReportOptions): Promise<ReportData> {
+    const products = await pwaStorage.getCachedProducts({ is_active: true });
+
+    // Calculate inventory metrics
+    const totalProducts = products.length;
+    const totalStock = products.reduce((sum, p) => sum + (p.quantity || 0), 0);
+    const lowStock = products.filter(p => (p.quantity || 0) < 10).length;
+    const highValue = products.filter(p => (p.price || 0) > 1000).length;
+
+    return {
+      type: 'inventory',
+      title: 'Relatório de Estoque',
+      subtitle: `Total de ${totalProducts} produtos ativos`,
+      generatedAt: new Date(),
+      dataSource: 'offline',
+      totalRecords: totalProducts,
+      data: products,
+      summary: {
+        totalSales: 0,
+        totalRevenue: 0,
+        totalPending: 0,
+        topProducts: [],
+        dailyBreakdown: [],
+      },
+      charts: [
+        {
+          type: 'bar',
+          title: 'Distribuição de Estoque por Categoria',
+          labels: ['Baixo Estoque (0-10)', 'Estoque Médio (11-50)', 'Estoque Alto (50+)'],
+          datasets: [{
+            label: 'Produtos',
+            data: [
+              lowStock,
+              products.filter(p => p.quantity >= 11 && p.quantity <= 50).length,
+              products.filter(p => p.quantity > 50).length,
+            ],
+            backgroundColor: ['#EF4444', '#F59E0B', '#10B981'],
+          }],
+        },
+      ],
+    };
+  }
+
+  /**
+   * Full products report
+   */
+  private async generateProductsReport(options: ReportOptions): Promise<ReportData> {
+    const products = await pwaStorage.getCachedProducts();
+
+    return {
+      type: 'products',
+      title: 'Catálogo de Produtos',
+      subtitle: `${products.length} produtos no cache`,
+      generatedAt: new Date(),
+      dataSource: 'offline',
+      totalRecords: products.length,
+      data: products,
+      summary: {
+        totalSales: 0,
+        totalRevenue: products.reduce((sum, p) => sum + (p.price || 0), 0),
+        totalPending: 0,
+        topProducts: [],
+        dailyBreakdown: [],
+      },
+      charts: [
+        {
+          type: 'pie',
+          title: 'Produtos por Status',
+          labels: ['Ativos', 'Inativos'],
+          datasets: [{
+            label: 'Quantidade',
+            data: [
+              products.filter(p => p.is_active).length,
+              products.filter(p => !p.is_active).length,
+            ],
+            backgroundColor: ['#10B981', '#6B7280'],
+          }],
+        },
+      ],
+    };
+  }
+
+  /**
+   * Pending sync report
+   */
+  private async generatePendingSyncReport(): Promise<ReportData> {
+    const pendingSales = await pwaStorage.getPendingSales({ synced: false });
+    const syncQueue = await pwaStorage.getSyncQueue();
+
+    return {
+      type: 'pending_sync',
+      title: 'Relatório de Sincronização Pendente',
+      subtitle: `${pendingSales.length + syncQueue.length} itens aguardando sync`,
+      generatedAt: new Date(),
+      dataSource: 'offline',
+      totalRecords: pendingSales.length + syncQueue.length,
+      data: {
+        pendingSales,
+        syncQueue,
+      },
+      summary: {
+        totalSales: pendingSales.length,
+        totalRevenue: pendingSales.reduce((sum, s) => sum + (s.total || 0), 0),
+        totalPending: syncQueue.length,
+        topProducts: [],
+        dailyBreakdown: [],
+      },
+      charts: [
+        {
+          type: 'pie',
+          title: 'Itens Pendentes por Tipo',
+          labels: ['Vendas', 'Produtos', 'Funcionários', 'Empresas'],
+          datasets: [{
+            label: 'Quantidade',
+            data: [
+              pendingSales.length,
+              syncQueue.filter(item => item.type === 'product').length,
+              syncQueue.filter(item => item.type === 'employee').length,
+              syncQueue.filter(item => item.type === 'company').length,
+            ],
+            backgroundColor: ['#F97316', '#3B82F6', '#10B981', '#8B5CF6'],
+          }],
+        },
+      ],
+    };
+  }
+
+  // ================================================================
+  // HELPER FUNCTIONS
+  // ================================================================
+
+  /**
+   * Calculate sales per product
+   */
+  private calculateProductSales(sales: any[]): ProductSale[] {
+    const productMap = new Map<string, ProductSale>();
+
+    sales.forEach(sale => {
+      sale.items?.forEach((item: any) => {
+        const existing = productMap.get(item.product_id) || {
+          productId: item.product_id,
+          productName: item.product_name || 'Produto Desconhecido',
+          quantity: 0,
+          revenue: 0,
+          percentage: 0,
+        };
+
+        existing.quantity += item.quantity || 1;
+        existing.revenue += (item.price || 0) * (item.quantity || 1);
+
+        productMap.set(item.product_id, existing);
+      });
+    });
+
+    // Calculate percentages
+    const totalRevenue = Array.from(productMap.values()).reduce((sum, p) => sum + p.revenue, 0);
+    const products = Array.from(productMap.values());
+    products.forEach(p => {
+      p.percentage = totalRevenue > 0 ? (p.revenue / totalRevenue) * 100 : 0;
+    });
+
+    // Sort by revenue
+    return products.sort((a, b) => b.revenue - a.revenue);
+  }
+
+  /**
+   * Calculate daily sales breakdown
+   */
+  private calculateDailyBreakdown(sales: any[], startDate: Date, endDate: Date): DailySale[] {
+    const dailyMap = new Map<string, DailySale>();
+
+    sales.forEach(sale => {
+      const date = new Date(sale.timestamp);
+      const dateKey = date.toLocaleDateString('pt-MZ');
+
+      const existing = dailyMap.get(dateKey) || {
+        date: dateKey,
+        sales: 0,
+        revenue: 0,
+      };
+
+      existing.sales += 1;
+      existing.revenue += sale.total || 0;
+
+      dailyMap.set(dateKey, existing);
+    });
+
+    // Sort by date
+    return Array.from(dailyMap.values()).sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+  }
+
+  /**
+   * Get start date (default: X days ago)
+   */
+  private getStartDate(days: number): Date {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    return date;
+  }
+
+  /**
+   * Format date range
+   */
+  private getDateRangeText(startDate: Date, endDate: Date): string {
+    const fmt = (d: Date) => d.toLocaleDateString('pt-MZ', { day: '2-digit', month: 'short', year: 'numeric' });
+    return `${fmt(startDate)} - ${fmt(endDate)}`;
+  }
+
+  /**
+   * Export to PDF
+   */
+  async exportToPDF(report: ReportData): Promise<Blob> {
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF();
+
+    // Title
+    doc.setFontSize(20);
+    doc.text(report.title, 14, 20);
+
+    // Subtitle
+    doc.setFontSize(12);
+    doc.setTextColor(100);
+    doc.text(report.subtitle, 14, 30);
+
+    // Generated at
+    doc.setFontSize(10);
+    doc.setTextColor(150);
+    doc.text(`Gerado em: ${report.generatedAt.toLocaleString('pt-MZ')}`, 14, 40);
+
+    // Summary table
+    let y = 55;
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text('Resumo', 14, y);
+
+    y += 7;
+    
+    if (report.summary.totalSales > 0) {
+      const summaryData = [
+        ['Métrica', 'Valor'],
+        ['Total de Vendas', report.summary.totalSales.toString()],
+        ['Receita Total', `MT ${report.summary.totalRevenue.toLocaleString()}`],
+        ['Total de Registros', report.totalRecords.toString()],
+      ];
+
+      summaryData.forEach((row, i) => {
+        doc.setFontSize(10);
+        doc.setTextColor(50);
+        doc.text(row[0], 14, y);
+        doc.setTextColor(0);
+        doc.text(row[1], 60, y);
+        y += 7;
+      });
+    }
+
+    y += 10;
+
+    // Data table
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text('Dados Detalhados', 14, y);
+    y += 7;
+
+    const data = Array.isArray(report.data) ? report.data : 
+                report.data.pendingSales || report.data.syncQueue || [];
+
+    data.slice(0, 20).forEach((item: any, index: number) => {
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+
+      doc.setFontSize(9);
+      doc.setTextColor(50);
+
+      if (item.id) {
+        doc.text(`ID: ${item.id}`, 14, y);
+        y += 5;
+      }
+
+      if (item.total !== undefined) {
+        doc.text(`Total: MT ${item.total.toLocaleString()}`, 14, y);
+        y += 5;
+      }
+
+      if (item.timestamp) {
+        doc.text(`Data: ${new Date(item.timestamp).toLocaleString('pt-MZ')}`, 14, y);
+        y += 5;
+      }
+
+      y += 3;
+    });
+
+    return doc.output('blob');
+  }
+
+  /**
+   * Export to Excel (CSV)
+   */
+  async exportToExcel(report: ReportData): Promise<Blob> {
+    const data = Array.isArray(report.data) ? report.data : 
+                report.data.pendingSales || report.data.syncQueue || [];
+
+    // Create CSV
+    const headers = Object.keys(data[0] || {});
+    const csvContent = [
+      headers.join(','),
+      ...data.map((row: any) => headers.map(h => JSON.stringify(row[h] || '')).join(',')),
+    ].join('\n');
+
+    return new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  }
+
+  /**
+   * Export to HTML (for viewing)
+   */
+  exportToHTML(report: ReportData): string {
+    const data = Array.isArray(report.data) ? report.data : 
+                report.data.pendingSales || report.data.syncQueue || [];
+
+    const tableRows = data.slice(0, 50).map((item: any) => `
+      <tr>
+        ${Object.entries(item).map(([key, value]) => `
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            ${typeof value === 'object' ? JSON.stringify(value) : String(value)}
+          </td>
+        `).join('')}
+      </tr>
+    `).join('');
+
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${report.title}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th { background: #F97316; color: white; padding: 12px; text-align: left; }
+            tr:nth-child(even) { background: #f9f9f9; }
+          h1 { color: #1f2937; }
+          .summary { background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0; }
+          .summary-item { margin: 5px 0; }
+          .summary-label { font-weight: bold; color: #6b7280; }
+          .summary-value { color: #1f2937; margin-left: 10px; }
+          .offline-badge { background: #F97316; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+          .meta { color: #6b7280; font-size: 14px; margin-bottom: 20px; }
+          .chart-container { margin: 30px 0; padding: 20px; background: #f9fafb; border-radius: 8px; }
+          .chart-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; }
+          .bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 200px; }
+          .bar { background: #F97316; display: flex; flex-direction: column; align-items: center; }
+          .bar-label { font-size: 10px; margin-top: 5px; }
+          .bar-value { font-size: 12px; font-weight: bold; }
+            </style>
+        </head>
+        <body>
+          <h1>${report.title}</h1>
+          <p class="meta">${report.subtitle}</p>
+          <p class="meta">
+            <strong>Fonte:</strong> 
+            <span class="offline-badge">${report.dataSource.toUpperCase()}</span>
+            | 
+            <strong>Gerado em:</strong> ${report.generatedAt.toLocaleString('pt-MZ')}
+            | 
+            <strong>Registros:</strong> ${report.totalRecords}
+          </p>
+
+          <div class="summary">
+            <h3>📊 Resumo</h3>
+            <div class="summary-item">
+              <span class="summary-label">Total de Vendas:</span>
+              <span class="summary-value">${report.summary.totalSales}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Receita Total:</span>
+              <span class="summary-value">MT ${report.summary.totalRevenue.toLocaleString()}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Pendentes de Sync:</span>
+              <span class="summary-value">${report.summary.totalPending}</span>
+            </div>
+          </div>
+
+          ${report.charts ? this.renderChart(report.charts[0], report.summary) : ''}
+
+          <h3>📋 Dados Detalhados</h3>
+          <table>
+            <thead>
+              <tr>
+                ${Object.keys(data[0] || {}).map(key => `<th>${key}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+
+          ${data.length > 50 ? `<p><em>Mostrando 50 de ${data.length} registros completos.</em></p>` : ''}
+
+          <p style="margin-top: 40px; color: #9ca3af; font-size: 12px;">
+            Relatório gerado pelo BizControl 360 ERP v2.1.0 - Sistema Offline-Ready
+          </p>
+        </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Render chart to HTML
+   */
+  private renderChart(chart: ChartData | undefined, summary: ReportSummary): string {
+    if (!chart) return '';
+
+    if (chart.type === 'pie' && summary.topProducts.length > 0) {
+      return `
+        <div class="chart-container">
+          <div class="chart-title">${chart.title}</div>
+          ${summary.topProducts.map(p => `
+            <div style="margin: 10px 0;">
+              <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                <span>${p.productName}</span>
+                <span>${p.percentage.toFixed(1)}%</span>
+              </div>
+              <div style="background: #e5e7eb; height: 8px; border-radius: 4px; overflow: hidden;">
+                <div style="background: #F97316; height: 100%; width: ${p.percentage}%;"></div>
+              </div>
+              <div style="font-size: 10px; color: #6b7280;">MT ${p.revenue.toLocaleString()}</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    if (chart.type === 'bar' && chart.datasets[0]) {
+      const maxValue = Math.max(...chart.datasets[0].data);
+      return `
+        <div class="chart-container">
+          <div class="chart-title">${chart.title}</div>
+          <div class="bar-chart">
+            ${chart.labels.map((label, i) => {
+              const value = chart.datasets[0].data[i];
+              const height = (value / maxValue) * 100;
+              return `
+                <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                  <div class="bar-value">${value.toLocaleString()}</div>
+                  <div class="bar" style="height: ${height}%; width: 40px; background: ${chart.datasets[0].backgroundColor?.[i] || '#F97316'};"></div>
+                  <div class="bar-label">${label.split(' ')[0]}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    return '';
+  }
+
+  /**
+   * Download file
+   */
+  downloadFile(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  /**
+   * Generate and download report
+   */
+  async generateAndDownload(
+    type: ReportType,
+    format: ReportFormat,
+    options: ReportOptions = {}
+  ): Promise<void> {
+    const report = await this.generateReport(type, options);
+
+    let blob: Blob;
+    let filename: string;
+
+    switch (format) {
+      case 'pdf':
+        blob = await this.exportToPDF(report);
+        filename = `${report.title.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
+        break;
+      case 'excel':
+        blob = await this.exportToExcel(report);
+        filename = `${report.title.replace(/\s+/g, '_')}_${Date.now()}.csv`;
+        break;
+      case 'html':
+        const html = this.exportToHTML(report);
+        blob = new Blob([html], { type: 'text/html' });
+        filename = `${report.title.replace(/\s+/g, '_')}_${Date.now()}.html`;
+        break;
+      case 'json':
+        blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+        filename = `${report.title.replace(/\s+/g, '_')}_${Date.now()}.json`;
+        break;
+    }
+
+    this.downloadFile(blob, filename);
+  }
+}
+
+// ================================================================
+// EXPORT SINGLETON
+// ================================================================
+
+export const offlineReports = new OfflineReportGenerator();
+
+// ================================================================
+// REACT HOOK
+// ================================================================
+
+import { useState, useCallback } from 'react';
+
+export function useOfflineReports() {
+  const [loading, setLoading] = useState(false);
+  const [lastReport, setLastReport] = useState<ReportData | null>(null);
+
+  /**
+   * Generate report
+   */
+  const generateReport = useCallback(async (type: ReportType, options: ReportOptions = {}) => {
+    setLoading(true);
+    try {
+      const report = await offlineReports.generateReport(type, options);
+      setLastReport(report);
+      return report;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /**
+   * Generate and download
+   */
+  const generateAndDownload = useCallback(async (
+    type: ReportType,
+    format: ReportFormat,
+    options: ReportOptions = {}
+  ) => {
+    setLoading(true);
+    try {
+      await offlineReports.generateAndDownload(type, format, options);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /**
+   * Preview report as HTML
+   */
+  const previewReport = useCallback((report: ReportData): string => {
+    return offlineReports.exportToHTML(report);
+  }, []);
+
+  return {
+    loading,
+    lastReport,
+    generateReport,
+    generateAndDownload,
+    previewReport,
+  };
+}
+
+// ================================================================
+// EXPORT TYPES
+// ================================================================
+
+export type {
+  ReportType,
+  ReportFormat,
+  ReportOptions,
+  ReportData,
+  ReportSummary,
+  ProductSale,
+  DailySale,
+  ChartData,
+};

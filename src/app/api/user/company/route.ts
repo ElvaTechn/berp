@@ -69,19 +69,15 @@ export async function GET(request: NextRequest) {
     let company = user.employees[0]?.company || user.companies[0];
 
     if (!company) {
-      // Fallback: buscar qualquer empresa (útil para seed)
-      const anyCompany = await prisma.company.findFirst({
-        select: {
-          id: true,
-          name: true,
-          nuit: true,
-          address: true,
-          phone: true,
-          email: true,
-        },
+      // Segurança: não expor empresas aleatórias do banco de dados
+      // Registrar tentativa de acesso sem empresa associada
+      logger.warn('User without company association attempted to access company data', {
+        userId: payload.userId,
+        email: user.email,
       });
 
-      company = anyCompany || {
+      // Retornar empresa padrão genérica para usuários sem empresa
+      company = {
         id: 'default',
         name: 'Minha Empresa',
         nuit: null,

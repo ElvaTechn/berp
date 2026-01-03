@@ -8,7 +8,7 @@
  * - Performance Considerations
  * ================================================================ */
 
-// IndexedDB Storage
+// IndexedDB Storage Enhanced
 export {
   initDB,
   addPendingSale,
@@ -18,21 +18,27 @@ export {
   cacheProducts,
   getCachedProducts,
   getCachedProduct,
+  cacheEmployees,
+  getCachedEmployees,
+  getCachedEmployee,
   addToSyncQueue,
   getSyncQueue,
   removeFromSyncQueue,
   clearSyncQueue,
-  clearAllCache,
   getCacheStats,
+  forceCleanup,
+  clearAll,
   pwaStorage,
-} from './indexedDB';
+} from './index.exposed';
 
 export type {
   PendingSale,
   CachedProduct,
   CachedEmployee,
   SyncQueueItem,
-} from './indexedDB';
+  StorageStats,
+  CleanupResult,
+} from './indexedDB.enhanced';
 
 // Offline Sync
 export {
@@ -47,6 +53,52 @@ export type {
   SyncProgress,
   SyncProgressCallback,
 } from './offlineSync';
+
+// Offline Reports
+export {
+  useOfflineReports,
+} from './offlineReports';
+
+export type {
+  ReportType,
+  ReportFormat,
+  ReportOptions,
+  ReportData,
+  ReportSummary,
+  ProductSale,
+  DailySale,
+  ChartData,
+} from './offlineReports';
+
+// Conflict Resolution
+export {
+  conflictResolution,
+  autoResolveConflict,
+  manualResolveConflict,
+  getConflictStats,
+} from './conflictResolution';
+
+export type {
+  ConflictType,
+  ConflictStrategy,
+  Conflict,
+  ConflictResolutionResult,
+  MergeOptions,
+} from './conflictResolution';
+
+// P2P Sync
+export {
+  p2pSync,
+  useP2PSync,
+  P2PConnectionState,
+  P2PRole,
+} from './p2pSync';
+
+export type {
+  P2PPeer,
+  SyncData,
+  P2PSyncResult,
+} from './p2pSync';
 
 // Hook exports
 export {

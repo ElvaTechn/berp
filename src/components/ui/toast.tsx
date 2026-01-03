@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
 import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react';
+import { enableSwipeToDismiss } from '@/lib/toast-swipe';
 
 export interface Toast {
   id: string;
@@ -75,6 +76,30 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 const ToastContainer: React.FC = () => {
   const { toasts, removeToast } = useToast();
 
+  return (
+    <div className="fixed top-4 right-4 z-50 space-y-2">
+      {toasts.map((toast) => (
+        <ToastItem key={toast.id} toast={toast} onDismiss={() => removeToast(toast.id)} />
+      ))}
+    </div>
+  );
+};
+
+// Individual toast item com swipe-to-dismiss
+const ToastItem: React.FC<{ toast: Toast; onDismiss: () => void }> = ({ toast, onDismiss }) => {
+  const toastRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (toastRef.current) {
+      const cleanup = enableSwipeToDismiss(
+        toastRef.current,
+        onDismiss,
+        100 // threshold em pixels
+      );
+      return cleanup;
+    }
+  }, [onDismiss]);
+
   const getIcon = (type: Toast['type']) => {
     switch (type) {
       case 'success':
@@ -102,29 +127,29 @@ const ToastContainer: React.FC = () => {
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
-      {toasts.map((toast) => (
-        <div
-          key={toast.id}
-          className={`flex items-start gap-3 p-4 rounded-lg border shadow-lg max-w-sm animate-fade-in ${getStyles(toast.type)}`}
-        >
-          <div className="flex-shrink-0">
-            {getIcon(toast.type)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-sm">{toast.title}</h4>
-            {toast.message && (
-              <p className="text-sm mt-1 opacity-90">{toast.message}</p>
-            )}
-          </div>
-          <button
-            onClick={() => removeToast(toast.id)}
-            className="flex-shrink-0 p-1 hover:opacity-70 transition-opacity"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      ))}
+    <div
+      ref={toastRef}
+      className={`flex items-start gap-3 p-4 rounded-lg border shadow-lg max-w-sm animate-fade-in cursor-pointer select-none hover:bg-opacity-90 ${getStyles(toast.type)}`}
+    >
+      <div className="flex-shrink-0">
+        {getIcon(toast.type)}
+      </div>
+      <div className="flex-1 min-w-0">
+        <h4 className="font-semibold text-sm">{toast.title}</h4>
+        {toast.message && (
+          <p className="text-sm mt-1 opacity-90">{toast.message}</p>
+        )}
+      </div>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDismiss();
+        }}
+        className="flex-shrink-0 p-1 hover:opacity-70 transition-colors"
+        aria-label={`Dismiss ${toast.type} notification`}
+      >
+        <X className="w-4 h-4" />
+      </button>
     </div>
   );
 };

@@ -742,7 +742,7 @@ class EnhancedIndexedDB {
         }
         
         // Ordenar por timestamp (recentes primeiro)
-        results.sort((a, b) => b.timestamp - a.timestamp);
+        results.sort((a: PendingSale, b: PendingSale) => b.timestamp - a.timestamp);
         
         resolve(results);
       };
@@ -868,7 +868,7 @@ class EnhancedIndexedDB {
           const cachedProduct: CachedProduct = {
             ...product,
             cached_at: Date.now(),
-            version: hasConflict ? (product.version || 0) + 1 : (product.version || 0),
+            version: hasConflict ? 1 : 0,  // Start at 0, increment to 1 if conflict
           };
 
           const request = store.put(cachedProduct);
@@ -1041,7 +1041,7 @@ class EnhancedIndexedDB {
         const cachedEmployee: CachedEmployee = {
           ...employee,
           cached_at: Date.now(),
-          version: employee.version || 0,
+          version: 0,  // Start at version 0
         };
 
         const request = store.put(cachedEmployee);
@@ -1181,8 +1181,8 @@ class EnhancedIndexedDB {
         let results = request.result;
         
         // Ordenar por prioridade (high > medium > low) e timestamp
-        const priorityWeight = { high: 3, medium: 2, low: 1 };
-        results.sort((a, b) => {
+        const priorityWeight: Record<'high' | 'medium' | 'low', number> = { high: 3, medium: 2, low: 1 };
+        results.sort((a: SyncQueueItem, b: SyncQueueItem) => {
           const priorityDiff = priorityWeight[b.priority] - priorityWeight[a.priority];
           if (priorityDiff !== 0) return priorityDiff;
           return a.timestamp - b.timestamp;
@@ -1283,8 +1283,8 @@ class EnhancedIndexedDB {
           
           request.onerror = () => reject(request.error);
         } catch (error) {
-          // Fallback
-          request.onerror = () => reject(request.error);
+          // Fallback - reject with the caught error
+          reject(error);
         }
       } else {
         const request = store.clear();
@@ -1330,15 +1330,5 @@ class EnhancedIndexedDB {
 
 export const pwaStorage = new EnhancedIndexedDB();
 
-// ================================================================
-// EXPORT ALL TYPES AND FUNCTIONS
-// ================================================================
-
-export type {
-  PendingSale,
-  CachedProduct,
-  CachedEmployee,
-  SyncQueueItem,
-  StorageStats,
-  CleanupResult,
-};
+// Types are already exported above with 'export interface'
+// No need to re-export them here

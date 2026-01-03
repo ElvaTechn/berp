@@ -11,8 +11,8 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence, PanInfo, useMotionValue, useTransform } from 'framer-motion';
 import { X, CheckCircle, AlertCircle, AlertTriangle, Info, WifiOff } from 'lucide-react';
 import { ERPNotifications, Notification } from '@/lib/notifications/notificationService';
 
@@ -123,6 +123,11 @@ interface ToastProps {
 function Toast({ notification, onRemove, onRead }: ToastProps) {
   const colors = getColorsForType(notification.type);
   const [progress, setProgress] = useState(100);
+  
+  // Swipe-to-dismiss with Framer Motion
+  const x = useMotionValue(0);
+  const opacity = useTransform(x, [-100, 0, 100], [0.5, 1, 0.5]);
+  const SWIPE_THRESHOLD = 100;
 
   useEffect(() => {
     if (notification.persistent || notification.metadata?.duration === 0) {
@@ -162,6 +167,13 @@ function Toast({ notification, onRemove, onRead }: ToastProps) {
     onRemove(notification.id);
   }, [notification.id, onRemove]);
 
+  // Handle swipe end
+  const handleDragEnd = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (Math.abs(info.offset.x) > SWIPE_THRESHOLD) {
+      onRemove(notification.id);
+    }
+  }, [notification.id, onRemove]);
+
   return (
     <motion.div
       layout
@@ -174,12 +186,17 @@ function Toast({ notification, onRemove, onRead }: ToastProps) {
         damping: 30,
         mass: 0.8
       }}
+      // Swipe-to-dismiss
+      drag="x"
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.7}
+      onDragEnd={handleDragEnd}
+      style={{ x, opacity }}
       className={`
         relative overflow-hidden rounded-xl border backdrop-blur-sm cursor-pointer
         pointer-events-auto select-none shadow-lg hover:shadow-xl transition-all duration-200
-        ${colors.bg} ${colors.text} border-l-4
+        ${colors.bg} ${colors.text} border-l-4 touch-pan-y
       `}
-      style={{ borderLeftColor: `currentColor` }}
       onClick={handleClick}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}

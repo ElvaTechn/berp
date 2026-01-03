@@ -10,7 +10,7 @@
 "use client";
 
 import dynamic from 'next/dynamic';
-import { ComponentType } from 'react';
+import React, { ComponentType } from 'react';
 
 // ================================================================
 // LAZY COMPONENTS
@@ -72,32 +72,13 @@ export const PWALayoutWrapper = dynamic(
 );
 
 // ================================================================
-// LAZY HOOKS
+// LAZY HOOKS (NOT SUPPORTED)
 // ================================================================
 
-/**
- * Carrega useOfflineSync apenas quando necessário
- */
-export const createUseOfflineSync = () => {
-  return dynamic(
-    () => import('@/hooks/useOfflineSync').then(mod => ({ default: mod.useOfflineSync })),
-    {
-      ssr: false,
-    }
-  );
-};
-
-/**
- * Carrega useOfflineGate apenas em componentes específicos
- */
-export const createUseOfflineGate = () => {
-  return dynamic(
-    () => import('@/hooks/useOfflineGate').then(mod => ({ default: mod.useOfflineGate })),
-    {
-      ssr: false,
-    }
-  );
-};
+// Note: Hooks cannot be lazy loaded using dynamic() from Next.js
+// Import them directly in components that need them:
+// import { useOfflineSync } from '@/hooks/useOfflineSync';
+// import { useOfflineGate } from '@/hooks/useOfflineGate';
 
 // ================================================================
 // CONDITIONAL LOADING HELPERS
@@ -151,34 +132,13 @@ export function ConditionalPWAFeature({
 }
 
 // ================================================================
-// STORAGE MONITOR (lazy load)
+// STORAGE & CONFLICT MONITORS (NOT LAZY LOADED)
 // ================================================================
 
-export const createStorageMonitor = () => {
-  return dynamic(
-    () => import('@/lib/pwa/indexedDB.enhanced').then(mod => ({ default: mod.pwaStorage })),
-    {
-      ssr: false,
-    }
-  );
-};
-
-// ================================================================
-// CONFLICT RESOLUTION MONITOR (lazy load)
-// ================================================================
-
-export const createConflictMonitor = () => {
-  return dynamic(
-    () => import('@/lib/pwa/conflictResolution').then(mod => ({ 
-      default: mod.conflictResolution,
-      getConflictStats: mod.getConflictStats,
-      autoResolveConflict: mod.autoResolveConflict,
-    })),
-    {
-      ssr: false,
-    }
-  );
-};
+// Note: Classes and singletons cannot be lazy loaded using dynamic()
+// Import them directly:
+// import { pwaStorage } from '@/lib/pwa/indexedDB.enhanced';
+// import { conflictResolution, getConflictStats } from '@/lib/pwa/conflictResolution';
 
 // ================================================================
 // LAZY NOTIFICATION COMPONENTS
@@ -188,7 +148,7 @@ export const createConflictMonitor = () => {
  * Carrega componentes de notificação apenas quando necessários
  */
 export const OfflineIndicator = dynamic(
-  () => import('@/components/offline/OfflineIndicator').then(mod => ({ default: mod.default })),
+  () => import('@/components/offline/OfflineIndicator'),
   {
     loading: () => null,
     ssr: false,
@@ -196,7 +156,7 @@ export const OfflineIndicator = dynamic(
 );
 
 export const SyncStatus = dynamic(
-  () => import('@/components/offline/SyncStatus').then(mod => ({ default: mod.default })),
+  () => import('@/components/offline/SyncStatus'),
   {
     loading: () => null,
     ssr: false,

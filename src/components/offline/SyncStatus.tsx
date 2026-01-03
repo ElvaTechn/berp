@@ -229,3 +229,5 @@ export function SyncStatusDetailed() {
     </div>
   );
 }
+
+export default SyncStatusDetailed;

@@ -26,7 +26,7 @@ export default function OfflineBanner() {
 
     try {
       const pendingSales = await getPendingSales();
-      
+
       if (pendingSales.length === 0) {
         toast.info('Nenhuma venda pendente. Tudo sincronizado!');
         return;
@@ -66,7 +66,7 @@ export default function OfflineBanner() {
       if (successCount > 0) {
         toast.success(`${successCount} vendas sincronizadas!`);
       }
-      
+
       if (errorCount > 0) {
         toast.error(`${errorCount} vendas falharam ao sincronizar`);
       }
@@ -88,7 +88,7 @@ export default function OfflineBanner() {
         triggerSync();
       }
     };
-    
+
     const handleOffline = () => setIsOnline(false);
 
     const handleSyncEvent = () => {
@@ -111,11 +111,10 @@ export default function OfflineBanner() {
   if (isOnline && pendingCount === 0) return null;
 
   return (
-    <div className={`fixed top-0 left-0 right-0 z-50 px-4 py-2 text-center text-sm ${
-      isOnline 
-        ? 'bg-green-50 border-b border-green-200 text-green-800' 
-        : 'bg-yellow-50 border-b border-yellow-200 text-yellow-800'
-    }`}>
+    <div className={`fixed top-0 left-0 right-0 z-50 px-4 py-2 text-center text-sm ${isOnline
+        ? 'bg-green-50 dark:bg-green-900/30 border-b border-green-200 dark:border-green-800 text-green-800 dark:text-green-300'
+        : 'bg-yellow-50 dark:bg-yellow-900/30 border-b border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300'
+      }`}>
       <div className="flex items-center justify-center gap-2 max-w-md mx-auto">
         {isOnline ? (
           <>

@@ -3,7 +3,7 @@
  * CONFLICT RESOLUTION TESTS - BIZCONTROL 360 ERP v2.1.0
  * ================================================================ */
 
-import { describe, it, expect, beforeEach, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import {
   conflictResolution,
   autoResolveConflict,
@@ -174,7 +174,7 @@ describe('ConflictResolution', () => {
 
       expect(result.resolved).toBe(true);
       expect(result.resolution.name).toBe('Product A');
-      expect(resolution!.strategy === 'lww');
+      expect(result.strategy).toBe('lww');
     });
 
     it('should resolve using last-write-wins with newer remote timestamp', async () => {
@@ -603,7 +603,7 @@ describe('ConflictResolution', () => {
         expect(result.hadConflict).toBe(true);
         expect(result.resolution).toBeDefined();
         expect(result.resolved).toBeDefined();
-        expect(result.resolution!.name).toBe('Product A'); // LWW - local mais recente
+        expect(result.resolved.name).toBe('Product A'); // LWW - local mais recente
       });
 
       it('should return non-conflicting version when no conflict', async () => {
